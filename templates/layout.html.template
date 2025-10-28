@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{TITLE}}</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,700;1,400&family=Crimson+Text:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/about.css">
+  <link rel="stylesheet" href="/styles/poems.css">
+  <link rel="stylesheet" href="/styles/poem.css">
+  <link rel="stylesheet" href="/styles/poem-viewer.css">
+  <link rel="stylesheet" href="/styles/swipe-navigation.css">
+</head>
+<body {{NAV_DATA}}>
+  <div class="container">
+    <main>
+      {{CONTENT}}
+    </main>
+
+    <footer>
+      <nav>
+        <a href="/">About</a>
+        <span>•</span>
+        <a href="/poems/">Poems</a>
+      </nav>
+    </footer>
+  </div>
+
+  <!-- Universal swipe navigation -->
+  <script src="/scripts/universal-swipe.js"></script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+/* Poem Viewer Styles */
+
+[v-cloak] {
+  display: none;
+}
+
+.poem-viewer {
+  position: relative;
+  min-height: 70vh;
+  overflow: hidden;
+}
+
+.poem-slide {
+  width: 100%;
+  min-height: 60vh;
+}
+
+/* Viewer Navigation */
+.viewer-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.viewer-navigation .nav-arrow {
+  font-size: 2rem;
+  color: var(--color-text);
+  background: none;
+  border: none;
+  padding: var(--spacing-sm);
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+  user-select: none;
+}
+
+.viewer-navigation .nav-arrow:hover:not(.disabled) {
+  color: var(--color-accent);
+  transform: scale(1.2);
+}
+
+.viewer-navigation .nav-arrow.disabled {
+  color: rgba(0, 0, 0, 0.2);
+  cursor: not-allowed;
+}
+
+.viewer-navigation .page-number {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.85rem;
+  color: var(--color-text-light);
+  font-family: var(--font-heading);
+  white-space: nowrap;
+}
+
+/* Vue Transitions - Slide Left */
+.slide-left-enter-active,
+.slide-left-leave-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-left-enter-from {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.slide-left-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+/* Vue Transitions - Slide Right */
+.slide-right-enter-active,
+.slide-right-leave-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-right-enter-from {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.slide-right-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+/* Touch feedback for mobile */
+@media (hover: none) {
+  .viewer-navigation .nav-arrow:active:not(.disabled) {
+    opacity: 0.6;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .viewer-navigation .nav-arrow {
+    font-size: 1.5rem;
+    padding: var(--spacing-xs);
+  }
+
+  .viewer-navigation .page-number {
+    font-size: 0.75rem;
+  }
+}

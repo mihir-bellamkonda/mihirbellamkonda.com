@@ -1,0 +1,144 @@
+<div id="app" v-cloak>
+  <div class="poem-viewer">
+    <!-- Poem slides with Vue transition -->
+    <transition :name="transitionName" mode="out-in">
+      <div :key="currentPoem.slug" class="poem-slide">
+        <div class="poem-container">
+          <div class="poem-header">
+            <h1>{{ currentPoem.title }}</h1>
+          </div>
+          <div class="poem-content" v-html="currentPoem.content"></div>
+          <p v-if="currentPoem.external_url && currentPoem.published_in" class="external-link">
+            Also published in <a :href="currentPoem.external_url" target="_blank" rel="noopener">{{ currentPoem.published_in }}</a>
+          </p>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Navigation -->
+    <div class="viewer-navigation">
+      <button
+        @click="goToPrev"
+        class="nav-arrow prev"
+        :class="{ disabled: currentIndex === 0 }"
+        :disabled="currentIndex === 0"
+        aria-label="Previous poem">←</button>
+
+      <span class="page-number">Poem {{ currentIndex + 1 }} of {{ poems.length }}</span>
+
+      <button
+        @click="goToNext"
+        class="nav-arrow next"
+        :class="{ disabled: currentIndex === poems.length - 1 }"
+        :disabled="currentIndex === poems.length - 1"
+        aria-label="Next poem">→</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
+<script>
+  const { createApp } = Vue;
+
+  createApp({
+    data() {
+      return {
+        poems: {{POEMS_JSON}},
+        currentIndex: 0,
+        transitionName: 'slide-left',
+        touchStartX: 0,
+        touchStartY: 0
+      }
+    },
+    computed: {
+      currentPoem() {
+        return this.poems[this.currentIndex] || {};
+      }
+    },
+    methods: {
+      goToNext() {
+        if (this.currentIndex < this.poems.length - 1) {
+          this.transitionName = 'slide-left';
+          this.currentIndex++;
+          this.updateUrl();
+        }
+      },
+      goToPrev() {
+        if (this.currentIndex > 0) {
+          this.transitionName = 'slide-right';
+          this.currentIndex--;
+          this.updateUrl();
+        }
+      },
+      goToIndex(index) {
+        if (index >= 0 && index < this.poems.length) {
+          this.transitionName = index > this.currentIndex ? 'slide-left' : 'slide-right';
+          this.currentIndex = index;
+          this.updateUrl();
+        }
+      },
+      updateUrl() {
+        const slug = this.currentPoem.slug;
+        history.replaceState({ index: this.currentIndex }, '', `/poems/viewer.html#${slug}`);
+      },
+      initFromHash() {
+        const hash = window.location.hash.slice(1);
+        if (hash) {
+          const index = this.poems.findIndex(p => p.slug === hash);
+          if (index !== -1) {
+            this.currentIndex = index;
+          }
+        }
+      },
+      handleTouchStart(e) {
+        this.touchStartX = e.touches[0].clientX;
+        this.touchStartY = e.touches[0].clientY;
+      },
+      handleTouchEnd(e) {
+        const touchEndX = e.changedTouches[0].clientX;
+        const touchEndY = e.changedTouches[0].clientY;
+
+        const diffX = touchEndX - this.touchStartX;
+        const diffY = touchEndY - this.touchStartY;
+
+        // Only handle horizontal swipes (prevent vertical scroll interference)
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+          if (diffX > 0) {
+            this.goToPrev();
+          } else {
+            this.goToNext();
+          }
+        }
+      },
+      handleKeydown(e) {
+        if (e.key === 'ArrowLeft') {
+          this.goToPrev();
+        } else if (e.key === 'ArrowRight') {
+          this.goToNext();
+        }
+      }
+    },
+    mounted() {
+      this.initFromHash();
+
+      // Touch events
+      document.addEventListener('touchstart', this.handleTouchStart);
+      document.addEventListener('touchend', this.handleTouchEnd);
+
+      // Keyboard navigation
+      document.addEventListener('keydown', this.handleKeydown);
+
+      // Handle browser back/forward
+      window.addEventListener('popstate', (e) => {
+        if (e.state && typeof e.state.index === 'number') {
+          this.goToIndex(e.state.index);
+        }
+      });
+    },
+    beforeUnmount() {
+      document.removeEventListener('touchstart', this.handleTouchStart);
+      document.removeEventListener('touchend', this.handleTouchEnd);
+      document.removeEventListener('keydown', this.handleKeydown);
+    }
+  }).mount('#app');
+</script>

@@ -1,0 +1,7 @@
+<div class="poems-header">
+    <h1>Contents</h1>
+  </div>
+  
+  <div class="poems-list">
+    {{POEMS_LIST}}
+  </div>

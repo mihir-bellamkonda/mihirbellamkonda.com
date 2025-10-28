@@ -1,0 +1,16 @@
+{
+    "name": "mihir-poetry-site",
+    "version": "1.0.0",
+    "description": "A minimalist poetry website",
+    "scripts": {
+      "build": "node build.js",
+      "dev": "node build.js && npx serve dist"
+    },
+    "dependencies": {
+      "marked": "^11.0.0",
+      "gray-matter": "^4.0.3"
+    },
+    "devDependencies": {
+      "serve": "^14.2.1"
+    }
+  }

@@ -1,0 +1,6 @@
+<div class="about-container">
+    <img src="/public/images/mihir.jpg" alt="Mihir" class="profile-image">
+    <h1 class="name">Mihir</h1>
+    <p class="pronouns">he/him</p>
+    <p class="email"><a href="mailto:mihir@example.com">mihir@example.com</a></p>
+  </div>

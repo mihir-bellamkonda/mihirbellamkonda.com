@@ -1,0 +1,19 @@
+<div class="poem-container">
+    <div class="poem-header">
+      <h1>{{POEM_TITLE}}</h1>
+    </div>
+    
+    <div class="poem-content">
+      {{POEM_CONTENT}}
+    </div>
+    
+    {{EXTERNAL_LINK}}
+    
+    <div class="poem-navigation" data-prev-slug="{{PREV_SLUG}}" data-next-slug="{{NEXT_SLUG}}">
+      {{PREV_LINK}}
+      {{PAGE_NUMBER}}
+      {{NEXT_LINK}}
+    </div>
+  </div>
+  
+  <script src="/scripts/poem-navigation.js"></script>

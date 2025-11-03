@@ -29,6 +29,17 @@ import AboutPage from './components/AboutPage.vue';
 import PoemsListPage from './components/PoemsListPage.vue';
 import PoemPage from './components/PoemPage.vue';
 
+// Swipe navigation constants
+const SWIPE_THRESHOLD_PERCENT = 0.35;  // 35% of screen width triggers navigation
+const SWIPE_DAMPING_FACTOR = 0.8;      // Reduces swipe speed for smoother feel
+const SWIPE_MIN_DISTANCE = 10;         // Minimum pixels to register as swipe
+const SWIPE_ANIMATION_DELAY = 200;     // Milliseconds before completing navigation
+const SWIPE_OPACITY_FADE = 0.2;        // Maximum opacity reduction during swipe
+const PREVIEW_SCALE_MIN = 0.98;        // Minimum scale for preview page
+const PREVIEW_SCALE_RANGE = 0.02;      // Scale range (0.98 to 1.0)
+const PREVIEW_OPACITY_MIN = 0.3;       // Minimum opacity for preview page
+const PREVIEW_OPACITY_RANGE = 0.7;     // Opacity range (0.3 to 1.0)
+
 // State
 const route = ref(parseRoute());
 const swipeOffset = ref(0);
@@ -94,11 +105,7 @@ function getPageData(r) {
       props: {
         poem,
         index: idx + 1,
-        total: poemsData.length,
-        hasPrev: idx > 0,
-        hasNext: idx < poemsData.length - 1,
-        onPrev: goToPrevPage,
-        onNext: goToNextPage
+        total: poemsData.length
       }
     };
   }
@@ -163,19 +170,18 @@ const previewPageKey = computed(() => {
 });
 
 const swipeOpacity = computed(() => {
-  const progress = Math.abs(swipeOffset.value) / (window.innerWidth * 0.35);
-  return 1 - Math.min(progress * 0.2, 0.2);
+  const progress = Math.abs(swipeOffset.value) / (window.innerWidth * SWIPE_THRESHOLD_PERCENT);
+  return 1 - Math.min(progress * SWIPE_OPACITY_FADE, SWIPE_OPACITY_FADE);
 });
 
 const nextPageScale = computed(() => {
-  const progress = Math.abs(swipeOffset.value) / (window.innerWidth * 0.35);
-  const scaleDiff = 0.02; // Difference between 0.98 and 1.0
-  return 0.98 + (Math.min(progress, 1) * scaleDiff);
+  const progress = Math.abs(swipeOffset.value) / (window.innerWidth * SWIPE_THRESHOLD_PERCENT);
+  return PREVIEW_SCALE_MIN + (Math.min(progress, 1) * PREVIEW_SCALE_RANGE);
 });
 
 const nextPageOpacity = computed(() => {
-  const progress = Math.abs(swipeOffset.value) / (window.innerWidth * 0.35);
-  return 0.3 + (Math.min(progress, 1) * 0.7); // From 0.3 to 1.0
+  const progress = Math.abs(swipeOffset.value) / (window.innerWidth * SWIPE_THRESHOLD_PERCENT);
+  return PREVIEW_OPACITY_MIN + (Math.min(progress, 1) * PREVIEW_OPACITY_RANGE);
 });
 
 // Touch handlers
@@ -187,10 +193,10 @@ function handleTouchStart(e) {
 function handleTouchMove(e) {
   if (!swipeStartX.value) return;
   const diff = e.touches[0].clientX - swipeStartX.value;
-  if (Math.abs(diff) > 10) {
+  if (Math.abs(diff) > SWIPE_MIN_DISTANCE) {
     isDragging.value = true;
     // Allow swiping both directions
-    swipeOffset.value = diff * 0.8;
+    swipeOffset.value = diff * SWIPE_DAMPING_FACTOR;
     e.preventDefault();
   }
 }
@@ -201,7 +207,7 @@ function handleTouchEnd() {
     return;
   }
 
-  const threshold = window.innerWidth * 0.35;
+  const threshold = window.innerWidth * SWIPE_THRESHOLD_PERCENT;
   if (Math.abs(swipeOffset.value) > threshold) {
     // Complete navigation
     if (swipeOffset.value < 0) {
@@ -210,14 +216,14 @@ function handleTouchEnd() {
       setTimeout(() => {
         goToNextPage();
         swipeOffset.value = 0;
-      }, 200);
+      }, SWIPE_ANIMATION_DELAY);
     } else {
       // Swiped right - go to previous
       swipeOffset.value = window.innerWidth;
       setTimeout(() => {
         goToPrevPage();
         swipeOffset.value = 0;
-      }, 200);
+      }, SWIPE_ANIMATION_DELAY);
     }
   } else {
     // Snap back

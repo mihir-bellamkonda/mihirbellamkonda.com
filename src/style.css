@@ -286,6 +286,7 @@ footer a:hover {
 .poem-container {
   max-width: 600px;
   margin: 0 auto;
+  text-align: center;
 }
 
 .poem-header {
@@ -311,6 +312,8 @@ footer a:hover {
   overflow-x: auto;
   max-width: 100%;
   -webkit-overflow-scrolling: touch;
+  text-align: left;
+  display: inline-block;
 }
 
 .poem-content p {

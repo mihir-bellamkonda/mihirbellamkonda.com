@@ -37,7 +37,7 @@ import ArrowKeyIcons from './components/hints/ArrowKeyIcons.vue';
 import EdgeGradients from './components/hints/EdgeGradients.vue';
 
 // Swipe navigation constants
-const SWIPE_THRESHOLD_PERCENT = 0.35;  // 35% of screen width triggers navigation
+const SWIPE_THRESHOLD_PERCENT = 0.25;  // 25% of screen width triggers navigation
 const SWIPE_DAMPING_FACTOR = 0.8;      // Reduces swipe speed for smoother feel
 const SWIPE_MIN_DISTANCE = 10;         // Minimum pixels to register as swipe
 const SWIPE_ANIMATION_DELAY = 200;     // Milliseconds before completing navigation

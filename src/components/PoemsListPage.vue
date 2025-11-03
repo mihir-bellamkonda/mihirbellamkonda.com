@@ -6,24 +6,18 @@
         <div v-for="poem in poems" :key="poem.slug" class="poem-entry">
           <div class="poem-entry-top">
             <a @click.prevent="onSelect(poem.slug)" href="#" class="poem-title">{{ poem.title }}</a>
-            <span class="dots"></span>
-            <span class="poem-number">{{ poem.index }}</span>
           </div>
           <div v-if="poem.published_in" class="poem-meta">Also published in {{ poem.published_in }}</div>
         </div>
       </div>
     </main>
-    <footer>
-      <nav>
-        <a href="#about">About</a>
-        <span>•</span>
-        <a href="#contents">Contents</a>
-      </nav>
-    </footer>
+    <FooterNav />
   </div>
 </template>
 
 <script setup>
+import FooterNav from './FooterNav.vue';
+
 defineProps({
   poems: Array,
   onSelect: Function

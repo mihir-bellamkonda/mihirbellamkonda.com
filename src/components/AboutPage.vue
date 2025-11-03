@@ -8,12 +8,10 @@
       <p class="bio">email@email.com</p>
       <p><a href="#contents">View Poems →</a></p>
     </main>
-    <footer>
-      <nav>
-        <a href="#about">About</a>
-        <span>•</span>
-        <a href="#contents">Contents</a>
-      </nav>
-    </footer>
+    <FooterNav />
   </div>
 </template>
+
+<script setup>
+import FooterNav from './FooterNav.vue';
+</script>

@@ -11,30 +11,25 @@
         </p>
       </div>
     </main>
-    <div class="poem-number-indicator">
-      <span class="poem-number-small">{{ index }}</span>
-    </div>
-    <footer>
-      <nav>
-        <a href="#about">About</a>
-        <span>•</span>
-        <a href="#contents">Contents</a>
-      </nav>
-    </footer>
+    <FooterNav />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
+import FooterNav from './FooterNav.vue';
+
+// Font scaling constants
+const FONT_SIZE_MIN = 10;        // Minimum readable font size (px)
+const FONT_SIZE_MAX = 24;        // Maximum font size for poems (px)
+const FONT_SIZE_STEP = 0.5;      // Size reduction increment (px)
+const CONTAINER_PADDING = 32;    // Horizontal padding to account for (px)
+const DOM_UPDATE_DELAY = 10;     // Milliseconds to wait for DOM update (ms)
 
 const props = defineProps({
   poem: Object,
   index: Number,
-  total: Number,
-  hasPrev: Boolean,
-  hasNext: Boolean,
-  onPrev: Function,
-  onNext: Function
+  total: Number
 });
 
 const poemContent = ref(null);
@@ -43,15 +38,14 @@ function fitPoemToWidth() {
   if (!poemContent.value) return;
 
   const container = poemContent.value;
-  const maxWidth = container.parentElement.clientWidth - 32; // Account for padding
-  let fontSize = 18; // Start at 18px (1.1rem-ish)
-  const minFontSize = 10; // Don't go below 10px
+  const maxWidth = container.parentElement.clientWidth - CONTAINER_PADDING;
+  let fontSize = FONT_SIZE_MAX; // Start at max and scale down
 
   container.style.fontSize = fontSize + 'px';
 
-  // Check if content overflows
-  while (container.scrollWidth > maxWidth && fontSize > minFontSize) {
-    fontSize -= 0.5;
+  // Check if content overflows and reduce font size if needed
+  while (container.scrollWidth > maxWidth && fontSize > FONT_SIZE_MIN) {
+    fontSize -= FONT_SIZE_STEP;
     container.style.fontSize = fontSize + 'px';
   }
 }
@@ -61,7 +55,11 @@ onMounted(() => {
   window.addEventListener('resize', fitPoemToWidth);
 });
 
+onUnmounted(() => {
+  window.removeEventListener('resize', fitPoemToWidth);
+});
+
 watch(() => props.poem, () => {
-  setTimeout(fitPoemToWidth, 10); // Small delay to ensure DOM is updated
+  setTimeout(fitPoemToWidth, DOM_UPDATE_DELAY); // Small delay to ensure DOM is updated
 });
 </script>

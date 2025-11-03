@@ -63,3 +63,71 @@ watch(() => props.poem, () => {
   setTimeout(fitPoemToWidth, DOM_UPDATE_DELAY); // Small delay to ensure DOM is updated
 });
 </script>
+
+<style scoped>
+/* Poem Page Specific Styles */
+.poem-content-wrapper {
+  padding-top: var(--spacing-lg);
+}
+
+.poem-container {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.poem-header {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.poem-header h1 {
+  font-family: var(--font-heading);
+  font-size: 1.8rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  color: var(--color-text);
+}
+
+.poem-content {
+  font-family: var(--font-body);
+  font-size: 18px; /* Will be adjusted by JavaScript */
+  line-height: 1.6;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-lg);
+  white-space: pre;
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+  text-align: left;
+  display: inline-block;
+}
+
+.poem-content p {
+  margin-bottom: 1.5em;
+}
+
+.external-link {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--color-text-light);
+  font-style: italic;
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+}
+
+.external-link a {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .poem-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .poem-content {
+    font-size: 1rem;
+  }
+}
+</style>

@@ -19,6 +19,9 @@
     >
       <component :is="currentPageData.view" v-bind="currentPageData.props" />
     </div>
+
+    <ArrowKeyIcons />
+    <EdgeGradients />
   </div>
 </template>
 
@@ -28,6 +31,10 @@ import poemsData from './poems.json';
 import AboutPage from './components/AboutPage.vue';
 import PoemsListPage from './components/PoemsListPage.vue';
 import PoemPage from './components/PoemPage.vue';
+
+// Navigation hint components - uncomment the one you want to use
+import ArrowKeyIcons from './components/hints/ArrowKeyIcons.vue';
+import EdgeGradients from './components/hints/EdgeGradients.vue';
 
 // Swipe navigation constants
 const SWIPE_THRESHOLD_PERCENT = 0.35;  // 35% of screen width triggers navigation
@@ -194,8 +201,16 @@ function handleTouchMove(e) {
   if (!swipeStartX.value) return;
   const diff = e.touches[0].clientX - swipeStartX.value;
   if (Math.abs(diff) > SWIPE_MIN_DISTANCE) {
+    // Check if swipe direction is valid
+    const swipingRight = diff > 0;
+    const swipingLeft = diff < 0;
+
+    if ((swipingRight && !prevPageData.value) || (swipingLeft && !nextPageData.value)) {
+      // Can't swipe in this direction - no page exists
+      return;
+    }
+
     isDragging.value = true;
-    // Allow swiping both directions
     swipeOffset.value = diff * SWIPE_DAMPING_FACTOR;
     e.preventDefault();
   }
@@ -233,6 +248,28 @@ function handleTouchEnd() {
   swipeStartX.value = 0;
 }
 
+// Animate page transition
+function animatePageTransition(direction) {
+  // Check if navigation is possible in this direction
+  if (direction === 'next' && !nextPageData.value) return;
+  if (direction === 'prev' && !prevPageData.value) return;
+
+  // direction: 'next' or 'prev'
+  if (direction === 'next') {
+    swipeOffset.value = -window.innerWidth;
+    setTimeout(() => {
+      goToNextPage();
+      swipeOffset.value = 0;
+    }, SWIPE_ANIMATION_DELAY);
+  } else {
+    swipeOffset.value = window.innerWidth;
+    setTimeout(() => {
+      goToPrevPage();
+      swipeOffset.value = 0;
+    }, SWIPE_ANIMATION_DELAY);
+  }
+}
+
 // Click handler
 function handlePageClick(e) {
   // Don't navigate if clicking on links or buttons
@@ -246,16 +283,16 @@ function handlePageClick(e) {
   const isLeftHalf = clickX < screenWidth / 2;
 
   if (isLeftHalf) {
-    goToPrevPage();
+    animatePageTransition('prev');
   } else {
-    goToNextPage();
+    animatePageTransition('next');
   }
 }
 
 // Keyboard handlers
 function handleKeydown(e) {
-  if (e.key === 'ArrowLeft') goToPrevPage();
-  if (e.key === 'ArrowRight') goToNextPage();
+  if (e.key === 'ArrowLeft') animatePageTransition('prev');
+  if (e.key === 'ArrowRight') animatePageTransition('next');
 }
 
 // Lifecycle

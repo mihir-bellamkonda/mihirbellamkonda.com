@@ -77,7 +77,7 @@ main {
   flex: 1;
 }
 
-/* Footer */
+/* Footer (shared component) */
 footer {
   margin-top: var(--spacing-sm);
   padding-top: var(--spacing-sm);
@@ -120,20 +120,11 @@ footer a:hover {
   color: var(--color-accent);
 }
 
-.poem-number-indicator {
-  text-align: center;
-  margin-top: var(--spacing-lg);
-  margin-bottom: 0.5rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.poem-number-small {
-  font-size: 0.75rem;
-  color: var(--color-text-light);
-  font-family: var(--font-heading);
-  font-weight: 500;
+/* Section Title (shared utility class) */
+.section-title {
+  border-bottom: 2px solid var(--color-text);
+  padding-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
 }
 
 /* Card Stack Swipe Effect */
@@ -164,216 +155,28 @@ footer a:hover {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* About Page */
-.about-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  flex: 1;
+/* Peek hint animation for navigation discovery */
+.page-stack.peek-hint .page-preview {
+  animation: peekAnimation 1.5s ease-out;
 }
 
-.profile-image-container {
-  margin-bottom: var(--spacing-md);
-}
-
-.profile-image {
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid rgba(0, 0, 0, 0.05);
-}
-
-.book-cover {
-  border: 8px solid #1B4332;
-  box-shadow:
-    inset 0 0 0 2px var(--color-background),
-    0 8px 24px rgba(27, 67, 50, 0.3);
-}
-
-.section-title {
-  border-bottom: 2px solid var(--color-text);
-  padding-bottom: var(--spacing-sm);
-  margin-bottom: var(--spacing-lg);
-}
-
-.bio {
-  font-size: 1.2rem;
-  color: var(--color-text-light);
-  font-style: italic;
-  margin-bottom: var(--spacing-sm);
-}
-
-/* Poems List Page */
-.poems-list-content {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  padding-top: var(--spacing-md);
-}
-
-.poems-list-content h2 {
-  text-align: center;
-  font-family: var(--font-heading);
-  font-weight: 400;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-}
-
-.poems-list {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.poem-entry {
-  margin-bottom: var(--spacing-md);
-}
-
-.poem-entry-top {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  margin-bottom: 0.25rem;
-}
-
-.poem-title {
-  font-family: var(--font-heading);
-  font-size: 1rem;
-  font-weight: 400;
-  letter-spacing: 0.05em;
-  color: var(--color-text);
-  text-decoration: none;
-  flex-shrink: 1;
-  cursor: pointer;
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-}
-
-.poem-title:hover {
-  color: var(--color-accent);
-  text-decoration: none;
-}
-
-.dots {
-  flex: 1;
-  border-bottom: 1px dotted rgba(0, 0, 0, 0.3);
-  margin: 0 0.5rem 0.3rem 0.5rem;
-  min-width: 2rem;
-}
-
-.poem-number {
-  font-family: var(--font-heading);
-  font-size: 0.9rem;
-  color: var(--color-text-light);
-  flex-shrink: 0;
-  min-width: 2rem;
-  text-align: right;
-}
-
-.poem-meta {
-  font-size: 0.85rem;
-  color: var(--color-text-light);
-  font-style: italic;
-}
-
-/* Poem Page */
-.poem-content-wrapper {
-  padding-top: var(--spacing-lg);
-}
-
-.poem-container {
-  max-width: 600px;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.poem-header {
-  text-align: center;
-  margin-bottom: var(--spacing-lg);
-}
-
-.poem-header h1 {
-  font-family: var(--font-heading);
-  font-size: 1.8rem;
-  font-weight: 400;
-  letter-spacing: 0.05em;
-  color: var(--color-text);
-}
-
-.poem-content {
-  font-family: var(--font-body);
-  font-size: 18px; /* Will be adjusted by JavaScript */
-  line-height: 1.6;
-  color: var(--color-text);
-  margin-bottom: var(--spacing-lg);
-  white-space: pre;
-  overflow-x: auto;
-  max-width: 100%;
-  -webkit-overflow-scrolling: touch;
-  text-align: left;
-  display: inline-block;
-}
-
-.poem-content p {
-  margin-bottom: 1.5em;
-}
-
-.external-link {
-  text-align: center;
-  font-size: 0.9rem;
-  color: var(--color-text-light);
-  font-style: italic;
-  margin-top: var(--spacing-lg);
-  margin-bottom: var(--spacing-md);
-}
-
-.external-link a {
-  color: var(--color-accent);
-  text-decoration: underline;
-}
-
-/* Poem Navigation */
-.poem-navigation {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: var(--spacing-xl);
-  padding-top: var(--spacing-md);
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-  position: relative;
-}
-
-.nav-arrow {
-  font-size: 2rem;
-  color: var(--color-text);
-  background: none;
-  border: none;
-  padding: var(--spacing-sm);
-  cursor: pointer;
-  transition: color 0.2s ease, transform 0.2s ease;
-  user-select: none;
-}
-
-.nav-arrow:hover:not(:disabled) {
-  color: var(--color-accent);
-  transform: scale(1.2);
-}
-
-.nav-arrow:disabled {
-  color: rgba(0, 0, 0, 0.2);
-  cursor: not-allowed;
-}
-
-.page-number {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.85rem;
-  color: var(--color-text-light);
-  font-family: var(--font-heading);
-  white-space: nowrap;
+@keyframes peekAnimation {
+  0% {
+    transform: scale(0.98) translateX(0);
+    opacity: 0.3;
+  }
+  30% {
+    transform: scale(0.99) translateX(-15px);
+    opacity: 0.6;
+  }
+  60% {
+    transform: scale(0.99) translateX(-15px);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(0.98) translateX(0);
+    opacity: 0.3;
+  }
 }
 
 /* Responsive */
@@ -393,27 +196,4 @@ footer a:hover {
   .container {
     padding: var(--spacing-sm);
   }
-
-  .profile-image {
-    width: 150px;
-    height: 150px;
-  }
-
-  .poem-header h1 {
-    font-size: 1.5rem;
-  }
-
-  .poem-content {
-    font-size: 1rem;
-  }
-
-  .nav-arrow {
-    font-size: 1.5rem;
-    padding: var(--spacing-xs);
-  }
-
-  .page-number {
-    font-size: 0.75rem;
-  }
-
 }

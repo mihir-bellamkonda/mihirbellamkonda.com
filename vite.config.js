@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
   plugins: [vue()],
-  base: '/mihirbellamkonda.com/',  // GitHub Pages project site path
+  base: '/',  // custom apex domain serves from root
   build: {
     outDir: 'dist'
   }

@@ -25,6 +25,14 @@
             <span v-if="poem.published_in" class="venue">{{ poem.published_in }}</span>
             <span v-if="yearOf(poem)" class="yr">{{ yearOf(poem) }}</span>
           </span>
+          <AsemicMarks
+            class="sig"
+            :text="poem.content"
+            :seed="poem.slug + '::sig'"
+            :max-lines="1"
+            :size="5"
+            instant
+          />
         </button>
       </div>
 
@@ -37,6 +45,7 @@
 
 <script setup>
 import FooterNav from './FooterNav.vue';
+import AsemicMarks from './AsemicMarks.vue';
 
 defineProps({
   poems: Array,
@@ -168,6 +177,14 @@ function yearOf(poem) {
 .row:focus-visible {
   outline: 1px solid var(--accent);
   outline-offset: 4px;
+}
+
+/* One illegible line of the poem itself, so every row is distinguishable
+   at a glance without a thumbnail. */
+.sig {
+  grid-column: 2 / 3;
+  height: 20px;
+  margin-top: 0.5rem;
 }
 
 .rest {

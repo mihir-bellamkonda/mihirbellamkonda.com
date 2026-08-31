@@ -33,6 +33,13 @@
             <span>{{ year }}</span>
           </template>
         </div>
+
+        <AsemicMarks
+          v-if="ghost"
+          class="ghost"
+          :text="ghost.content"
+          :seed="poem.slug + '::ghost'"
+        />
       </div>
 
       <!-- Nothing in here is styled differently from anything else in here.
@@ -52,6 +59,7 @@
 <script setup>
 import { computed } from 'vue';
 import FooterNav from './FooterNav.vue';
+import AsemicMarks from './AsemicMarks.vue';
 
 const props = defineProps({
   poem: Object,
@@ -59,6 +67,7 @@ const props = defineProps({
   total: Number,
   prev: { type: Object, default: null },
   next: { type: Object, default: null },
+  ghost: { type: Object, default: null },
   onGo: { type: Function, default: null }
 });
 
@@ -190,6 +199,13 @@ const stanzas = computed(() => {
   border-bottom-color: var(--a-ink-2);
 }
 
+/* The illegible column. Its height is the composition — the marks fill
+   whatever room they are given, so this is a layout decision. */
+.ghost {
+  height: clamp(15rem, 40vh, 32rem);
+  margin-top: 0.4rem;
+}
+
 .verse {
   font-size: clamp(1.02rem, 1.45vw, 1.13rem);
   line-height: 1.78;
@@ -220,6 +236,10 @@ const stanzas = computed(() => {
 }
 
 @media (max-width: 860px) {
+  .ghost {
+    height: 8rem;
+  }
+
   .grid {
     grid-template-columns: 1fr;
     gap: 2.6rem;

@@ -78,6 +78,9 @@ const current = computed(() => {
         total: poemsData.length,
         prev: i > 0 ? poemsData[i - 1] : null,
         next: i < poemsData.length - 1 ? poemsData[i + 1] : null,
+        // The marks beside a poem are the *next* poem's shape, wrapping at
+        // the end — the book bleeding through the page you are on.
+        ghost: poemsData[(i + 1) % poemsData.length],
         onGo: slug => navigate({ page: 'poem', slug })
       }
     };

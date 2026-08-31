@@ -1,8 +1,8 @@
 ---
 title: "Thuragnosia: Parable of the Man Blind to Doors"
-date: 2025-10-27
+date: 2024-05-01
 published_in: "Painted Bride Quarterly"
-external_url: "https://pbqmag.org/tag/mihir-bellamkonda/"
+external_url: "https://pbqmag.org/mihir-bellamkonda-thuragnosia-parable-of-the-man-blind-to-doors/"
 ---
 
 In a way, the diagnosis was an honor,

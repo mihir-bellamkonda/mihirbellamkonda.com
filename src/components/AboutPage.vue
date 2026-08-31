@@ -17,7 +17,8 @@
           <a href="https://x.com/MihirWords" rel="me noopener" target="_blank">X</a>
           and
           <a href="https://www.instagram.com/mihirwords/" rel="me noopener" target="_blank">Instagram</a>
-          as @MihirWords. They are honored to be read.
+          as @MihirWords, or reached by
+          <a href="mailto:mihir.bellamkonda@gmail.com">email</a>. They are honored to be read.
         </p>
 
         <p class="enter"><a href="/#index">read →</a></p>

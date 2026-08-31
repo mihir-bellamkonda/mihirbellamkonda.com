@@ -182,7 +182,7 @@ function yearOf(poem) {
    at a glance without a thumbnail. */
 .sig {
   grid-column: 2 / 3;
-  height: 20px;
+  height: 26px;
   margin-top: 0.5rem;
 }
 

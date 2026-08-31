@@ -221,16 +221,14 @@ All CSS is in `src/style.css` using CSS variables:
 
 ### Deployment
 
-Automatic deployment to GitHub Pages:
+Automatic deployment to GitHub Pages, live at https://mihirbellamkonda.com
 
-**Not yet configured** - To set up:
-
-1. Create `.github/workflows/deploy.yml`
-2. Configure workflow to:
-   - Run `npm install`
-   - Run `npm run build`
-   - Deploy `dist/` to `gh-pages` branch
-3. Enable GitHub Pages in repo settings (source: gh-pages branch)
+- Repo `mihir-bellamkonda/mihirbellamkonda.com`, default branch **`trunk`** (not `main`)
+- `.github/workflows/deploy.yml` runs `npm ci && npm run build` and uploads `dist/`
+- Pages source is **GitHub Actions**; custom domain set, Enforce HTTPS on
+- `public/CNAME` must stay in `public/` so Vite copies it into `dist/` — a
+  root-level CNAME never reaches the published site
+- `vite.config.js` base must stay `/`; a project subpath 404s every asset
 
 ## Key Implementation Details
 

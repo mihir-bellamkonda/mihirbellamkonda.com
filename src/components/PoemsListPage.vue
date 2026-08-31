@@ -30,7 +30,6 @@
             :text="poem.content"
             :seed="poem.slug + '::sig'"
             :max-lines="1"
-            :size="5"
             instant
           />
         </button>

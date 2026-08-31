@@ -11,7 +11,8 @@ const props = defineProps({
   text: { type: String, default: '' },
   // Same seed, same marks, every load, for everyone.
   seed: { type: String, required: true },
-  size: { type: Number, default: 5.2 },
+  // 0 lets the hand scale itself to the space it is given
+  size: { type: Number, default: 0 },
   maxLines: { type: Number, default: 0 },
   // Draw straight to full instead of writing itself on.
   instant: { type: Boolean, default: false }
@@ -41,17 +42,12 @@ function build() {
   const ctx = el.getContext('2d');
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  const size = props.size;
-  const leading = size * 2.95;
-
   strokes = ghost(props.text, {
     rng: rngFor(props.seed),
     x: 0,
-    y: size * 1.6,
     width: w,
-    bottom: h - size,
-    size,
-    leading,
+    height: h,
+    size: props.size || 0,
     maxLines: props.maxLines
   });
 

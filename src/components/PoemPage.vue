@@ -1,5 +1,10 @@
 <template>
   <div class="poem-plate" v-if="poem">
+    <div class="chrome">
+      <a href="#about">mihir bellamkonda</a>
+      <a href="#index">index</a>
+    </div>
+
     <main class="grid">
       <div class="col-margin">
         <div class="num">{{ pad(index) }} / {{ pad(total) }}</div>
@@ -40,7 +45,7 @@
     </main>
 
     <div class="rest"></div>
-    <FooterNav />
+    <FooterNav :prev="prev" :next="next" :position="pad(index) + ' / ' + pad(total)" :on-go="onGo" />
   </div>
 </template>
 
@@ -51,7 +56,10 @@ import FooterNav from './FooterNav.vue';
 const props = defineProps({
   poem: Object,
   index: Number,
-  total: Number
+  total: Number,
+  prev: { type: Object, default: null },
+  next: { type: Object, default: null },
+  onGo: { type: Function, default: null }
 });
 
 function pad(n) {
@@ -83,6 +91,32 @@ const stanzas = computed(() => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+.chrome {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(1.4rem, 4vw, 2.4rem) clamp(1.25rem, 5vw, 4.5rem) 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1.5rem;
+  font-family: var(--f-cat);
+  font-size: 0.63rem;
+  letter-spacing: 0.18em;
+  color: var(--a-faint);
+}
+
+.chrome a {
+  color: var(--a-faint);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.chrome a:hover {
+  color: var(--a-ink);
+  border-bottom-color: var(--a-hair);
 }
 
 .grid {

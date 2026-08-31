@@ -1,8 +1,10 @@
 /* ============================================================
    mihirbellamkonda.com — design tokens
+
    Ground and mark. Bone against near-black, graphite, deep green.
-   Both themes are defined at token level so components never need
-   to know which one is active.
+   Both themes are defined at token level so components never need to
+   know which one is active, and dark is a negative rather than a
+   dimming: the two bands trade places.
    ============================================================ */
 
 :root {
@@ -13,14 +15,14 @@
   --a-faint: #A5A093;
   --a-hair:  #D5D0C2;
 
-  /* band B — the hard block */
+  /* band B — the hard block beneath it */
   --b-bg:    #1D1B18;
   --b-ink:   #EDE9DE;
   --b-ink-2: #A29C8E;
   --b-faint: #6E6A60;
   --b-hair:  #35322C;
 
-  --accent:  #1F4A34;
+  --accent:   #1F4A34;
   --accent-2: #2E6B4B;
 
   /* asemic inks, as rgb triples for canvas */
@@ -33,24 +35,8 @@
   --f-display: 'Cormorant Garamond', 'Hoefler Text', Garamond, Georgia, serif;
   --f-verse:   'Spectral', 'Iowan Old Style', Georgia, serif;
   --f-cat:     'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
-
-  /* legacy names, still referenced by components until they are rebuilt */
-  --color-background: var(--a-bg);
-  --color-text: var(--a-ink);
-  --color-text-light: var(--a-ink-2);
-  --color-accent: var(--accent);
-  --color-accent-hover: var(--accent-2);
-  --font-heading: var(--f-display);
-  --font-body: var(--f-verse);
-
-  --spacing-xs: 0.5rem;
-  --spacing-sm: 1rem;
-  --spacing-md: 2rem;
-  --spacing-lg: 3rem;
-  --spacing-xl: 4rem;
 }
 
-/* dark is the negative, not a dimming: bone and slate trade places */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --a-bg:    #1B1A16;
@@ -65,7 +51,7 @@
     --b-faint: #9C978A;
     --b-hair:  #CFC9BA;
 
-    --accent:  #6FA98A;
+    --accent:   #6FA98A;
     --accent-2: #8CC0A3;
 
     --i-mark:  230, 226, 214;
@@ -89,7 +75,7 @@
   --b-faint: #9C978A;
   --b-hair:  #CFC9BA;
 
-  --accent:  #6FA98A;
+  --accent:   #6FA98A;
   --accent-2: #8CC0A3;
 
   --i-mark:  230, 226, 214;
@@ -106,7 +92,9 @@
   box-sizing: border-box;
 }
 
-html { -webkit-text-size-adjust: 100%; }
+html {
+  -webkit-text-size-adjust: 100%;
+}
 
 body {
   font-family: var(--f-verse);
@@ -137,134 +125,20 @@ button:focus-visible {
 }
 
 /* ---------------- typography ---------------- */
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   font-family: var(--f-display);
   font-weight: 300;
   line-height: 1.04;
   text-wrap: balance;
 }
 
-h1 {
-  font-size: clamp(2.3rem, 5.6vw, 3.7rem);
-  margin-bottom: var(--spacing-sm);
-}
-
-h2 {
-  font-size: clamp(1.6rem, 3.4vw, 2.2rem);
-  margin-bottom: var(--spacing-md);
-}
-
-/* small uppercase catalogue labels — plate numbers, provenance keys */
-.cat {
-  font-family: var(--f-cat);
-  font-size: 0.63rem;
-  letter-spacing: 0.18em;
-  color: var(--a-faint);
-}
-
-/* ---------------- layout ---------------- */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: var(--spacing-md);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: var(--a-bg);
-}
-
-main { flex: 1; }
-
-/* ---------------- footer ---------------- */
-footer {
-  margin-top: var(--spacing-sm);
-  padding-top: var(--spacing-sm);
-  padding-bottom: var(--spacing-sm);
-  border-top: 1px solid var(--a-hair);
-  text-align: center;
-  font-size: 0.95rem;
-}
-
-footer nav {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  width: 100%;
-}
-
-footer nav a:first-child {
-  text-align: right;
-  padding-right: var(--spacing-md);
-}
-
-footer nav a:last-child {
-  text-align: left;
-  padding-left: var(--spacing-md);
-}
-
-footer nav span {
-  text-align: center;
-  color: var(--a-faint);
-}
-
-footer a {
-  color: var(--a-ink-2);
-  font-family: var(--f-cat);
-  letter-spacing: 0.14em;
-  font-size: 0.63rem;
-}
-
-footer a:hover { color: var(--a-ink); }
-
-/* ---------------- shared ---------------- */
-.section-title {
-  border-bottom: 1px solid var(--a-hair);
-  padding-bottom: var(--spacing-sm);
-  margin-bottom: var(--spacing-lg);
-}
-
-/* ---------------- card stack (retired in a later commit) ---------------- */
-.page-stack {
-  position: relative;
-  width: 100%;
-  min-height: 100vh;
-}
-
-.page {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  min-height: 100vh;
-}
-
-.page-preview {
-  z-index: 1;
-  transition: transform 0.1s ease-out, opacity 0.1s ease-out;
-  max-height: 100vh;
-  overflow: hidden;
-}
-
-.page-current {
-  z-index: 2;
-  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
-}
-
-.page-stack.peek-hint .page-preview {
-  animation: peekAnimation 1.5s ease-out;
-}
-
-@keyframes peekAnimation {
-  0%   { transform: scale(0.98) translateX(0);     opacity: 0.3; }
-  30%  { transform: scale(0.99) translateX(-15px); opacity: 0.6; }
-  60%  { transform: scale(0.99) translateX(-15px); opacity: 0.6; }
-  100% { transform: scale(0.98) translateX(0);     opacity: 0.3; }
-}
-
 /* ---------------- responsive ---------------- */
 @media (max-width: 860px) {
-  body { font-size: 16px; }
-  .container { padding: var(--spacing-sm); }
+  body {
+    font-size: 16px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -274,5 +148,12 @@ footer a:hover { color: var(--a-ink); }
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
   }
 }

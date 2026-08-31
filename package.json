@@ -7,6 +7,8 @@
     "poems": "node scripts/build-poems.js",
     "dev": "npm run poems && vite",
     "build": "npm run poems && vite build && node scripts/build-pages.js",
+    "verify": "npm run build && node scripts/verify-site.js",
+    "check:links": "npm run poems && node scripts/check-external-links.js",
     "preview": "vite preview"
   },
   "dependencies": {

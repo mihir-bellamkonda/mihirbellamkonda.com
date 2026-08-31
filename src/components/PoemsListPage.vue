@@ -18,7 +18,10 @@
                anchor cannot legally contain another. The poem link is
                stretched across the row instead, so the whole row still
                opens the poem while the venue stays separately clickable. -->
-          <div class="row">
+          <div
+            class="row"
+            :class="{ 'peek-open': openSlug === poem.slug }"
+          >
             <span class="no">{{ pad(i + 1) }}</span>
 
             <a
@@ -43,11 +46,23 @@
                 class="sr-only"> — read at the publisher, opens in a new tab</span></a>
               <span v-else-if="poem.published_in" class="venue">{{ poem.published_in }}</span>
               <span v-if="yearOf(poem)" class="yr">{{ yearOf(poem) }}</span>
+              <button
+                type="button"
+                class="peek"
+                :aria-expanded="openSlug === poem.slug"
+                :aria-controls="`excerpt-${i}`"
+                @click.prevent.stop="toggleExcerpt(poem.slug)"
+              >{{ openSlug === poem.slug ? 'close' : 'excerpt' }}</button>
             </span>
 
             <!-- The poet's own line, unaltered, in the reading face. It is a
                  way in, not a caption. -->
-            <span class="firstline" aria-hidden="true" v-html="firstLine(poem)"></span>
+            <span
+              class="firstline"
+              :id="`excerpt-${i}`"
+              :aria-hidden="openSlug === poem.slug ? undefined : 'true'"
+              v-html="firstLine(poem)"
+            ></span>
 
             <AsemicMarks
               class="sig"
@@ -68,6 +83,7 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import FooterNav from './FooterNav.vue';
 import AsemicMarks from './AsemicMarks.vue';
 
@@ -75,6 +91,12 @@ const props = defineProps({
   poems: Array,
   onSelect: Function
 });
+
+const openSlug = ref('');
+
+function toggleExcerpt(slug) {
+  openSlug.value = openSlug.value === slug ? '' : slug;
+}
 
 function follow(event, slug) {
   if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -264,6 +286,20 @@ function firstLine(poem) {
   outline-offset: 3px;
 }
 
+.peek {
+  display: none;
+  position: relative;
+  z-index: 2;
+  border: 0;
+  border-bottom: 1px solid var(--a-hair);
+  padding: 0 0 0.08rem;
+  background: none;
+  color: var(--a-faint);
+  font: inherit;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
 .ext {
   display: inline-block;
   margin-left: 0.25em;
@@ -286,16 +322,15 @@ function firstLine(poem) {
 }
 
 .row:hover .firstline,
-.row:focus-within .firstline {
+.row:focus-within .firstline,
+.row.peek-open .firstline {
   max-height: 4rem;
   opacity: 1;
   margin-top: 0.55rem;
 }
 
-/* Nothing hovers on a touch screen; the line would never appear, and
-   reserving space for it would only loosen the list. */
 @media (hover: none) {
-  .firstline { display: none; }
+  .peek { display: inline-block; }
 }
 
 .row:hover .title,

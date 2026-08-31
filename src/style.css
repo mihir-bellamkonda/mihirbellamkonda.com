@@ -320,10 +320,88 @@ h3 {
   outline: none;
 }
 
+/* The generated poem pages carry a complete reading copy inside noscript.
+   This is deliberately plainer than the app, but it remains the same book. */
+.static-poem {
+  min-height: 100vh;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 clamp(1.25rem, 5vw, 4.5rem) clamp(5rem, 17vh, 10rem);
+}
+
+.static-chrome {
+  display: flex;
+  justify-content: space-between;
+  padding-top: clamp(1.4rem, 4vw, 2.4rem);
+  font-family: var(--f-cat);
+  font-size: 0.63rem;
+  letter-spacing: 0.18em;
+}
+
+.static-chrome a {
+  color: var(--a-faint);
+}
+
+.static-grid {
+  padding-top: clamp(5rem, 17vh, 10rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  gap: 0 clamp(2rem, 7vw, 7rem);
+  align-items: start;
+}
+
+.static-margin {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+.static-margin h1 {
+  font-size: clamp(2.3rem, 5.6vw, 3.7rem);
+}
+
+.static-number,
+.static-provenance {
+  margin: 0;
+  font-family: var(--f-cat);
+  font-size: 0.63rem;
+  letter-spacing: 0.16em;
+  color: var(--a-faint);
+}
+
+.static-dedication {
+  margin: 0;
+  font-family: var(--f-display);
+  font-style: italic;
+  color: var(--a-ink-2);
+}
+
+.static-verse {
+  max-width: 40rem;
+  font-size: clamp(1.02rem, 1.45vw, 1.13rem);
+  line-height: 1.78;
+}
+
+.static-stanza {
+  margin: 0 0 1.78em;
+}
+
+.static-line {
+  display: block;
+  text-indent: -1.4em;
+  padding-left: 1.4em;
+}
+
 /* ---------------- responsive ---------------- */
 @media (max-width: 860px) {
   body {
     font-size: 16px;
+  }
+
+  .static-grid {
+    grid-template-columns: 1fr;
+    gap: 2.6rem;
   }
 }
 

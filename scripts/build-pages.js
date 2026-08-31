@@ -21,7 +21,78 @@ function setMeta(html, selector, value) {
   return html.replace(pattern, `$1${escaped}$2`);
 }
 
-for (const poem of poems) {
+const jsonForHtml = (value) => JSON.stringify(value).replace(/</g, '\\u003c');
+
+function structuredData(poem, canonical) {
+  const personId = 'https://mihirbellamkonda.com/#mihir-bellamkonda';
+  const work = {
+    '@type': 'CreativeWork',
+    '@id': `${canonical}#work`,
+    url: canonical,
+    name: poem.title,
+    genre: 'Poetry',
+    inLanguage: 'en',
+    author: { '@id': personId },
+    isPartOf: {
+      '@type': 'CollectionPage',
+      '@id': 'https://mihirbellamkonda.com/#published-poems',
+      url: 'https://mihirbellamkonda.com/#index',
+      name: 'Published poems by Mihir Bellamkonda'
+    }
+  };
+
+  if (poem.date) work.datePublished = String(poem.date).slice(0, 10);
+  if (poem.published_in) {
+    work.publisher = { '@type': 'Organization', name: poem.published_in };
+  }
+
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Person',
+        '@id': personId,
+        name: 'Mihir Bellamkonda',
+        url: 'https://mihirbellamkonda.com/',
+        sameAs: [
+          'https://x.com/MihirWords',
+          'https://www.instagram.com/mihirwords/'
+        ]
+      },
+      work
+    ]
+  };
+}
+
+function staticPoem(poem, index, total) {
+  const year = String(poem.date || '').match(/\d{4}/)?.[0] || '';
+  const provenance = poem.published_in
+    ? `First published in ${escapeHtml(poem.published_in)}${year ? `, ${year}` : ''}`
+    : year ? `Written ${year}` : '';
+  const stanzas = (poem.stanzas || []).map(stanza =>
+    `<p class="static-stanza">${stanza.map(line => `<span class="static-line">${line}</span>`).join('')}</p>`
+  ).join('');
+
+  return `<noscript>
+    <article class="static-poem">
+      <nav class="static-chrome" aria-label="Site">
+        <a href="/">mihir bellamkonda</a>
+        <a href="/#index">index</a>
+      </nav>
+      <main class="static-grid">
+        <header class="static-margin">
+          <p class="static-number">${String(index + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}</p>
+          <h1>${escapeHtml(poem.title)}</h1>
+          ${poem.subtitle ? `<p class="static-dedication">${escapeHtml(poem.subtitle)}</p>` : ''}
+          ${provenance ? `<p class="static-provenance">${provenance}</p>` : ''}
+        </header>
+        <div class="static-verse">${stanzas}</div>
+      </main>
+    </article>
+  </noscript>`;
+}
+
+for (const [index, poem] of poems.entries()) {
   const year = String(poem.date || '').match(/\d{4}/)?.[0] || '';
   const venue = poem.published_in
     ? ` First published in ${poem.published_in}${year ? ` in ${year}` : ''}.`
@@ -41,6 +112,14 @@ for (const poem of poems) {
   html = html.replace(
     /<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i,
     `<link rel="canonical" href="${escapeHtml(canonical)}">`
+  );
+  html = html.replace(
+    '</head>',
+    `  <script type="application/ld+json">${jsonForHtml(structuredData(poem, canonical))}</script>\n</head>`
+  );
+  html = html.replace(
+    '<div id="app"></div>',
+    `${staticPoem(poem, index, poems.length)}\n  <div id="app"></div>`
   );
 
   const pageDir = path.join(dist, 'poem', poem.path);

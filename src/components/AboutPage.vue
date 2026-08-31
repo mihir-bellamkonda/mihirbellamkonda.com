@@ -13,7 +13,11 @@
           Mihir Bellamkonda is a poet based in Brooklyn. They were a finalist for Black Lawrence
           Press's St.&nbsp;Lawrence Book Award, and their work appears in Oxford&nbsp;Poetry,
           Nashville&nbsp;Review, The&nbsp;Offing, Variant&nbsp;Literature, and elsewhere. They can
-          be found on socials @MihirWords. They are honored to be read.
+          be found on
+          <a href="https://x.com/MihirWords" rel="me noopener" target="_blank">X</a>
+          and
+          <a href="https://www.instagram.com/mihirwords/" rel="me noopener" target="_blank">Instagram</a>
+          as @MihirWords. They are honored to be read.
         </p>
 
         <p class="enter"><a href="/#index">read →</a></p>
@@ -94,6 +98,16 @@ import FooterNav from './FooterNav.vue';
   font-size: 1.02rem;
   line-height: 1.8;
   color: var(--a-ink-2);
+}
+
+.bio a {
+  color: inherit;
+  border-bottom: 1px solid var(--a-hair);
+}
+
+.bio a:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
 }
 
 .enter {

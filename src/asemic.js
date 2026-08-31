@@ -106,17 +106,55 @@ function wordMark(x, y, letters, size, R) {
 }
 
 /**
+ * Choose a letter size so the poem's longest line very nearly fills the
+ * width and the whole poem fits the height.
+ *
+ * The advance per glyph is random, so this estimates it: measured against
+ * the generator, a line runs about 0.36 units per character plus 0.87 per
+ * word gap, per unit of size.
+ */
+function fitSize(lines, width, height, maxLines) {
+  let widest = 0;
+  let count = 0;
+
+  for (const raw of lines) {
+    const line = raw.replace(/\*/g, '').trim();
+    if (!line) continue;
+    count++;
+    const words = line.split(/\s+/).length;
+    const chars = line.replace(/\s/g, '').length;
+    widest = Math.max(widest, 0.36 * chars + 0.87 * words);
+  }
+
+  if (!widest) return 5;
+
+  const rows = maxLines ? Math.min(count, maxLines) : count;
+  const byWidth = (width * 0.96) / widest;
+  // 2.95 is the leading multiple; the extra row leaves the ascenders room
+  const byHeight = rows > 0 ? height / ((rows + 0.9) * 2.95) : byWidth;
+
+  return Math.max(2.4, Math.min(16, Math.min(byWidth, byHeight)));
+}
+
+/**
  * Render a poem's real lines as unreadable writing inside a box.
  * Blank lines in the source become stanza gaps, so the block keeps the
  * poem's actual shape.
  */
 export function ghost(text, opts) {
-  const { x = 0, y = 0, width, bottom, size = 5.2, leading = size * 2.95, maxLines = 0 } = opts;
+  const { x = 0, width, height, maxLines = 0 } = opts;
   const R = opts.rng;
   const out = [];
   const lines = String(text || '').split('\n');
 
-  let by = y;
+  // The hand is scaled to the space it is given, so a poem's longest line
+  // very nearly fills the column and the whole poem fits the height. Fixing
+  // the size instead leaves the marks stranded in a corner of the canvas.
+  const size = opts.size || fitSize(lines, width, height, maxLines);
+  const leading = size * 2.95;
+
+  let by = size * 1.6;
+  const bottom = height - size * 0.6;
   let used = 0;
 
   for (const raw of lines) {

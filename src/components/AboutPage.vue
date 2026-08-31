@@ -1,15 +1,28 @@
 <template>
-  <div class="container book-cover">
-    <main class="about-content">
-      <div class="profile-image-container">
-        <img src="/images/mihir.jpg" alt="Mihir Bellamkonda" class="profile-image">
+  <div class="about-page">
+    <div class="inner">
+      <div class="chrome">
+        <span>mihirbellamkonda.com</span>
+        <a href="#index">index</a>
       </div>
-      <h1>Mihir Bellamkonda</h1>
-      <p class="bio">
-        Mihir Bellamkonda is a DC-based poet. They were a finalist for Black Lawrence Press's St. Lawrence Book Award and have work published or forthcoming in Variant Lit, The Offing, and the Nashville Review, among other journals. They can be found on socials @MihirWords. They are honored to be read.
-      </p>
-      <p><a href="#contents">View Poems →</a></p>
-    </main>
+
+      <main class="opening">
+        <h1>Mihir Bellamkonda</h1>
+
+        <p class="bio">
+          Mihir Bellamkonda is a Brooklyn-based poet. They were a finalist for Black Lawrence
+          Press's St.&nbsp;Lawrence Book Award and have work published or forthcoming in
+          Fairy&nbsp;Tale&nbsp;Review, The&nbsp;Offing, Nashville&nbsp;Review,
+          Variant&nbsp;Literature, and Trampset, among other journals. They can be found on
+          socials @MihirWords. They are honored to be read.
+        </p>
+
+        <p class="enter"><a href="#index">read →</a></p>
+      </main>
+
+      <div class="rest"></div>
+    </div>
+
     <FooterNav />
   </div>
 </template>
@@ -19,80 +32,91 @@ import FooterNav from './FooterNav.vue';
 </script>
 
 <style scoped>
-/* About Page Specific Styles */
-.container {
-  background: var(--color-accent);
-  color: var(--color-background);
-}
-
-.about-content {
+/* The full-bleed green cover is gone. The opening is the same ground the
+   poems sit on, so arriving and reading are one surface. */
+.about-page {
+  background: var(--a-bg);
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+}
+
+.inner {
   flex: 1;
-  padding: 0 3rem;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 clamp(1.25rem, 5vw, 4.5rem);
 }
 
-.about-content h1 {
-  color: var(--color-background);
+.chrome {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1.5rem;
+  padding: clamp(1.4rem, 4vw, 2.4rem) 0 0;
+  font-family: var(--f-cat);
+  font-size: 0.63rem;
+  letter-spacing: 0.18em;
+  color: var(--a-faint);
 }
 
-.about-content a {
-  color: var(--color-background);
-  text-decoration: underline;
+.chrome a {
+  color: var(--a-faint);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
 }
 
-.about-content a:hover {
-  opacity: 0.8;
+.chrome a:hover {
+  color: var(--a-ink);
+  border-bottom-color: var(--a-hair);
 }
 
-.profile-image-container {
-  margin-bottom: var(--spacing-md);
+.opening {
+  padding: clamp(6rem, 26vh, 15rem) 0 0;
+  max-width: 42rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
-.profile-image {
-  width: 200px;
-  height: 220px;
-  border-radius: 0;
-  object-fit: cover;
-  /* border: 3px solid var(--color-background); */
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-}
-
-.book-cover {
-  /* border: 8px solid var(--color-background); */
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+.opening h1 {
+  font-family: var(--f-display);
+  font-weight: 300;
+  font-size: clamp(2.6rem, 7vw, 4.4rem);
+  line-height: 1;
+  margin: 0;
+  color: var(--a-ink);
 }
 
 .bio {
-  font-size: 1rem;
-  color: var(--color-background);
-  font-style: normal;
-  margin-bottom: var(--spacing-md);
-  line-height: 1.7;
-  text-align: center;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0;
+  max-width: 46ch;
+  font-size: 1.02rem;
+  line-height: 1.8;
+  color: var(--a-ink-2);
 }
 
-/* Footer styling for about page */
-:deep(footer) {
-  border-top: 1px solid rgba(249, 247, 244, 0.3);
+.enter {
+  margin: 0;
+  font-family: var(--f-cat);
+  font-size: 0.63rem;
+  letter-spacing: 0.18em;
 }
 
-:deep(footer a) {
-  color: var(--color-background);
+.enter a {
+  color: var(--a-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--a-hair);
+  padding-bottom: 0.2rem;
 }
 
-:deep(footer a:hover) {
-  color: var(--color-background);
-  opacity: 0.7;
+.enter a:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
 }
 
-:deep(footer nav span) {
-  color: var(--color-background);
+.rest {
+  height: clamp(6rem, 22vh, 14rem);
 }
 </style>

@@ -187,7 +187,9 @@ export function ghost(text, opts) {
 
       const ink = R() < 0.84 ? lineInk : INKS[Math.floor(R() * INKS.length)];
       const alpha = 0.6 + R() * 0.4;
-      const lw = 0.5 + R() * 0.2;
+      // Stroke weight tracks letter size — a pen keeps its nib whatever it
+      // writes. A fixed hairline vanishes once the hand is scaled up.
+      const lw = Math.max(0.6, size * 0.075) * (0.85 + R() * 0.35);
       for (const s of m.strokes) out.push({ pts: s, ink, alpha, lw });
 
       cx = m.end + size * (0.62 + R() * 0.5);
@@ -227,7 +229,7 @@ export function paint(ctx, strokes, upto) {
     ctx.beginPath();
     ctx.moveTo(p[0][0], p[0][1]);
     for (let j = 1; j < p.length; j++) ctx.lineTo(p[j][0], p[j][1]);
-    ctx.strokeStyle = 'rgba(' + (pal[s.ink] || pal.mark) + ',' + 0.62 * s.alpha + ')';
+    ctx.strokeStyle = 'rgba(' + (pal[s.ink] || pal.mark) + ',' + 0.85 * s.alpha + ')';
     ctx.lineWidth = s.lw;
     ctx.stroke();
   }

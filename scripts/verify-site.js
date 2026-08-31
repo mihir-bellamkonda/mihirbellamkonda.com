@@ -35,6 +35,14 @@ for (const poem of poems) {
     }
   }
 
+  if (poem.audio) {
+    check(poem.audio.startsWith('/audio/'), `${poem.slug}: audio must live beneath /audio/.`);
+    check(
+      fs.existsSync(path.join(root, 'public', poem.audio.replace(/^\//, ''))),
+      `${poem.slug}: audio file ${poem.audio} is missing.`
+    );
+  }
+
   const sourceLines = poem.content.split('\n').filter(line => line.trim()).length;
   const renderedLines = poem.stanzas.flat().length;
   check(

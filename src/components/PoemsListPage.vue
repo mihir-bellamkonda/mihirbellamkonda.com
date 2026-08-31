@@ -21,6 +21,9 @@
           <div
             class="row"
             :class="{ 'peek-open': openSlug === poem.slug }"
+            @mouseenter="approach(poem.slug)"
+            @focusin="approach(poem.slug)"
+            @pointerdown="approach(poem.slug)"
           >
             <span class="no">{{ pad(i + 1) }}</span>
 
@@ -65,6 +68,7 @@
             ></span>
 
             <AsemicMarks
+              :ref="el => rememberSignature(poem.slug, el)"
               class="sig"
               :text="poem.content"
               :seed="poem.slug + '::sig'"
@@ -93,9 +97,22 @@ const props = defineProps({
 });
 
 const openSlug = ref('');
+const signatureRefs = new Map();
+const approached = new Set();
 
 function toggleExcerpt(slug) {
   openSlug.value = openSlug.value === slug ? '' : slug;
+}
+
+function rememberSignature(slug, instance) {
+  if (instance) signatureRefs.set(slug, instance);
+  else signatureRefs.delete(slug);
+}
+
+function approach(slug) {
+  if (approached.has(slug)) return;
+  approached.add(slug);
+  signatureRefs.get(slug)?.replay?.();
 }
 
 function follow(event, slug) {

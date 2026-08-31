@@ -45,6 +45,35 @@
           <span class="sr-only" role="status" aria-live="polite">{{ copied ? 'Link copied' : '' }}</span>
         </div>
 
+        <div v-if="poem.audio" class="reading">
+          <audio
+            ref="audioEl"
+            class="audio-engine"
+            :src="poem.audio"
+            preload="metadata"
+            @loadedmetadata="syncReading"
+            @durationchange="syncReading"
+            @timeupdate="syncReading"
+            @play="readingStarted = true; isPlaying = true"
+            @pause="isPlaying = false"
+            @ended="isPlaying = false"
+          ></audio>
+          <button type="button" class="listen" @click="toggleReading">
+            {{ isPlaying ? 'pause reading' : currentTime > 0 ? 'resume reading' : 'listen' }}
+          </button>
+          <input
+            class="reading-position"
+            type="range"
+            min="0"
+            :max="duration || 0"
+            step="0.1"
+            :value="currentTime"
+            aria-label="Reading position"
+            @input="seekReading"
+          >
+          <span class="reading-time">{{ formatTime(currentTime) }} / {{ formatTime(duration) }}</span>
+        </div>
+
         <!-- The arrow keys have always worked; nothing ever said so. Hidden
              where there is no keyboard to press. -->
         <p class="hint" v-if="prev || next">
@@ -56,6 +85,7 @@
           class="ghost"
           :text="ghost.content"
           :seed="poem.slug + '::ghost'"
+          :progress="readingProgress"
         />
       </div>
 
@@ -94,6 +124,52 @@ function pad(n) {
 
 const copied = ref(false);
 let copyTimer = null;
+const audioEl = ref(null);
+const readingStarted = ref(false);
+const isPlaying = ref(false);
+const currentTime = ref(0);
+const duration = ref(0);
+
+const readingProgress = computed(() => {
+  if (!readingStarted.value || !duration.value) return null;
+  return Math.max(0, Math.min(1, currentTime.value / duration.value));
+});
+
+async function toggleReading() {
+  const audio = audioEl.value;
+  if (!audio) return;
+  if (!audio.paused) {
+    audio.pause();
+    return;
+  }
+  readingStarted.value = true;
+  try {
+    await audio.play();
+  } catch {
+    isPlaying.value = false;
+  }
+}
+
+function syncReading() {
+  const audio = audioEl.value;
+  if (!audio) return;
+  currentTime.value = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
+  duration.value = Number.isFinite(audio.duration) ? audio.duration : 0;
+}
+
+function seekReading(event) {
+  const audio = audioEl.value;
+  if (!audio) return;
+  readingStarted.value = true;
+  audio.currentTime = Number(event.target.value);
+  syncReading();
+}
+
+function formatTime(seconds) {
+  if (!Number.isFinite(seconds) || seconds <= 0) return '0:00';
+  const whole = Math.floor(seconds);
+  return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}`;
+}
 
 /**
  * Copy this poem's canonical URL. Every poem has had a real shareable
@@ -285,6 +361,49 @@ const stanzas = computed(() => {
   color: var(--a-faint);
 }
 
+.reading {
+  display: grid;
+  grid-template-columns: auto minmax(5rem, 1fr);
+  align-items: center;
+  gap: 0.55rem 0.9rem;
+  max-width: 24rem;
+}
+
+.audio-engine {
+  display: none;
+}
+
+.listen {
+  border: 0;
+  border-bottom: 1px solid var(--a-hair);
+  padding: 0 0 0.12rem;
+  background: none;
+  color: var(--a-ink-2);
+  font-family: var(--f-cat);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+}
+
+.listen:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.reading-position {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.reading-time {
+  grid-column: 2;
+  font-family: var(--f-cat);
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  color: var(--a-faint);
+  font-variant-numeric: tabular-nums;
+}
+
 .hint kbd {
   font: inherit;
   border: 1px solid var(--a-hair);
@@ -355,9 +474,20 @@ const stanzas = computed(() => {
 }
 
 @media print {
-  .tools, .hint { display: none; }
+  .chrome, .tools, .hint, .reading, .ghost { display: none; }
   .poem-plate { min-height: 0; }
-  .grid { display: block; padding: 0; }
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(1.3in, 0.42fr) minmax(0, 1fr);
+    gap: 0 0.42in;
+    max-width: none;
+    padding: 0;
+  }
+  .col-margin { gap: 0.16in; }
+  .col-margin h1 { font-size: 28pt; }
+  .dedication { font-size: 10pt; }
+  .verse { max-width: none; font-size: 10.5pt; line-height: 1.48; }
+  .stanza { margin-bottom: 1em; break-inside: avoid; }
   .rest { display: none; }
   .num, .provenance { color: #000; }
 }

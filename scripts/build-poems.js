@@ -18,14 +18,26 @@ const poems = poemFiles.map((file, index) => {
   const fileContent = fs.readFileSync(filePath, 'utf-8');
   const { data, content } = matter(fileContent);
 
+  // Stanzas as structured lines, so the page can set each line as its own
+  // block with a hanging indent. A wrapped line then reads differently from a
+  // line the poet actually broke — which `white-space: pre` could not do.
+  // parseInline keeps the poet's own emphasis and escapes everything else.
+  const stanzas = content
+    .split(/\n[ \t]*\n/)
+    .map(block => block.split('\n').map(l => l.trim()).filter(Boolean))
+    .filter(block => block.length > 0)
+    .map(block => block.map(line => marked.parseInline(line)));
+
   return {
     slug: path.basename(file, '.md'),
     title: data.title || 'Untitled',
+    subtitle: data.subtitle || '',
     date: data.date || '',
     external_url: data.external_url || '',
     published_in: data.published_in || '',
     content: content,
     html: marked(content),
+    stanzas: stanzas,
     index: index + 1
   };
 });

@@ -8,8 +8,9 @@ The poetry site of **Mihir Bellamkonda** (pronouns **they/he**; his published bi
 use "they"). Live at **https://mihirbellamkonda.com**.
 
 It is a **publication record** — a numbered index of published poems with venue and
-year, not a themed collection. Vue 3 SPA, Vite, hash routing, markdown poems compiled
-to JSON at build time, deployed to GitHub Pages by GitHub Actions.
+year, not a themed collection. Vue 3 SPA, Vite, real URLs at `/poem/<title>/` with
+legacy `#poem/<slug>` links still honoured, markdown poems compiled to JSON at build
+time, deployed to GitHub Pages by GitHub Actions.
 
 ## Rules that are not negotiable
 
@@ -49,9 +50,10 @@ npm run preview   # serve the production build
 
 ```
 poems/*.md                        source poems, filename sets order
-scripts/build-poems.js            markdown -> src/poems.json
+scripts/build-poems.js            markdown -> src/poems.json (slug, path, url)
+scripts/build-pages.js            static HTML shell per poem + sitemap.xml
 src/asemic.js                     the mark generator
-src/App.vue                       hash routing
+src/App.vue                       routing: /poem/<path>/, #index, legacy #poem/<slug>
 src/components/
   AboutPage.vue                   opening: name, bio, link in
   PoemsListPage.vue               the index
@@ -123,7 +125,11 @@ reintroduce anything like it.
 - Navigation is ordinary links with real URLs. The card-stack swipe was removed: it
   hid the index behind a gesture and had no way back that wasn't a swipe. Arrow keys
   move between poems as a convenience, never as the only route.
-- Open Graph tags are site-level on purpose. Routes are hashes, which never reach a
-  server, so a crawler cannot tell which poem a link points at. Per-poem previews
-  would need the pages pre-rendered as real files.
-- Adding a poem: drop a markdown file in `poems/` and push. Filename sets order.
+- Open Graph tags are per-poem. `npm run build` runs three stages: `build-poems.js`,
+  then Vite, then `build-pages.js`, which emits one static HTML shell per poem — its
+  own title, description, OG and Twitter fields, and a single canonical link — plus a
+  `sitemap.xml` covering the homepage and every poem. The Vue app still renders the
+  visible poem; the shell exists so crawlers and unfurlers read the right metadata
+  before JavaScript runs.
+- Adding a poem: drop a markdown file in `poems/` and push. Filename sets order. The
+  build fails if a title yields an empty or duplicate public path.

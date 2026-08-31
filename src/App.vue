@@ -1,9 +1,12 @@
 <template>
+  <!-- A real link, but the default is prevented: this site routes on the
+       hash, so letting the browser set #main would navigate the app. -->
+  <a class="skip-link" href="#main" @click="skipToMain">skip to content</a>
   <component :is="current.view" v-bind="current.props" :key="currentKey" />
 </template>
 
 <script setup>
-import { ref, computed, watchEffect, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watchEffect, onMounted, onUnmounted, nextTick } from 'vue';
 import poemsData from './poems.json';
 import AboutPage from './components/AboutPage.vue';
 import PoemsListPage from './components/PoemsListPage.vue';
@@ -50,6 +53,34 @@ function navigate(r) {
   window.history.pushState(null, '', next);
   route.value = parseRoute();
   window.scrollTo({ top: 0, behavior: 'instant' });
+  focusHeading();
+}
+
+/**
+ * Move focus to the new page's heading after a client-side navigation.
+ *
+ * Without this the document stays where it was: a screen reader announces
+ * nothing when the poem changes, and the next Tab resumes from a control
+ * that no longer exists. The headings carry tabindex="-1" so they can take
+ * focus without entering the tab order, and the focus ring is suppressed
+ * for them in style.css — the reader did not tab here.
+ *
+ * Only navigation calls this. Focus is left alone on first load.
+ */
+function focusHeading() {
+  nextTick(() => {
+    const heading = document.querySelector('[data-page-heading]');
+    if (heading) heading.focus({ preventScroll: true });
+  });
+}
+
+function skipToMain(event) {
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  event.preventDefault();
+  const main = document.getElementById('main');
+  if (!main) return;
+  main.focus({ preventScroll: true });
+  main.scrollIntoView({ behavior: 'instant', block: 'start' });
 }
 
 const poemIndex = computed(() =>
@@ -116,10 +147,12 @@ function handleKeydown(e) {
 
 function onHashChange() {
   route.value = parseRoute();
+  focusHeading();
 }
 
 function onPopState() {
   route.value = parseRoute();
+  focusHeading();
 }
 
 /**

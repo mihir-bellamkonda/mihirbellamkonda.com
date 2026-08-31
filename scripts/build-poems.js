@@ -13,20 +13,56 @@ const poemFiles = fs.readdirSync(POEMS_DIR)
   .filter(file => file.endsWith('.md'))
   .sort();
 
+const escapeHtml = (ch) =>
+  ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch;
+
+/**
+ * Split one stanza into lines, each a complete fragment of HTML.
+ *
+ * The page sets every line as its own block so a wrapped line reads
+ * differently from a break the poet made. That means each line has to be
+ * valid on its own — but the poet's emphasis often spans several lines:
+ *
+ *     *We are the people by the water
+ *     in the morning—*
+ *
+ * So emphasis is tracked across the whole stanza and closed and reopened at
+ * each line break. Parsing line by line would leave an unclosed asterisk on
+ * every line and print the asterisks literally.
+ *
+ * Only the poet's own asterisks are interpreted. Nothing else is added.
+ */
+function stanzaLines(block) {
+  let out = '';
+  let inEm = false;
+
+  for (const ch of block) {
+    if (ch === '*') {
+      out += inEm ? '</em>' : '<em>';
+      inEm = !inEm;
+    } else if (ch === '\n') {
+      out += inEm ? '</em>\n<em>' : '\n';
+    } else {
+      out += escapeHtml(ch);
+    }
+  }
+  if (inEm) out += '</em>';
+
+  return out
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line !== '' && line !== '<em></em>');
+}
+
 const poems = poemFiles.map((file, index) => {
   const filePath = path.join(POEMS_DIR, file);
   const fileContent = fs.readFileSync(filePath, 'utf-8');
   const { data, content } = matter(fileContent);
 
-  // Stanzas as structured lines, so the page can set each line as its own
-  // block with a hanging indent. A wrapped line then reads differently from a
-  // line the poet actually broke — which `white-space: pre` could not do.
-  // parseInline keeps the poet's own emphasis and escapes everything else.
   const stanzas = content
     .split(/\n[ \t]*\n/)
-    .map(block => block.split('\n').map(l => l.trim()).filter(Boolean))
-    .filter(block => block.length > 0)
-    .map(block => block.map(line => marked.parseInline(line)));
+    .map(stanzaLines)
+    .filter(block => block.length > 0);
 
   return {
     slug: path.basename(file, '.md'),

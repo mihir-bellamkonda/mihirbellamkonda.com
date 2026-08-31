@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watchEffect, onMounted, onUnmounted } from 'vue';
 import poemsData from './poems.json';
 import AboutPage from './components/AboutPage.vue';
 import PoemsListPage from './components/PoemsListPage.vue';
@@ -106,6 +106,27 @@ function handleKeydown(e) {
 function onHashChange() {
   route.value = parseRoute();
 }
+
+/**
+ * Per-route titles. The Open Graph tags in index.html stay site-level:
+ * the routes are hashes, which never reach a server, so a crawler cannot
+ * see which poem a link points at. Per-poem previews would need the pages
+ * pre-rendered as real files.
+ */
+function setTitle() {
+  const r = route.value;
+  const name = 'Mihir Bellamkonda';
+  if (r.page === 'index') {
+    document.title = 'Poems — ' + name;
+  } else if (r.page === 'poem') {
+    const p = poemsData[poemIndex.value];
+    document.title = p ? p.title + ' — ' + name : name;
+  } else {
+    document.title = name;
+  }
+}
+
+watchEffect(setTitle);
 
 onMounted(() => {
   window.addEventListener('hashchange', onHashChange);

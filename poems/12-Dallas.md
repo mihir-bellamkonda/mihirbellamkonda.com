@@ -2,6 +2,7 @@
 title: "Dallas"
 date: 2024-01-23
 published_in: "the museum of americana"
+external_url: "https://themuseumofamericana.net/2024/01/23/americana-stories-poetry-37/"
 ---
 
 1. Father

@@ -2,30 +2,36 @@
   <footer>
     <nav class="inner">
       <span class="slot start">
-        <button v-if="prev" type="button" @click="onGo(prev.slug)">← {{ short(prev.title) }}</button>
-        <a v-else href="#about">← about</a>
+        <a v-if="prev" :href="prev.url" @click="follow($event, prev.slug)">← {{ short(prev.title) }}</a>
+        <a v-else href="/">← about</a>
       </span>
 
       <span class="slot mid">
-        <a v-if="position" href="#index">{{ position }} — index</a>
-        <a v-else href="#index">index</a>
+        <a v-if="position" href="/#index">{{ position }} — index</a>
+        <a v-else href="/#index">index</a>
       </span>
 
       <span class="slot end">
-        <button v-if="next" type="button" @click="onGo(next.slug)">{{ short(next.title) }} →</button>
-        <a v-else href="#index">read →</a>
+        <a v-if="next" :href="next.url" @click="follow($event, next.slug)">{{ short(next.title) }} →</a>
+        <a v-else href="/#index">read →</a>
       </span>
     </nav>
   </footer>
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
   prev: { type: Object, default: null },
   next: { type: Object, default: null },
   position: { type: String, default: '' },
   onGo: { type: Function, default: null }
 });
+
+function follow(event, slug) {
+  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  event.preventDefault();
+  props.onGo?.(slug);
+}
 
 // Titles like "Thuragnosia: Parable of the Man Blind to Doors" would swamp
 // the footer, so only the part before the colon appears here.
@@ -62,8 +68,7 @@ footer {
 .slot.mid   { text-align: center; }
 .slot.end   { text-align: right; }
 
-a,
-button {
+a {
   color: var(--b-ink-2);
   background: none;
   border: 0;
@@ -74,16 +79,14 @@ button {
   cursor: pointer;
 }
 
-a:hover,
-button:hover {
+a:hover {
   color: var(--b-ink);
 }
 
 .slot.mid a { color: var(--b-faint); }
 .slot.mid a:hover { color: var(--b-ink); }
 
-a:focus-visible,
-button:focus-visible {
+a:focus-visible {
   outline: 1px solid var(--b-ink-2);
   outline-offset: 3px;
 }

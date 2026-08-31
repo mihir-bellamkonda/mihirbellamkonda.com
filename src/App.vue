@@ -10,12 +10,13 @@ import PoemsListPage from './components/PoemsListPage.vue';
 import PoemPage from './components/PoemPage.vue';
 
 /**
- * Hash routing.
+ * Real paths for poems, with legacy hash routing retained.
  *
  *   #            → about
  *   #index       → the index   (#contents and #poems still work; they were
  *                               the old names and may exist in shared links)
  *   #poem/<slug> → one poem
+ *   /poem/<path>/ → one poem, pre-rendered at build time for link previews
  *
  * The card-stack swipe that used to live here is gone. It hid the index
  * behind a gesture, behaved differently on desktop and phone, and had no
@@ -26,28 +27,36 @@ const route = ref(parseRoute());
 
 function parseRoute() {
   const hash = decodeURIComponent(window.location.hash.slice(1) || '');
-  if (hash === '' || hash === 'about') return { page: 'about' };
+  if (hash === 'about') return { page: 'about' };
   if (hash === 'index' || hash === 'contents' || hash === 'poems') return { page: 'index' };
   if (hash.startsWith('poem/')) return { page: 'poem', slug: hash.slice(5) };
+
+  const pathMatch = decodeURIComponent(window.location.pathname).match(/^\/poem\/([^/]+)\/?$/);
+  if (pathMatch) return { page: 'poem', path: pathMatch[1] };
+
   return { page: 'about' };
 }
 
-function hashFor(r) {
-  if (r.page === 'about') return '';
-  if (r.page === 'index') return 'index';
-  return 'poem/' + encodeURIComponent(r.slug);
+function urlFor(r) {
+  if (r.page === 'about') return '/';
+  if (r.page === 'index') return '/#index';
+  const poem = poemsData.find(p => p.slug === r.slug || p.path === r.path);
+  return poem ? poem.url : '/#index';
 }
 
 function navigate(r) {
-  const next = hashFor(r);
-  if (window.location.hash.slice(1) === next) return;
-  window.location.hash = next;
+  const next = urlFor(r);
+  if (window.location.pathname + window.location.hash === next) return;
+  window.history.pushState(null, '', next);
+  route.value = parseRoute();
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
 const poemIndex = computed(() =>
   route.value.page === 'poem'
-    ? poemsData.findIndex(p => p.slug === route.value.slug)
+    ? poemsData.findIndex(p =>
+        route.value.slug ? p.slug === route.value.slug : p.path === route.value.path
+      )
     : -1
 );
 
@@ -90,7 +99,9 @@ const current = computed(() => {
 });
 
 const currentKey = computed(() =>
-  route.value.page === 'poem' ? 'poem-' + route.value.slug : route.value.page
+  route.value.page === 'poem' && poemIndex.value !== -1
+    ? 'poem-' + poemsData[poemIndex.value].slug
+    : route.value.page
 );
 
 // Arrow keys still move between poems — a convenience, never the only way.
@@ -107,11 +118,14 @@ function onHashChange() {
   route.value = parseRoute();
 }
 
+function onPopState() {
+  route.value = parseRoute();
+}
+
 /**
- * Per-route titles. The Open Graph tags in index.html stay site-level:
- * the routes are hashes, which never reach a server, so a crawler cannot
- * see which poem a link points at. Per-poem previews would need the pages
- * pre-rendered as real files.
+ * Per-route browser titles. The build also emits a real HTML file for each
+ * poem URL, giving unfurlers and crawlers poem-specific metadata before the
+ * Vue application takes over.
  */
 function setTitle() {
   const r = route.value;
@@ -130,11 +144,13 @@ watchEffect(setTitle);
 
 onMounted(() => {
   window.addEventListener('hashchange', onHashChange);
+  window.addEventListener('popstate', onPopState);
   document.addEventListener('keydown', handleKeydown);
 });
 
 onUnmounted(() => {
   window.removeEventListener('hashchange', onHashChange);
+  window.removeEventListener('popstate', onPopState);
   document.removeEventListener('keydown', handleKeydown);
 });
 </script>

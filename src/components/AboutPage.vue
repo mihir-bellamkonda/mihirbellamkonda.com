@@ -3,21 +3,20 @@
     <div class="inner">
       <div class="chrome">
         <span>mihirbellamkonda.com</span>
-        <a href="#index">index</a>
+        <a href="/#index">index</a>
       </div>
 
       <main class="opening">
         <h1>Mihir Bellamkonda</h1>
 
         <p class="bio">
-          Mihir Bellamkonda is a Brooklyn-based poet. They were a finalist for Black Lawrence
-          Press's St.&nbsp;Lawrence Book Award and have work published or forthcoming in
-          Fairy&nbsp;Tale&nbsp;Review, The&nbsp;Offing, Nashville&nbsp;Review,
-          Variant&nbsp;Literature, and Trampset, among other journals. They can be found on
-          socials @MihirWords. They are honored to be read.
+          Mihir Bellamkonda is a poet based in Brooklyn. They were a finalist for Black Lawrence
+          Press's St.&nbsp;Lawrence Book Award, and their work appears in Oxford&nbsp;Poetry,
+          Nashville&nbsp;Review, The&nbsp;Offing, Variant&nbsp;Literature, and elsewhere. They can
+          be found on socials @MihirWords. They are honored to be read.
         </p>
 
-        <p class="enter"><a href="#index">read →</a></p>
+        <p class="enter"><a href="/#index">read →</a></p>
       </main>
 
       <div class="rest"></div>

@@ -2,19 +2,19 @@
   <div class="index-page">
     <div class="inner">
       <div class="chrome">
-        <a href="#about">mihir bellamkonda</a>
+        <a href="/">mihir bellamkonda</a>
         <span>{{ pad(poems.length) }}</span>
       </div>
 
       <div class="lead"></div>
 
       <div class="rows">
-        <button
+        <a
           v-for="(poem, i) in poems"
           :key="poem.slug"
-          type="button"
+          :href="poem.url"
           class="row"
-          @click="onSelect(poem.slug)"
+          @click="follow($event, poem.slug)"
         >
           <span class="no">{{ pad(i + 1) }}</span>
           <span class="title">
@@ -32,7 +32,7 @@
             :max-lines="1"
             instant
           />
-        </button>
+        </a>
       </div>
 
       <div class="rest"></div>
@@ -46,10 +46,16 @@
 import FooterNav from './FooterNav.vue';
 import AsemicMarks from './AsemicMarks.vue';
 
-defineProps({
+const props = defineProps({
   poems: Array,
   onSelect: Function
 });
+
+function follow(event, slug) {
+  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  event.preventDefault();
+  props.onSelect?.(slug);
+}
 
 function pad(n) {
   return (n < 10 ? '0' : '') + n;
@@ -126,6 +132,7 @@ function yearOf(poem) {
   color: inherit;
   text-align: left;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .no {

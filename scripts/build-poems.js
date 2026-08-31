@@ -16,6 +16,13 @@ const poemFiles = fs.readdirSync(POEMS_DIR)
 const escapeHtml = (ch) =>
   ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch;
 
+const pathSlug = (value) => String(value || '')
+  .normalize('NFKD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-+|-+$/g, '');
+
 /**
  * Split one stanza into lines, each a complete fragment of HTML.
  *
@@ -64,8 +71,12 @@ const poems = poemFiles.map((file, index) => {
     .map(stanzaLines)
     .filter(block => block.length > 0);
 
+  const publicPath = pathSlug(data.title || path.basename(file, '.md'));
+
   return {
     slug: path.basename(file, '.md'),
+    path: publicPath,
+    url: `/poem/${publicPath}/`,
     title: data.title || 'Untitled',
     subtitle: data.subtitle || '',
     date: data.date || '',
@@ -77,6 +88,14 @@ const poems = poemFiles.map((file, index) => {
     index: index + 1
   };
 });
+
+const paths = new Set();
+for (const poem of poems) {
+  if (!poem.path || paths.has(poem.path)) {
+    throw new Error(`Duplicate or empty public poem path: ${poem.path || '(empty)'}`);
+  }
+  paths.add(poem.path);
+}
 
 // Ensure src directory exists
 const srcDir = path.join(__dirname, '../src');

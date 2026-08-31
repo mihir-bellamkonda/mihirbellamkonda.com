@@ -1,8 +1,8 @@
 <template>
   <div class="poem-plate" v-if="poem">
     <div class="chrome">
-      <a href="#about">mihir bellamkonda</a>
-      <a href="#index">index</a>
+      <a href="/">mihir bellamkonda</a>
+      <a href="/#index">index</a>
     </div>
 
     <main class="grid">

@@ -6,7 +6,7 @@
   "scripts": {
     "poems": "node scripts/build-poems.js",
     "dev": "npm run poems && vite",
-    "build": "npm run poems && vite build",
+    "build": "npm run poems && vite build && node scripts/build-pages.js",
     "preview": "vite preview"
   },
   "dependencies": {

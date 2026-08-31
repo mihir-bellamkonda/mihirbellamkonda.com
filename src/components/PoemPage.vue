@@ -5,10 +5,10 @@
       <a href="/#index">index</a>
     </div>
 
-    <main class="grid">
+    <main class="grid" id="main" tabindex="-1">
       <div class="col-margin">
         <div class="num">{{ pad(index) }} / {{ pad(total) }}</div>
-        <h1>{{ poem.title }}</h1>
+        <h1 data-page-heading tabindex="-1">{{ poem.title }}</h1>
         <p v-if="poem.subtitle" class="dedication">{{ poem.subtitle }}</p>
 
         <div class="provenance">
@@ -19,13 +19,17 @@
               :href="poem.external_url"
               target="_blank"
               rel="noopener"
-            >{{ poem.published_in }}<template v-if="year">, {{ year }}</template></a>
+            >{{ poem.published_in }}<template v-if="year">, {{ year }}</template><span
+              class="ext" aria-hidden="true">&#8599;</span><span
+              class="sr-only"> (opens in a new tab)</span></a>
             <span v-else>{{ poem.published_in }}<template v-if="year">, {{ year }}</template></span>
           </template>
 
           <template v-else-if="poem.external_url">
             <span class="k">venue not recorded</span>
-            <a :href="poem.external_url" target="_blank" rel="noopener">read it<template v-if="year">, {{ year }}</template></a>
+            <a :href="poem.external_url" target="_blank" rel="noopener">read it<template v-if="year">, {{ year }}</template><span
+              class="ext" aria-hidden="true">&#8599;</span><span
+              class="sr-only"> (opens in a new tab)</span></a>
           </template>
 
           <template v-else-if="year">
@@ -33,6 +37,19 @@
             <span>{{ year }}</span>
           </template>
         </div>
+
+        <div class="tools">
+          <button type="button" class="copy" @click="copyLink">
+            {{ copied ? 'link copied' : 'copy link' }}
+          </button>
+          <span class="sr-only" role="status" aria-live="polite">{{ copied ? 'Link copied' : '' }}</span>
+        </div>
+
+        <!-- The arrow keys have always worked; nothing ever said so. Hidden
+             where there is no keyboard to press. -->
+        <p class="hint" v-if="prev || next">
+          <kbd>&#8592;</kbd><kbd>&#8594;</kbd> to move between poems
+        </p>
 
         <AsemicMarks
           v-if="ghost"
@@ -57,7 +74,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, onUnmounted } from 'vue';
 import FooterNav from './FooterNav.vue';
 import AsemicMarks from './AsemicMarks.vue';
 
@@ -74,6 +91,31 @@ const props = defineProps({
 function pad(n) {
   return (n < 10 ? '0' : '') + n;
 }
+
+const copied = ref(false);
+let copyTimer = null;
+
+/**
+ * Copy this poem's canonical URL. Every poem has had a real shareable
+ * address since the static pages landed; nothing on the page invited
+ * anyone to take it.
+ */
+async function copyLink() {
+  const url = window.location.origin + props.poem.url;
+  try {
+    await navigator.clipboard.writeText(url);
+  } catch (e) {
+    // Clipboard is unavailable over plain http and in some embedded
+    // browsers. Select the address instead of failing silently.
+    window.prompt('Copy this link', url);
+    return;
+  }
+  copied.value = true;
+  clearTimeout(copyTimer);
+  copyTimer = setTimeout(() => { copied.value = false; }, 2000);
+}
+
+onUnmounted(() => clearTimeout(copyTimer));
 
 const year = computed(() => {
   const d = props.poem && props.poem.date;
@@ -199,6 +241,63 @@ const stanzas = computed(() => {
   border-bottom-color: var(--a-ink-2);
 }
 
+.ext {
+  display: inline-block;
+  margin-left: 0.3em;
+  font-size: 0.85em;
+  vertical-align: baseline;
+}
+
+.tools {
+  display: flex;
+  gap: 1.2rem;
+  align-items: baseline;
+}
+
+.copy {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--f-cat);
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  color: var(--a-faint);
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s ease;
+}
+
+.copy:hover {
+  color: var(--a-ink);
+  border-bottom-color: var(--a-hair);
+}
+
+.copy:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.hint {
+  margin: 0;
+  font-family: var(--f-cat);
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  color: var(--a-faint);
+}
+
+.hint kbd {
+  font: inherit;
+  border: 1px solid var(--a-hair);
+  border-radius: 2px;
+  padding: 0.05rem 0.3rem;
+  margin-right: 0.25rem;
+}
+
+/* No keyboard to press. */
+@media (hover: none) {
+  .hint { display: none; }
+}
+
 /* The illegible column. Its height is the composition — the marks fill
    whatever room they are given, so this is a layout decision. */
 .ghost {
@@ -256,6 +355,7 @@ const stanzas = computed(() => {
 }
 
 @media print {
+  .tools, .hint { display: none; }
   .poem-plate { min-height: 0; }
   .grid { display: block; padding: 0; }
   .rest { display: none; }

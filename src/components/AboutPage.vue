@@ -6,8 +6,8 @@
         <a href="/#index">index</a>
       </div>
 
-      <main class="opening">
-        <h1>Mihir Bellamkonda</h1>
+      <main class="opening" id="main" tabindex="-1">
+        <h1 data-page-heading tabindex="-1">Mihir Bellamkonda</h1>
 
         <p class="bio">
           Mihir Bellamkonda is a poet based in Brooklyn. They were a finalist for Black Lawrence

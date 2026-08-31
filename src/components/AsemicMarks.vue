@@ -15,7 +15,10 @@ const props = defineProps({
   size: { type: Number, default: 0 },
   maxLines: { type: Number, default: 0 },
   // Draw straight to full instead of writing itself on.
-  instant: { type: Boolean, default: false }
+  instant: { type: Boolean, default: false },
+  // When supplied, another medium — an audio reading, for example — holds
+  // the pen and decides how far through the mark it has travelled.
+  progress: { type: Number, default: null }
 });
 
 const cv = ref(null);
@@ -62,6 +65,19 @@ function draw(progress) {
   paint(ctx, strokes, Math.floor(progress * strokes.length));
 }
 
+function animate(duration = 1500) {
+  if (raf) cancelAnimationFrame(raf);
+  let t0 = null;
+  const step = (ts) => {
+    if (t0 === null) t0 = ts;
+    const p = Math.min(1, (ts - t0) / duration);
+    draw(p);
+    if (p < 1) raf = requestAnimationFrame(step);
+  };
+  draw(0);
+  raf = requestAnimationFrame(step);
+}
+
 function run() {
   if (!build()) {
     requestAnimationFrame(run);
@@ -69,24 +85,30 @@ function run() {
   }
   if (raf) cancelAnimationFrame(raf);
 
+  if (props.progress !== null) {
+    draw(Math.max(0, Math.min(1, props.progress)));
+    return;
+  }
+
   if (props.instant || reduced()) {
     draw(1);
     return;
   }
 
-  let t0 = null;
-  const step = (ts) => {
-    if (t0 === null) t0 = ts;
-    const p = Math.min(1, (ts - t0) / 2200);
-    draw(p);
-    if (p < 1) raf = requestAnimationFrame(step);
-  };
-  raf = requestAnimationFrame(step);
+  animate(2200);
 }
 
 function repaint() {
-  if (build()) draw(1);
+  if (build()) draw(props.progress === null ? 1 : Math.max(0, Math.min(1, props.progress)));
 }
+
+function replay() {
+  if (!build()) return;
+  if (reduced()) draw(1);
+  else animate(1300);
+}
+
+defineExpose({ replay });
 
 onMounted(() => {
   nextTick(run);
@@ -126,6 +148,12 @@ onUnmounted(() => {
 });
 
 watch(() => [props.text, props.seed], run);
+watch(() => props.progress, (value) => {
+  if (value === null) return;
+  if (!strokes.length && !build()) return;
+  if (raf) cancelAnimationFrame(raf);
+  draw(Math.max(0, Math.min(1, value)));
+});
 </script>
 
 <style scoped>

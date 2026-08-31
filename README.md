@@ -38,6 +38,7 @@ subtitle: "For L.H."                 # optional
 date: 2026-08-31
 published_in: "Magazine Name"        # optional
 external_url: "https://example.com"  # optional
+audio: "/audio/poem-title.mp3"        # optional reading
 ---
 
 First line
@@ -48,6 +49,8 @@ Second stanza
 
 Blank lines divide stanzas. Single line breaks are preserved. Asterisks carry
 the poet's own emphasis; do not add typographic emphasis in the application.
+Audio files belong in `public/audio/`; playback time drives the adjacent asemic
+trace without changing or highlighting the poem itself.
 
 Run `npm run verify` before committing. The verifier checks source and rendered
 line counts, public paths, static reading copies, metadata, sitemap coverage,

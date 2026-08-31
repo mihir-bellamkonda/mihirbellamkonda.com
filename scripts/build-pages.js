@@ -45,6 +45,13 @@ function structuredData(poem, canonical) {
   if (poem.published_in) {
     work.publisher = { '@type': 'Organization', name: poem.published_in };
   }
+  if (poem.audio) {
+    work.associatedMedia = {
+      '@type': 'AudioObject',
+      contentUrl: new URL(poem.audio, 'https://mihirbellamkonda.com/').href,
+      encodingFormat: path.extname(poem.audio).slice(1).toLowerCase()
+    };
+  }
 
   return {
     '@context': 'https://schema.org',
@@ -85,6 +92,7 @@ function staticPoem(poem, index, total) {
           <h1>${escapeHtml(poem.title)}</h1>
           ${poem.subtitle ? `<p class="static-dedication">${escapeHtml(poem.subtitle)}</p>` : ''}
           ${provenance ? `<p class="static-provenance">${provenance}</p>` : ''}
+          ${poem.audio ? `<audio class="static-audio" controls preload="metadata" src="${escapeHtml(poem.audio)}">Audio reading of ${escapeHtml(poem.title)}</audio>` : ''}
         </header>
         <div class="static-verse">${stanzas}</div>
       </main>

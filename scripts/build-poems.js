@@ -82,6 +82,7 @@ const poems = poemFiles.map((file, index) => {
     date: data.date || '',
     external_url: data.external_url || '',
     published_in: data.published_in || '',
+    audio: data.audio || '',
     content: content,
     html: marked(content),
     stanzas: stanzas,

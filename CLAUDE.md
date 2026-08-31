@@ -1,269 +1,129 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code working in this repository.
 
-## Project Overview
+## Project
 
-This is a minimalist, book-inspired poetry website built as a Vue 3 Single Page Application (SPA). The site features an intuitive card-stack interface with swipe navigation, showcasing poetry in an elegant, book-like reading experience. It uses Vue 3 with Composition API, Vite for bundling, and a custom Node.js script to convert markdown poems into JSON data.
+The poetry site of **Mihir Bellamkonda** (pronouns **they/he**; his published bios
+use "they"). Live at **https://mihirbellamkonda.com**.
 
-## Build and Development Commands
+It is a **publication record** — a numbered index of published poems with venue and
+year, not a themed collection. Vue 3 SPA, Vite, hash routing, markdown poems compiled
+to JSON at build time, deployed to GitHub Pages by GitHub Actions.
+
+## Rules that are not negotiable
+
+1. **No line of a poem may be modified.** No added emphasis, no coloured lines, no
+   drop caps, no size changes, no auto-shrinking. Every line is set identically.
+   Emphasis already present in a source file is the poet's own and stays — the rule
+   is *add nothing*, not strip what he wrote.
+2. **Do not use the word "plates"** anywhere user-facing. Numbers only: `01 / 18`.
+3. **No explanatory captions.** The index has no heading and no introductory
+   sentence. It gets space instead.
+4. The accent is **dark green**, never rust or red.
+
+## Commands
 
 ```bash
-# Install dependencies (required before first build)
-npm install
-
-# Generate poems.json from markdown files
-npm run poems
-
-# Start development server with hot module reload at http://localhost:5173
-npm run dev
-
-# Build for production (outputs to dist/)
-npm run build
-
-# Preview production build locally
-npm run preview
+npm install       # first run
+npm run poems     # markdown -> src/poems.json
+npm run dev       # dev server, localhost:5173
+npm run build     # npm run poems && vite build -> dist/
+npm run preview   # serve the production build
 ```
 
-## Architecture
+## Deployment
 
-### Technology Stack
+- Repo `mihir-bellamkonda/mihirbellamkonda.com`, default branch **`trunk`**, not `main`
+- `.github/workflows/deploy.yml` runs `npm ci && npm run build`, uploads `dist/`
+- Pages source is **GitHub Actions**; custom domain set, Enforce HTTPS on
+- `public/CNAME` must stay in `public/` — Vite copies `public/` into `dist/`, and
+  `dist/` is the artifact. A root-level CNAME never reaches the published site.
+- `vite.config.js` base must stay `/`. A project subpath 404s every asset and the
+  page renders blank.
+- A failed build does not deploy, so the live site survives a bad push. **But check
+  the rendered page in a browser, not just the Actions status** — the multi-line
+  emphasis bug passed the build and was only visible on screen.
 
-- **Framework**: Vue 3 (Composition API with `<script setup>`)
-- **Build Tool**: Vite 5
-- **Styling**: CSS with CSS Variables (no preprocessor)
-- **Markdown Processing**: gray-matter + marked
-- **Deployment**: GitHub Pages via GitHub Actions
-
-### Project Structure
+## Structure
 
 ```
-mihirbellamkonda.com/
-├── src/
-│   ├── main.js                 # Vue app entry point
-│   ├── App.vue                 # Root component with routing & swipe logic
-│   ├── style.css               # Global styles with CSS variables
-│   ├── poems.json              # GENERATED - do NOT commit (gitignored)
-│   └── components/
-│       ├── AboutPage.vue       # Landing page component
-│       ├── PoemsListPage.vue   # Table of contents page
-│       └── PoemPage.vue        # Individual poem display with font scaling
-├── scripts/
-│   └── build-poems.js          # Converts markdown poems to JSON
-├── poems/
-│   └── *.md                    # Markdown poem files with frontmatter
-├── public/
-│   └── images/                 # Static assets (copied to dist/ by Vite)
-├── dist/                       # GENERATED build output (gitignored)
-├── index.html                  # Vite entry HTML
-├── vite.config.js              # Vite configuration
-└── package.json                # Dependencies and scripts
+poems/*.md                        source poems, filename sets order
+scripts/build-poems.js            markdown -> src/poems.json
+src/asemic.js                     the mark generator
+src/App.vue                       hash routing
+src/components/
+  AboutPage.vue                   opening: name, bio, link in
+  PoemsListPage.vue               the index
+  PoemPage.vue                    one poem
+  AsemicMarks.vue                 canvas wrapper around asemic.js
+  FooterNav.vue                   the dark band
+src/style.css                     design tokens only
 ```
 
-### Build Process
+`src/poems.json` and `dist/` are generated and gitignored. Do not edit or commit them.
 
-#### 1. Poem Processing (`npm run poems`)
-
-The `scripts/build-poems.js` script:
-
-1. **Reads all `.md` files** from `poems/` directory (sorted alphabetically by filename)
-2. **Parses frontmatter** using `gray-matter` to extract metadata:
-   - `title` (required)
-   - `date` (optional)
-   - `published_in` (optional)
-   - `external_url` (optional)
-3. **Converts markdown to HTML** using `marked` library
-4. **Generates `src/poems.json`** with array of poem objects:
-   ```json
-   [
-     {
-       "slug": "01-The Gesture",
-       "title": "The Gesture",
-       "date": "2024-10-27",
-       "external_url": "",
-       "published_in": "",
-       "content": "raw markdown text",
-       "html": "<p>converted html</p>",
-       "index": 1
-     }
-   ]
-   ```
-5. This JSON is imported by Vue components at build time
-
-**Important**: `src/poems.json` is generated and should NOT be committed to git (listed in `.gitignore`).
-
-#### 2. Vite Build (`npm run build`)
-
-Vite processes the Vue SPA:
-
-1. **Bundles Vue components** using `@vitejs/plugin-vue`
-2. **Compiles and minifies** JavaScript and CSS
-3. **Copies static assets** from `public/` to `dist/`
-4. **Outputs production build** to `dist/` directory (~208KB total)
-   - `dist/assets/index-*.js` (~177KB - includes Vue 3 runtime)
-   - `dist/assets/index-*.css` (~5KB - minified styles)
-   - `dist/images/` (static assets)
-
-### Poem File Format
-
-Poems are markdown files in `poems/` with YAML frontmatter:
+## Poem files
 
 ```markdown
 ---
 title: "Poem Title"
-date: 2024-10-27
-published_in: "Magazine Name"  # Optional
-external_url: "https://..."    # Optional
+subtitle: "For L.H."                 # optional, shown as a dedication
+date: 2024-10-15
+published_in: "Bluestem Magazine"    # optional
+external_url: "https://..."          # optional
 ---
 
-Poem content here with preserved
-    indentation and line breaks
+The poem. Blank lines separate stanzas.
+*Emphasis is the poet's own* and may span line breaks.
 ```
 
-**Important**: Filename determines sort order (poems are sorted alphabetically). Use number prefixes like `01-`, `02-` to control ordering.
+`build-poems.js` emits a `stanzas` array: stanzas of lines, each line a complete HTML
+fragment. Emphasis is tracked **across the whole stanza** and closed and reopened at
+each line break, because his italics often span several lines. Parsing line by line
+leaves an unclosed asterisk on every line and prints the asterisks literally.
 
-### Component Architecture
+## Design
 
-#### App.vue (Root Component)
+Bone `#F2EFE6` ground, graphite `#23211C` ink, deep green `#1F4A34` accent, against a
+second band `#1D1B18`. Dark mode is a **negative, not a dimming** — the two bands
+trade places. All colour lives in `src/style.css` as tokens; components never
+hard-code a colour.
 
-The main application component at `src/App.vue` handles:
+Faces: **Cormorant Garamond** display, **Spectral** verse, **IBM Plex Mono** for the
+small catalogue chrome.
 
-- **Hash-based routing**: Parses `window.location.hash` to determine current page
-  - `#` or `#about` → About page
-  - `#contents` → Poems list
-  - `#poem/{slug}` → Individual poem
-- **Card stack UI**: Implements layered page preview effect
-- **Swipe navigation**:
-  - Touch events for mobile (left swipe = next, right swipe = prev)
-  - Click navigation (left half = prev, right half = next)
-  - Keyboard arrows for desktop
-- **Page transitions**: Calculates swipe offset, opacity, and scale transforms
+The poem page is two columns — number, title, dedication and provenance in a left
+margin, verse pushed right. Each verse line is its own block with a hanging indent, so
+a wrapped line reads differently from a break the poet made. This replaced a
+`fitPoemToWidth()` routine that shrank the type until the longest line fit; do not
+reintroduce anything like it.
 
-Key functions:
-- `parseRoute()` - Converts hash to route object
-- `navigate()` - Updates hash and triggers navigation
-- `goToNextPage()` / `goToPrevPage()` - Navigation logic
-- `getPageData()` - Returns component and props for a route
+## The marks
 
-#### AboutPage.vue
+`src/asemic.js` generates writing with the shape of writing and no words in it.
 
-Landing page component:
-- Displays circular profile image
-- Shows name and contact info
-- Links to poems list
-- Has footer navigation
+- Every mark comes from a **real poem's line and word structure**, so the illegible
+  column is genuinely a poem rendered unreadable.
+- The column beside a poem draws the **next poem in sequence**, wrapping at the end.
+- **Seeded from the slug**, so a poem's signature is identical on every load for every
+  reader. Never make it random per visit.
+- Letterforms follow Mihir's hand from photographed notebook pages: angular rather
+  than looped, sharp peaks joined by straight segments, ascenders near three times the
+  x-height, long hooked descenders, frequent pen lifts, overshooting crossbars, a fine
+  even line, slight forward lean.
+- The hand **scales to the space it is given** — `fitSize()` picks a size so the
+  longest line nearly fills the width and the poem fits the height. Stroke weight
+  tracks that size; a fixed hairline vanishes once the hand scales up.
+- Canvas, never a handwriting font. Ink colour comes from CSS variables so marks
+  follow the theme.
 
-#### PoemsListPage.vue
+## Notes
 
-Table of contents component:
-- Receives `poems` array and `onSelect` callback as props
-- Displays all poems in a list with:
-  - Title (clickable)
-  - Dotted line separator
-  - Poem number
-  - Publication info (if available)
-- Footer navigation
-
-#### PoemPage.vue
-
-Individual poem display component:
-- Receives `poem` object, `index`, and `total` as props
-- Displays poem title and HTML content
-- **Font size auto-scaling**: `fitPoemToWidth()` function dynamically reduces font size if content overflows horizontally
-- Shows external publication link if available
-- Footer navigation
-- Cleans up resize event listener on unmount (prevents memory leaks)
-
-### Navigation System
-
-Navigation is implemented entirely in `App.vue`:
-
-- **Touch gestures**:
-  - `handleTouchStart()`, `handleTouchMove()`, `handleTouchEnd()`
-  - Swipe threshold: 35% of screen width
-  - Swipe left → next page, swipe right → previous page
-- **Click navigation**:
-  - `handlePageClick()` detects which half of screen was clicked
-  - Left half → previous, right half → next
-- **Keyboard**:
-  - `handleKeydown()` listens for arrow keys
-- **Back button behavior**: From any poem, swiping back goes to contents page (not previous poem)
-
-### Styling
-
-All CSS is in `src/style.css` using CSS variables:
-
-```css
-:root {
-  --color-background: #F9F7F4;
-  --color-text: #2C2C2C;
-  --color-text-light: #6B6B6B;
-  --color-accent: #1B4332;
-  --color-accent-hover: #2C5F2D;
-  --font-heading: 'Libre Baskerville', serif;
-  --font-body: 'Lora', serif;
-  --spacing-xs: 0.5rem;
-  --spacing-sm: 1rem;
-  --spacing-md: 2rem;
-  --spacing-lg: 3rem;
-  --spacing-xl: 4rem;
-}
-```
-
-**Design features**:
-- Paper texture via inline SVG (fractal noise filter)
-- Book cover border effect on about page
-- Card stack layering with scale/opacity transforms
-- Dotted lines in table of contents
-- Responsive font sizes
-
-**Fonts**: Loaded from Google Fonts (Libre Baskerville, Lora) via `index.html`.
-
-### Deployment
-
-Automatic deployment to GitHub Pages, live at https://mihirbellamkonda.com
-
-- Repo `mihir-bellamkonda/mihirbellamkonda.com`, default branch **`trunk`** (not `main`)
-- `.github/workflows/deploy.yml` runs `npm ci && npm run build` and uploads `dist/`
-- Pages source is **GitHub Actions**; custom domain set, Enforce HTTPS on
-- `public/CNAME` must stay in `public/` so Vite copies it into `dist/` — a
-  root-level CNAME never reaches the published site
-- `vite.config.js` base must stay `/`; a project subpath 404s every asset
-
-## Key Implementation Details
-
-1. **SPA with hash routing**: Uses `window.location.hash` for navigation (no router library needed)
-2. **Generated data file**: `src/poems.json` is generated by build script and imported at build time
-3. **Card stack effect**: Preview page sits underneath current page, scales up during swipe
-4. **Poems are 1-indexed** for display (Poem 1 of 5) but 0-indexed internally
-5. **Markdown preserves whitespace**: Indentation in poems is maintained through markdown conversion
-6. **No external router**: Custom routing logic in App.vue (lightweight, <300 lines)
-7. **Font auto-scaling**: PoemPage dynamically adjusts font size to prevent horizontal overflow
-
-## Common Modifications
-
-- **Add a poem**: Create `poems/XX-name.md` with frontmatter, run `npm run build`
-- **Change colors**: Edit CSS variables in `src/style.css` root section
-- **Modify about page**: Edit `src/components/AboutPage.vue` template
-- **Update navigation behavior**: Modify functions in `src/App.vue`
-- **Change poem processing**: Edit `scripts/build-poems.js`
-- **Adjust swipe sensitivity**: Modify threshold values in App.vue (currently 35% of screen width)
-
-## Important Notes
-
-- **src/poems.json** is generated - do NOT manually edit or commit
-- **dist/** is build output - do NOT manually edit or commit
-- Poems list always reflects filesystem - no database or config
-- Poem slugs are derived from filename (without `.md` extension)
-- External links open in new tab with `rel="noopener"` for security
-- All navigation is client-side - no backend required
-- Build is destructive - `dist/` is completely recreated on each build
-- Hot Module Reload (HMR) works in dev mode for instant updates
-
-## Development Tips
-
-- **Test swipe on mobile**: Use browser DevTools mobile emulation or deploy to test device
-- **Watch mode**: `npm run dev` includes automatic poem rebuilding on markdown changes
-- **Component hot reload**: Vite HMR updates components without full page refresh
-- **Debug routing**: Check `route.value` in Vue DevTools to see current route state
-- **Font scaling issues**: Check `fitPoemToWidth()` in PoemPage.vue if poems overflow
+- Navigation is ordinary links with real URLs. The card-stack swipe was removed: it
+  hid the index behind a gesture and had no way back that wasn't a swipe. Arrow keys
+  move between poems as a convenience, never as the only route.
+- Open Graph tags are site-level on purpose. Routes are hashes, which never reach a
+  server, so a crawler cannot tell which poem a link points at. Per-poem previews
+  would need the pages pre-rendered as real files.
+- Adding a poem: drop a markdown file in `poems/` and push. Filename sets order.

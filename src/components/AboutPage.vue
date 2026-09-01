@@ -3,7 +3,7 @@
     <div class="inner">
       <div class="chrome">
         <span>mihirbellamkonda.com</span>
-        <a href="/#index">index</a>
+        <a href="/#index">poems</a>
       </div>
 
       <main class="opening" id="main" tabindex="-1">
@@ -21,7 +21,7 @@
           <a href="mailto:mihir.bellamkonda@gmail.com">email</a>. They are honored to be read.
         </p>
 
-        <p class="enter"><a href="/#index">read →</a></p>
+        <p class="enter"><a href="/#index">read poems →</a></p>
       </main>
 
       <div class="rest"></div>

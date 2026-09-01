@@ -92,7 +92,7 @@ function staticPoem(poem, index, total) {
     <article class="static-poem">
       <nav class="static-chrome" aria-label="Site">
         <a href="/">mihir bellamkonda</a>
-        <a href="/#index">index</a>
+        <a href="/#index">poems</a>
       </nav>
       <main class="static-grid">
         <header class="static-margin">
@@ -109,7 +109,7 @@ function staticPoem(poem, index, total) {
 }
 
 function staticHome(poems) {
-  const rows = poems.map((poem, index) => {
+  const row = (poem, index) => {
     const year = String(poem.date || '').match(/\d{4}/)?.[0] || '';
     const venue = poem.published_in || (poem.unpublished ? 'unpublished' : '');
     return `<li>
@@ -117,24 +117,33 @@ function staticHome(poems) {
       <a href="${escapeHtml(poem.url)}">${escapeHtml(poem.title)}</a>
       <span class="static-home-venue">${escapeHtml([venue, year].filter(Boolean).join(', '))}</span>
     </li>`;
-  }).join('');
+  };
+  const selected = poems.slice(0, 4).map(row).join('');
+  const archive = poems.slice(4).map((poem, index) => row(poem, index + 4)).join('');
 
   return `<noscript>
     <div class="static-home">
       <nav class="static-chrome" aria-label="Site">
         <span>mihirbellamkonda.com</span>
-        <a href="#static-index">index</a>
+        <a href="#static-index">poems</a>
       </nav>
       <main id="main">
         <section class="static-home-about">
           <h1>Mihir Bellamkonda</h1>
           <p>Mihir Bellamkonda is a poet based in Brooklyn. They were a finalist for Black Lawrence Press's St. Lawrence Book Award, and their work appears in Oxford Poetry, Nashville Review, The Offing, Variant Literature, and elsewhere.</p>
           <p>They can be found on <a href="https://x.com/MihirWords">X</a> and <a href="https://www.instagram.com/mihirwords/">Instagram</a> as @MihirWords, or reached by <a href="mailto:mihir.bellamkonda@gmail.com">email</a>. They are honored to be read.</p>
-          <p class="static-home-enter"><a href="#static-index">read →</a></p>
+          <p class="static-home-enter"><a href="#static-index">read poems →</a></p>
         </section>
         <section class="static-home-index" id="static-index">
           <h2>Poems</h2>
-          <ol>${rows}</ol>
+          <div class="static-home-group">
+            <h3>selected</h3>
+            <ol>${selected}</ol>
+          </div>
+          <div class="static-home-group">
+            <h3>archive</h3>
+            <ol start="5">${archive}</ol>
+          </div>
         </section>
       </main>
     </div>

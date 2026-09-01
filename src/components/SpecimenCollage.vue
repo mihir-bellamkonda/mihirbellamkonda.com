@@ -12,6 +12,7 @@
     ]"
     :data-specimen="study?.kind || 'asemic'"
     :data-poem="poem.path"
+    :data-composition="settings.composition"
     aria-hidden="true"
     @pointermove="handlePointer"
     @pointerdown="beginHandling"
@@ -70,6 +71,7 @@
 import { computed, ref } from 'vue';
 import AsemicMarks from './AsemicMarks.vue';
 import { specimenWordsFor } from '../specimen-vocabulary.js';
+import { prototypeSettings as settings } from '../prototype-settings.js';
 
 const props = defineProps({
   poem: { type: Object, required: true },
@@ -429,30 +431,30 @@ function clearPointer(event) {
 }
 
 /* Folio keeps one sheet nearly whole: still handled, but archival. */
-:global(html[data-prototype-composition='folio']) .layer-secondary {
+.specimen[data-composition='folio'] .layer-secondary {
   opacity: 0.14;
 }
 
-:global(html[data-prototype-composition='folio']) .layer-tertiary {
+.specimen[data-composition='folio'] .layer-tertiary {
   opacity: 0;
 }
 
-:global(html[data-prototype-composition='folio']) .large-trace-sheet {
+.specimen[data-composition='folio'] .large-trace-sheet {
   opacity: 0.055;
 }
 
-:global(html[data-prototype-composition='folio']) .has-large-hand .large-trace-sheet {
+.specimen[data-composition='folio'].has-large-hand .large-trace-sheet {
   opacity: 0.12;
 }
 
 /* Cut-up changes the crop, not merely the amount of material. */
-:global(html[data-prototype-composition='cutup']) .sheet-ground {
+.specimen[data-composition='cutup'] .sheet-ground {
   inset: 3% 4% 4% 5%;
   clip-path: polygon(3% 3%, 96% 0, 100% 89%, 88% 97%, 9% 100%, 0 76%);
   transform: translate(var(--shift-x-reverse), var(--shift-y-reverse)) rotate(1.15deg);
 }
 
-:global(html[data-prototype-composition='cutup']) .layer-primary {
+.specimen[data-composition='cutup'] .layer-primary {
   left: 5%;
   top: 6%;
   width: 78%;
@@ -461,11 +463,11 @@ function clearPointer(event) {
   transform: translate(var(--shift-x), var(--shift-y)) rotate(-2.35deg);
 }
 
-:global(html[data-prototype-composition='cutup']) .layer-primary img {
+.specimen[data-composition='cutup'] .layer-primary img {
   transform: translate(var(--crop-x), var(--crop-y)) scale(1.19);
 }
 
-:global(html[data-prototype-composition='cutup']) .layer-secondary {
+.specimen[data-composition='cutup'] .layer-secondary {
   right: -4%;
   bottom: 1%;
   width: 61%;
@@ -475,12 +477,12 @@ function clearPointer(event) {
   transform: translate(var(--shift-x-reverse), var(--shift-y-reverse)) rotate(3.2deg);
 }
 
-:global(html[data-prototype-composition='cutup']) .layer-secondary img,
-:global(html[data-prototype-composition='cutup']) .layer-tertiary img {
+.specimen[data-composition='cutup'] .layer-secondary img,
+.specimen[data-composition='cutup'] .layer-tertiary img {
   transform: translate(var(--crop-x-reverse), var(--crop-y-reverse)) scale(1.22);
 }
 
-:global(html[data-prototype-composition='cutup']) .layer-tertiary {
+.specimen[data-composition='cutup'] .layer-tertiary {
   left: -6%;
   bottom: -7%;
   width: 53%;
@@ -490,7 +492,7 @@ function clearPointer(event) {
   transform: translate(var(--shift-x-reverse), var(--shift-y-reverse)) rotate(-5deg);
 }
 
-:global(html[data-prototype-composition='cutup']) .large-trace-sheet {
+.specimen[data-composition='cutup'] .large-trace-sheet {
   left: -13%;
   top: 29%;
   width: 124%;
@@ -500,13 +502,13 @@ function clearPointer(event) {
   transform: translate(var(--shift-x), var(--shift-y)) rotate(-6.5deg);
 }
 
-:global(html[data-prototype-composition='cutup']) .has-large-hand .large-trace-sheet {
+.specimen[data-composition='cutup'].has-large-hand .large-trace-sheet {
   top: 23%;
   height: 48%;
   opacity: 0.2;
 }
 
-:global(html[data-prototype-composition='cutup']) .trace-sheet {
+.specimen[data-composition='cutup'] .trace-sheet {
   right: -1%;
   top: 3%;
   width: 57%;
@@ -518,7 +520,7 @@ function clearPointer(event) {
   transform: translate(var(--shift-x-reverse), var(--shift-y-reverse)) rotate(1.7deg);
 }
 
-:global(html[data-prototype-composition='cutup']) .specimen:not(.has-study) .trace-sheet {
+.specimen[data-composition='cutup']:not(.has-study) .trace-sheet {
   inset: 7% 4% 7% 28%;
   width: auto;
   height: auto;
@@ -566,7 +568,7 @@ function clearPointer(event) {
   object-position: center 64%;
 }
 
-:global(html[data-prototype-composition='cutup']) [data-specimen='lithic'] .layer-primary {
+.specimen[data-composition='cutup'][data-specimen='lithic'] .layer-primary {
   clip-path: polygon(0 12%, 84% 0, 100% 31%, 91% 100%, 18% 91%, 4% 62%);
 }
 
@@ -596,7 +598,7 @@ function clearPointer(event) {
   object-position: center center;
 }
 
-:global(html[data-prototype-composition='cutup']) [data-specimen='cosmic'] .layer-primary {
+.specimen[data-composition='cutup'][data-specimen='cosmic'] .layer-primary {
   left: 3%;
   top: 4%;
   width: 79%;
@@ -604,7 +606,7 @@ function clearPointer(event) {
   clip-path: ellipse(43% 48% at 48% 49%);
 }
 
-:global(html[data-prototype-composition='cutup']) [data-specimen='cosmic'] .layer-secondary {
+.specimen[data-composition='cutup'][data-specimen='cosmic'] .layer-secondary {
   right: -1%;
   bottom: -2%;
   width: 47%;
@@ -612,7 +614,7 @@ function clearPointer(event) {
   clip-path: polygon(15% 0, 100% 9%, 91% 91%, 21% 100%, 0 57%);
 }
 
-:global(html[data-prototype-composition='cutup']) [data-specimen='cosmic'] .layer-tertiary {
+.specimen[data-composition='cutup'][data-specimen='cosmic'] .layer-tertiary {
   left: -7%;
   bottom: -9%;
   width: 58%;

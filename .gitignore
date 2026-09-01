@@ -4,6 +4,7 @@ node_modules/
 # Build output
 dist/
 src/poems.json
+public/social/poems/
 
 # OS files
 .DS_Store

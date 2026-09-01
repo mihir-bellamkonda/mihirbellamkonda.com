@@ -394,6 +394,82 @@ h3 {
   padding-left: 1.4em;
 }
 
+/* A complete, quiet edition of the home and index for readers without
+   JavaScript and crawlers that do not execute the application. */
+.static-home {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 clamp(1.25rem, 5vw, 4.5rem) clamp(6rem, 20vh, 12rem);
+}
+
+.static-home-about {
+  padding: clamp(6rem, 26vh, 15rem) 0 clamp(8rem, 28vh, 16rem);
+  max-width: 42rem;
+}
+
+.static-home-about h1 {
+  margin-bottom: 2rem;
+  font-size: clamp(2.6rem, 7vw, 4.4rem);
+}
+
+.static-home-about p {
+  max-width: 46ch;
+  margin-bottom: 1rem;
+  color: var(--a-ink-2);
+}
+
+.static-home-enter {
+  padding-top: 1rem;
+  font-family: var(--f-cat);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+}
+
+.static-home-index {
+  border-top: 1px solid var(--a-hair);
+  padding-top: 2rem;
+}
+
+.static-home-index h2 {
+  margin-bottom: 2rem;
+  font-family: var(--f-cat);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  color: var(--a-ink-2);
+}
+
+.static-home-index ol {
+  list-style: none;
+}
+
+.static-home-index li {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) minmax(8rem, auto);
+  gap: 1rem;
+  align-items: baseline;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--a-hair);
+}
+
+.static-home-index li > a {
+  font-family: var(--f-display);
+  font-size: 1.45rem;
+  color: var(--a-ink);
+}
+
+.static-home-number,
+.static-home-venue {
+  font-family: var(--f-cat);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: var(--a-ink-2);
+}
+
+.static-home-venue {
+  text-align: right;
+}
+
 /* ---------------- responsive ---------------- */
 @media (max-width: 860px) {
   body {
@@ -403,6 +479,15 @@ h3 {
   .static-grid {
     grid-template-columns: 1fr;
     gap: 2.6rem;
+  }
+
+  .static-home-index li {
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+  }
+
+  .static-home-venue {
+    grid-column: 2;
+    text-align: left;
   }
 }
 

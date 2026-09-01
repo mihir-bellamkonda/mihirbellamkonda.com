@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "poems": "node scripts/build-poems.js",
+    "social": "node scripts/build-social-images.js",
     "test": "node --test",
-    "dev": "npm run poems && vite",
-    "build": "npm run poems && vite build && node scripts/build-pages.js",
+    "dev": "npm run poems && npm run social && vite",
+    "build": "npm run poems && npm run social && vite build && node scripts/build-pages.js",
     "verify": "npm test && npm run build && node scripts/verify-site.js",
     "check:links": "npm run poems && node scripts/check-external-links.js",
     "preview": "vite preview"
@@ -16,8 +17,9 @@
     "vue": "^3.4.21"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.0.4",
+    "@vitejs/plugin-vue": "^6.0.8",
     "gray-matter": "^4.0.3",
-    "vite": "^5.1.6"
+    "sharp": "^0.35.4",
+    "vite": "^7.3.6"
   }
 }

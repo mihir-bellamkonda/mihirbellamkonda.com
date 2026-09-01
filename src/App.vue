@@ -138,7 +138,12 @@ const currentKey = computed(() =>
 // Arrow keys still move between poems — a convenience, never the only way.
 function handleKeydown(e) {
   if (route.value.page !== 'poem') return;
-  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
+  const target = e.target;
+  if (
+    target instanceof Element
+    && target.closest('a, button, input, select, textarea, [contenteditable="true"], [role="slider"]')
+  ) return;
   const i = poemIndex.value;
   if (i === -1) return;
   if (e.key === 'ArrowLeft' && i > 0) navigate({ page: 'poem', slug: poemsData[i - 1].slug });

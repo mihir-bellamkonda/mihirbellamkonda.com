@@ -121,6 +121,7 @@ import FooterNav from './FooterNav.vue';
 import AsemicMarks from './AsemicMarks.vue';
 import SpecimenCollage from './SpecimenCollage.vue';
 import SpecimenVocabulary from './SpecimenVocabulary.vue';
+import { studyFor } from '../collage-studies.js';
 
 const props = defineProps({
   poem: Object,
@@ -214,9 +215,8 @@ const year = computed(() => {
   return m ? m[0] : '';
 });
 
-const hasSpecimen = computed(() =>
-  ['a-quiet-family', 'brahmanda'].includes(props.poem?.path)
-);
+// Every poem carries a study now, so the collage is the illegible column.
+const hasSpecimen = computed(() => Boolean(studyFor(props.poem?.path)));
 
 // Prefer the structured stanzas from the build script; fall back to splitting
 // the raw markdown so an older poems.json still renders.

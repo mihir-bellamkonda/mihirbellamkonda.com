@@ -62,6 +62,7 @@ src/components/
   SpecimenCollage.vue             the folio: sheets, imagery, returned title
   SpecimenVocabulary.vue          a poem's four words, in the margin
   FooterNav.vue                   the dark band
+src/collage-studies.js            which found material sits under which poem
 src/specimen-vocabulary.js        the curated four words per poem
 src/style.css                     design tokens only
 scripts/verify-site.js            production checks; `npm run verify`
@@ -127,9 +128,11 @@ reintroduce anything like it.
 
 ## The folio
 
-Beside the index, and on the two poems that have imagery, `SpecimenCollage.vue`
-lays a few sheets over one another: a ground, one quiet photograph, one sparse
-drawn fragment, and the asemic hand. Moving the pointer shifts the layers and
+Beside the index, and on every poem page, `SpecimenCollage.vue` lays a few
+sheets over one another: a ground, one quiet photograph, one sparse drawn
+fragment, and the asemic hand. `src/collage-studies.js` says which material
+belongs to which poem — one photograph each, and six drawn marks shared across
+the fifteen, so the folio stays one thing rather than fifteen decorations. Moving the pointer shifts the layers and
 their crops; pressing parts them, the way paper comes apart in the hand.
 Hovering or focusing an index title returns that poem's title to the collage as
 a small found label at the lower right.
@@ -143,8 +146,14 @@ a small found label at the lower right.
   `data-composition` and are scoped `.specimen[data-composition='cutup'] …`.
   **Never** hang them off a root selector: a `clip-path` written that way once
   compiled onto `html` and clipped the whole page into a circle.
+- `kind` decides how a photograph meets its panel: a `field` is a tonal expanse
+  and fills the crop (aimed by `focus`, which becomes `--focus`), a `form` is a
+  single shape that needs the space around it and is contained, not cropped.
 - Sources and rights for everything in `public/collage/` are recorded in its
-  own README. Public domain or CC0 only.
+  own README. Public domain or CC0 only, and every plate is cropped away from
+  its mount and caption before it is used.
+- A pale subject on a dark plate has to be **inverted**: `multiply` against the
+  bone ground keeps the black and throws away the mark.
 
 ## The four words
 

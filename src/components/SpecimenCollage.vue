@@ -13,6 +13,7 @@
     :data-specimen="study?.kind || 'asemic'"
     :data-poem="poem.path"
     :data-composition="composition"
+    :style="study?.focus ? { '--focus': study.focus } : null"
     aria-hidden="true"
     @pointermove="handlePointer"
     @pointerdown="beginHandling"
@@ -71,6 +72,7 @@
 import { computed, ref } from 'vue';
 import AsemicMarks from './AsemicMarks.vue';
 import { specimenWordsFor } from '../specimen-vocabulary.js';
+import { studyFor } from '../collage-studies.js';
 
 // The published crop. The folio rules in the stylesheet are kept intact, so
 // the other composition is one word away.
@@ -84,25 +86,10 @@ const props = defineProps({
   progress: { type: Number, default: null }
 });
 
-// One quiet photographic fragment and one sparse line fragment each. The
-// engravings that were here before arrived with their own headlines and
-// hundreds of labelled hairlines, and won every glance.
-const studies = {
-  'a-quiet-family': {
-    kind: 'lithic',
-    primary: '/collage/eroded-strata.webp',
-    secondary: '/collage/strata-contours.svg'
-  },
-  brahmanda: {
-    kind: 'cosmic',
-    primary: '/collage/lunar-disc.webp',
-    secondary: '/collage/orbit-trace.svg'
-  }
-};
 
 const frame = ref(null);
 const handled = ref(false);
-const study = computed(() => studies[props.poem.path] || null);
+const study = computed(() => studyFor(props.poem.path));
 const vocabulary = computed(() => specimenWordsFor(props.poem));
 // On a poem page SpecimenVocabulary.vue is the single appearance of the four
 // words, so the collage keeps only its identifier.
@@ -277,6 +264,7 @@ function clearPointer(event) {
   height: 100%;
   display: block;
   object-fit: cover;
+  object-position: var(--focus, center);
   filter: grayscale(0.93) sepia(0.09) saturate(0.46) contrast(0.88) brightness(1.0) blur(0.3px);
   mix-blend-mode: multiply;
   user-select: none;
@@ -603,46 +591,40 @@ function clearPointer(event) {
   transform: translate(calc(var(--shift-x-reverse) - 1%), calc(var(--shift-y-reverse) - 4%)) rotate(-0.5deg);
 }
 
-/* The stone study: the photograph carries the surface, the drawn lines carry
-   the bedding. Nothing here is a chart. */
-[data-specimen='lithic'] .layer-primary img {
-  object-position: 58% 44%;
-}
+/* A field is a tonal expanse: it fills the panel, and --focus decides what
+   part of it the panel is looking at. */
 
-[data-specimen='lithic'] .layer-secondary img {
-  object-position: center 40%;
-}
-
-/* The egg study. The oval is the photograph itself, so no mask cuts a circle
-   here — a round crop at this size becomes a porthole for the whole page. */
-[data-specimen='cosmic'] .layer-primary {
+/* A form is a single shape — a disc, a leaf, a spiral in a dark sky — and it
+   needs the space around it, so it is contained rather than cropped. No mask
+   cuts a circle here: a round crop at this size becomes a porthole. */
+[data-specimen='form'] .layer-primary {
   left: 8%;
   top: 6%;
   width: 60%;
   height: 60%;
 }
 
-[data-specimen='cosmic'] .layer-primary img,
-[data-specimen='cosmic'] .layer-secondary img {
+[data-specimen='form'] .layer-primary img,
+[data-specimen='form'] .layer-secondary img {
   object-fit: contain;
   object-position: center center;
 }
 
-.specimen[data-composition='folio'][data-specimen='cosmic'] .layer-primary {
+.specimen[data-composition='folio'][data-specimen='form'] .layer-primary {
   left: 9%;
   top: 6%;
   width: 58%;
   height: 60%;
 }
 
-.specimen[data-composition='cutup'][data-specimen='cosmic'] .layer-primary {
+.specimen[data-composition='cutup'][data-specimen='form'] .layer-primary {
   left: 3%;
   top: 4%;
   width: 66%;
   height: 66%;
 }
 
-.specimen[data-composition='cutup'][data-specimen='cosmic'] .layer-secondary {
+.specimen[data-composition='cutup'][data-specimen='form'] .layer-secondary {
   right: -3%;
   bottom: -2%;
   width: 52%;

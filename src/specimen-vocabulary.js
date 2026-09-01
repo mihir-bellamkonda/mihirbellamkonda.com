@@ -28,8 +28,7 @@ export const specimenVocabulary = {
   'circling-figures': ['loop-de-loop', 'signs', 'pigeon', 'beginning'],
   'the-horse': ['domesticity', 'rennet', 'marrow', 'distance'],
   brahmanda: ['egg', 'thyme', 'stars', 'oil'],
-  'a-quiet-family': ['taxonomies', 'basalt', 'quartz', 'shale'],
-  'volunteer-firefighter-antigua': ['uncomprehension', 'obsidian', 'earth', 'softness']
+  'a-quiet-family': ['taxonomies', 'basalt', 'quartz', 'shale']
 };
 
 export function normalizeWords(value) {

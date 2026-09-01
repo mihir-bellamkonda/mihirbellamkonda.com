@@ -10,6 +10,7 @@
 
       <div class="lead"></div>
 
+      <div class="index-stage">
       <main class="rows" id="main" tabindex="-1">
         <template v-for="(poem, i) in poems" :key="poem.slug">
           <p v-if="startsYear(i)" class="year-mark" aria-hidden="true">{{ yearOf(poem) }}</p>
@@ -21,9 +22,9 @@
           <div
             class="row"
             :class="{ 'peek-open': openSlug === poem.slug }"
-            @mouseenter="approach(poem.slug)"
-            @focusin="approach(poem.slug)"
-            @pointerdown="approach(poem.slug)"
+            @mouseenter="approach(poem)"
+            @focusin="approach(poem)"
+            @pointerdown="approach(poem)"
           >
             <span class="no">{{ pad(i + 1) }}</span>
 
@@ -79,6 +80,19 @@
         </template>
       </main>
 
+      <aside class="folio-field" aria-hidden="true">
+        <Transition name="specimen-swap" mode="out-in">
+          <SpecimenCollage
+            :key="activePoem.slug"
+            :poem="activePoem"
+            :mark-text="activePoem.content"
+            :mark-seed="`${activePoem.slug}::folio`"
+            context="index"
+          />
+        </Transition>
+      </aside>
+      </div>
+
       <div class="rest"></div>
     </div>
 
@@ -90,6 +104,7 @@
 import { ref } from 'vue';
 import FooterNav from './FooterNav.vue';
 import AsemicMarks from './AsemicMarks.vue';
+import SpecimenCollage from './SpecimenCollage.vue';
 
 const props = defineProps({
   poems: Array,
@@ -97,6 +112,9 @@ const props = defineProps({
 });
 
 const openSlug = ref('');
+const activePoem = ref(
+  props.poems.find(poem => poem.path === 'a-quiet-family') || props.poems[0]
+);
 const signatureRefs = new Map();
 const approached = new Set();
 
@@ -109,7 +127,9 @@ function rememberSignature(slug, instance) {
   else signatureRefs.delete(slug);
 }
 
-function approach(slug) {
+function approach(poem) {
+  activePoem.value = poem;
+  const slug = poem.slug;
   if (approached.has(slug)) return;
   approached.add(slug);
   signatureRefs.get(slug)?.replay?.();
@@ -157,7 +177,7 @@ function firstLine(poem) {
 .inner {
   flex: 1;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 0 auto;
   padding: 0 clamp(1.25rem, 5vw, 4.5rem);
 }
@@ -187,7 +207,14 @@ function firstLine(poem) {
 
 /* The list explains itself; it gets space instead of a heading. */
 .lead {
-  height: clamp(4rem, 15vh, 9rem);
+  height: clamp(3.5rem, 11vh, 7rem);
+}
+
+.index-stage {
+  display: grid;
+  grid-template-columns: minmax(31rem, 0.92fr) minmax(27rem, 1.08fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: start;
 }
 
 .rows {
@@ -196,14 +223,35 @@ function firstLine(poem) {
   border-top: 1px solid var(--a-hair);
 }
 
+.folio-field {
+  position: sticky;
+  top: clamp(1.4rem, 4vw, 2.4rem);
+  height: clamp(32rem, 76vh, 49rem);
+}
+
+.specimen-swap-enter-active,
+.specimen-swap-leave-active {
+  transition: opacity 180ms ease, transform 260ms ease;
+}
+
+.specimen-swap-enter-from {
+  opacity: 0;
+  transform: translateY(0.5rem);
+}
+
+.specimen-swap-leave-to {
+  opacity: 0;
+  transform: translateY(-0.25rem);
+}
+
 .row {
   position: relative;
   display: grid;
-  grid-template-columns: 3.4rem minmax(0, 1fr) 11rem;
-  gap: 0 clamp(1rem, 3vw, 2.2rem);
+  grid-template-columns: 2.8rem minmax(0, 1fr) minmax(7.5rem, 9.5rem);
+  gap: 0 clamp(0.8rem, 2vw, 1.45rem);
   align-items: baseline;
   width: 100%;
-  padding: clamp(1.1rem, 2.6vw, 1.7rem) 0;
+  padding: clamp(1rem, 2.1vw, 1.45rem) 0;
   border: 0;
   border-bottom: 1px solid var(--a-hair);
   background: none;
@@ -255,7 +303,7 @@ function firstLine(poem) {
 .title {
   font-family: var(--f-display);
   font-weight: 300;
-  font-size: clamp(1.3rem, 2.5vw, 1.75rem);
+  font-size: clamp(1.24rem, 2vw, 1.68rem);
   line-height: 1.18;
   color: var(--a-ink);
   transition: color 0.2s ease;
@@ -370,7 +418,39 @@ function firstLine(poem) {
   height: clamp(8rem, 30vh, 18rem);
 }
 
+@media (max-width: 1080px) {
+  .index-stage {
+    grid-template-columns: minmax(27rem, 1fr) minmax(22rem, 0.82fr);
+    gap: 2rem;
+  }
+
+  .row {
+    grid-template-columns: 2.6rem minmax(0, 1fr);
+  }
+
+  .where {
+    grid-column: 2 / 3;
+    align-items: flex-start;
+    text-align: left;
+    flex-direction: row;
+    gap: 0.6rem;
+    margin-top: 0.45rem;
+  }
+}
+
 @media (max-width: 860px) {
+  .index-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .folio-field {
+    position: relative;
+    top: auto;
+    order: -1;
+    height: clamp(23rem, 72vw, 31rem);
+    margin-bottom: 1.5rem;
+  }
+
   .row {
     grid-template-columns: 2.6rem minmax(0, 1fr);
   }

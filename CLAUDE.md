@@ -59,8 +59,13 @@ src/components/
   PoemsListPage.vue               the index
   PoemPage.vue                    one poem
   AsemicMarks.vue                 canvas wrapper around asemic.js
+  SpecimenCollage.vue             the folio: sheets, imagery, returned title
+  SpecimenVocabulary.vue          a poem's four words, in the margin
   FooterNav.vue                   the dark band
+src/specimen-vocabulary.js        the curated four words per poem
 src/style.css                     design tokens only
+scripts/verify-site.js            production checks; `npm run verify`
+public/collage/                   collage imagery, with sources and rights
 ```
 
 `src/poems.json` and `dist/` are generated and gitignored. Do not edit or commit them.
@@ -119,6 +124,40 @@ reintroduce anything like it.
   tracks that size; a fixed hairline vanishes once the hand scales up.
 - Canvas, never a handwriting font. Ink colour comes from CSS variables so marks
   follow the theme.
+
+## The folio
+
+Beside the index, and on the two poems that have imagery, `SpecimenCollage.vue`
+lays a few sheets over one another: a ground, one quiet photograph, one sparse
+drawn fragment, and the asemic hand. Moving the pointer shifts the layers and
+their crops; pressing parts them, the way paper comes apart in the hand.
+Hovering or focusing an index title returns that poem's title to the collage as
+a small found label at the lower right.
+
+- The imagery must **recede**. Large calm tonal areas, few edges, nothing
+  captioned or labelled, nothing that reads as a second headline. Fragments end
+  by dissolving through a gradient mask, not on a hard border.
+- Composition is fixed to **cut-up** in `SpecimenCollage.vue`; the `folio` rules
+  are kept in the stylesheet so the other crop is one word away.
+- Composition rules live on the `<figure class="specimen">` as
+  `data-composition` and are scoped `.specimen[data-composition='cutup'] …`.
+  **Never** hang them off a root selector: a `clip-path` written that way once
+  compiled onto `html` and clipped the whole page into a circle.
+- Sources and rights for everything in `public/collage/` are recorded in its
+  own README. Public domain or CC0 only.
+
+## The four words
+
+Every poem has four exact words from its own body — one field word and three
+coordinates — curated in `src/specimen-vocabulary.js`. None may appear in the
+poem's title. `npm run verify` fails if a word is missing from the body, occurs
+in the title, repeats, or if a poem has no set.
+
+They appear twice over: recessed beside the identifier in the index collage, and
+fainter still in the poem page's left margin, with no label and no heading.
+Each poem page carries **exactly one** set — the collaged pages keep their
+`MB / NN` identifier and give their words up to the margin. The words never
+touch the verse.
 
 ## Notes
 

@@ -3,6 +3,7 @@
        hash, so letting the browser set #main would navigate the app. -->
   <a class="skip-link" href="#main" @click="skipToMain">skip to content</a>
   <component :is="current.view" v-bind="current.props" :key="currentKey" />
+  <PrototypeControls />
 </template>
 
 <script setup>
@@ -11,6 +12,7 @@ import poemsData from './poems.json';
 import AboutPage from './components/AboutPage.vue';
 import PoemsListPage from './components/PoemsListPage.vue';
 import PoemPage from './components/PoemPage.vue';
+import PrototypeControls from './components/PrototypeControls.vue';
 
 /**
  * Real paths for poems, with legacy hash routing retained.

@@ -80,8 +80,18 @@
           <kbd>&#8592;</kbd><kbd>&#8594;</kbd> to move between poems
         </p>
 
+        <SpecimenCollage
+          v-if="ghost && hasSpecimen"
+          class="specimen-ghost"
+          :poem="poem"
+          :mark-text="ghost.content"
+          :mark-seed="`${poem.slug}::ghost`"
+          :progress="readingProgress"
+          context="poem"
+        />
+
         <AsemicMarks
-          v-if="ghost"
+          v-else-if="ghost"
           class="ghost"
           :text="ghost.content"
           :seed="poem.slug + '::ghost'"
@@ -107,6 +117,7 @@
 import { computed, ref, onUnmounted } from 'vue';
 import FooterNav from './FooterNav.vue';
 import AsemicMarks from './AsemicMarks.vue';
+import SpecimenCollage from './SpecimenCollage.vue';
 
 const props = defineProps({
   poem: Object,
@@ -199,6 +210,10 @@ const year = computed(() => {
   const m = String(d).match(/\d{4}/);
   return m ? m[0] : '';
 });
+
+const hasSpecimen = computed(() =>
+  ['a-quiet-family', 'brahmanda'].includes(props.poem?.path)
+);
 
 // Prefer the structured stanzas from the build script; fall back to splitting
 // the raw markdown so an older poems.json still renders.
@@ -424,6 +439,10 @@ const stanzas = computed(() => {
   margin-top: 0.4rem;
 }
 
+.specimen-ghost {
+  margin-top: 0.4rem;
+}
+
 .verse {
   font-size: clamp(1.02rem, 1.45vw, 1.13rem);
   line-height: 1.78;
@@ -458,6 +477,10 @@ const stanzas = computed(() => {
     height: 8rem;
   }
 
+  .specimen-ghost {
+    height: 18rem;
+  }
+
   .grid {
     grid-template-columns: 1fr;
     gap: 2.6rem;
@@ -474,7 +497,7 @@ const stanzas = computed(() => {
 }
 
 @media print {
-  .chrome, .tools, .hint, .reading, .ghost { display: none; }
+  .chrome, .tools, .hint, .reading, .ghost, .specimen-ghost { display: none; }
   .poem-plate { min-height: 0; }
   .grid {
     display: grid;

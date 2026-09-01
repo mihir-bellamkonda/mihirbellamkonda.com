@@ -15,40 +15,18 @@
       </div>
 
       <fieldset>
-        <legend>collage</legend>
+        <legend>composition</legend>
         <label>
-          <input v-model="settings.density" type="radio" value="quiet">
-          <span>quiet</span>
+          <input v-model="settings.composition" type="radio" value="folio">
+          <span>folio</span>
         </label>
         <label>
-          <input v-model="settings.density" type="radio" value="layered">
-          <span>layered</span>
-        </label>
-      </fieldset>
-
-      <fieldset>
-        <legend>type</legend>
-        <label>
-          <input v-model="settings.type" type="radio" value="current">
-          <span>current</span>
-        </label>
-        <label>
-          <input v-model="settings.type" type="radio" value="character">
-          <span>character</span>
+          <input v-model="settings.composition" type="radio" value="cutup">
+          <span>cut-up</span>
         </label>
       </fieldset>
 
-      <fieldset>
-        <legend>handling</legend>
-        <label>
-          <input v-model="settings.motion" type="radio" value="still">
-          <span>still</span>
-        </label>
-        <label>
-          <input v-model="settings.motion" type="radio" value="responsive">
-          <span>responsive</span>
-        </label>
-      </fieldset>
+      <p class="studio-fixed">current type · responsive handling</p>
 
       <div class="studio-actions">
         <button type="button" @click="copyCombination">{{ copied ? 'link copied' : 'copy combination' }}</button>
@@ -69,9 +47,7 @@ let copiedTimer = null;
 
 async function copyCombination() {
   const url = new URL(window.location.href);
-  url.searchParams.set('folio_density', settings.density);
-  url.searchParams.set('folio_type', settings.type);
-  url.searchParams.set('folio_motion', settings.motion);
+  url.searchParams.set('folio_composition', settings.composition);
   try {
     await navigator.clipboard.writeText(url.href);
     copied.value = true;
@@ -155,7 +131,7 @@ async function copyCombination() {
 
 fieldset {
   display: grid;
-  grid-template-columns: 5.2rem 1fr 1fr;
+  grid-template-columns: 6.6rem 1fr 1fr;
   gap: 0.45rem;
   align-items: center;
   border: 0;
@@ -166,7 +142,7 @@ fieldset {
 
 legend {
   float: left;
-  width: 5.2rem;
+  width: 6.6rem;
   padding: 0.2rem 0 0;
   font-size: 0.54rem;
   letter-spacing: 0.14em;
@@ -202,6 +178,15 @@ label input:checked + span {
 label input:focus-visible + span {
   outline: 1px solid var(--accent);
   outline-offset: 2px;
+}
+
+.studio-fixed {
+  margin: 0.8rem 0 0;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--a-hair);
+  color: var(--a-faint);
+  font-size: 0.51rem;
+  letter-spacing: 0.08em;
 }
 
 .studio-actions {

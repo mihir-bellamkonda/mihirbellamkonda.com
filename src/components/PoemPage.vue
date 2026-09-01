@@ -38,6 +38,8 @@
           </template>
         </div>
 
+        <SpecimenVocabulary :poem="poem" />
+
         <div class="tools">
           <button type="button" class="copy" @click="copyLink">
             {{ copied ? 'link copied' : 'copy link' }}
@@ -118,6 +120,7 @@ import { computed, ref, onUnmounted } from 'vue';
 import FooterNav from './FooterNav.vue';
 import AsemicMarks from './AsemicMarks.vue';
 import SpecimenCollage from './SpecimenCollage.vue';
+import SpecimenVocabulary from './SpecimenVocabulary.vue';
 
 const props = defineProps({
   poem: Object,

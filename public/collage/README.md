@@ -1,15 +1,35 @@
 # Prototype collage sources
 
-All source images are public-domain or carry no known copyright restrictions.
-The site uses reduced-size derivatives solely for the private visual prototype.
+Two photographs and two drawn fragments, for the private visual prototype only.
 
-- `geological-chart.webp` — *1893 chromolithograph — Geological Chart*, public domain.  
-  https://commons.wikimedia.org/wiki/File:1893_chromolithograph_-_Geological_Chart.jpg
-- `crystal-forms.webp` — illustration from *A Popular Guide to Minerals* (1912), no known restrictions.  
-  https://commons.wikimedia.org/wiki/File:A_popular_guide_to_minerals_-_with_chapters_on_the_Bement_Collection_of_minerals_in_the_American_Museum_of_Natural_History,_and_the_development_of_mineralogy_(1912)_(14754875556).jpg
-- `citrus-aurantium.webp` — *The Botanical Register* (1815), no known restrictions.  
-  https://commons.wikimedia.org/wiki/File:The_Botanical_register_consisting_of_coloured_figures_of_(1815)_(14793099233).jpg
-- `cosmic-egg.webp` — *Asiatic devices allusive to the cosmogony* (1795), public domain.  
-  https://commons.wikimedia.org/wiki/File:A_bull_pushing_an_egg_off_a_table_Wellcome_V0050540.jpg
-- `solar-system.webp` — *The Solar System, with the orbits of 5 remarkable comets* (1747), public domain.  
-  https://commons.wikimedia.org/wiki/File:The_Solar_System,_with_the_orbits_of_5_remarkable_comets._LOC_2013593161_(cropped).jpg
+The engravings that were here before — a geological chart, crystal figures, a
+solar system, a cosmogony plate, a botanical register — were replaced rather
+than faded. Each arrived with its own headline and several hundred labelled
+hairlines, so no amount of opacity stopped them competing with the poem. What
+replaced them has large quiet tonal areas and very few edges.
+
+## Photographs
+
+Both are 1871 albumen prints from The Metropolitan Museum of Art, released
+under its Open Access policy (CC0 / public domain). Each is cropped away from
+its mount and printed caption, flattened tonally, softened, and feathered at
+the edges; `scripts` for the derivation are not kept in the repository, and the
+originals are not redistributed here.
+
+- `eroded-strata.webp` — Timothy H. O'Sullivan, *Eroded Strata, Near Cottonwood
+  Springs, Nevada*, 1871. Met object 264703, public domain.
+  https://www.metmuseum.org/art/collection/search/264703
+  Cropped into the hill face only: no sky, no horizon, no caption.
+- `lunar-disc.webp` — Lewis Morris Rutherfurd, *Full Moon*, 1871. Met object
+  813902, public domain. https://www.metmuseum.org/art/collection/search/813902
+  A single half of the stereograph, lifted well off black so the field around
+  the disc reads as haze on paper rather than as a dark rectangle.
+
+## Drawn fragments
+
+Made for this prototype, deterministic, no rights encumbrance. A found
+engraving at this scale always brings labels and micro-detail with it, and the
+whole point of this layer is that there is almost nothing in it.
+
+- `strata-contours.svg` — thirteen level lines across one landform.
+- `orbit-trace.svg` — two ellipses, one arc leaving the frame, two points.

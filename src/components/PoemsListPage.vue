@@ -81,7 +81,19 @@
         </template>
       </main>
 
+      <!-- The collage opens its poem too. It is a second way in to a link the
+           row already provides, so it stays out of the accessibility tree and
+           out of the tab order rather than repeating that link for a reader
+           who cannot see it. -->
       <aside class="folio-field" aria-hidden="true">
+        <a
+          class="folio-link"
+          :href="activePoem.url"
+          tabindex="-1"
+          draggable="false"
+          @pointerdown="beginCollagePress"
+          @click="followCollage"
+        >
         <Transition name="specimen-swap" mode="out-in">
           <SpecimenCollage
             :key="activePoem.slug"
@@ -91,6 +103,7 @@
             context="index"
           />
         </Transition>
+        </a>
       </aside>
       </div>
 
@@ -134,6 +147,28 @@ function approach(poem) {
   if (approached.has(slug)) return;
   approached.add(slug);
   signatureRefs.get(slug)?.replay?.();
+}
+
+// Handling the collage — moving in it, pressing to separate the layers — must
+// not count as a click. A press that lingers or travels is the gesture; a
+// short, still one is someone asking for the poem.
+let collagePress = null;
+
+function beginCollagePress(event) {
+  collagePress = { at: Date.now(), x: event.clientX, y: event.clientY };
+}
+
+function followCollage(event) {
+  const press = collagePress;
+  collagePress = null;
+  if (press) {
+    const travelled = Math.hypot(event.clientX - press.x, event.clientY - press.y);
+    if (Date.now() - press.at > 400 || travelled > 8) {
+      event.preventDefault();
+      return;
+    }
+  }
+  follow(event, activePoem.value.slug);
 }
 
 function follow(event, slug) {
@@ -232,6 +267,14 @@ function firstLine(poem) {
   position: sticky;
   top: clamp(1.4rem, 4vw, 2.4rem);
   height: clamp(32rem, 76vh, 49rem);
+}
+
+.folio-link {
+  display: block;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+  -webkit-user-drag: none;
 }
 
 .specimen-swap-enter-active,

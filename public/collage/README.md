@@ -1,6 +1,6 @@
 # Prototype collage sources
 
-Fifteen poems, fifteen photographs, six drawn marks.
+Twenty-one poems, twenty-one photographs, six drawn marks.
 
 Every photograph is public domain and comes from an institution's open access
 programme. None is redistributed here as it was found: each is cropped away
@@ -85,6 +85,36 @@ illustrates the poem by naming its objects back to it.
   https://www.metmuseum.org/art/collection/search/271852
   Used under *The Horse*.
 
+- `vase-of-flowers.webp` — Unknown, [Vase of Flowers], 1860s.
+  The Metropolitan Museum of Art, object 270862, public domain (Open Access).
+  https://www.metmuseum.org/art/collection/search/270862
+  Used under *Old Man at Dinner*.
+
+- `woodchoppers.webp` — Andrew Joseph Russell, Woodchoppers' Huts in a Virginia Forest. On the Orange & Alexandria Railroad. Wood Supplied U.S.M.R. Railroads under Supervision of Major Brayton, June 1863.
+  The Metropolitan Museum of Art, object 302357, public domain (Open Access).
+  https://www.metmuseum.org/art/collection/search/302357
+  Used under *The Carpenter*.
+
+- `sutro-road.webp` — Carleton E. Watkins, Road View to Sutro Tunnel, 1875, printed ca. 1876.
+  The Metropolitan Museum of Art, object 264985, public domain (Open Access).
+  https://www.metmuseum.org/art/collection/search/264985
+  Used under *The Economy*.
+
+- `dustbowl-farm.webp` — Dorothea Lange, Abandoned Farm in the Dustbowl, Coldwater District, near Dalhart, Texas, June, 1938, printed ca. 1972.
+  The Metropolitan Museum of Art, object 260387, public domain (Open Access).
+  https://www.metmuseum.org/art/collection/search/260387
+  Used under *Epiphany*.
+
+- `oriel-window.webp` — William Henry Fox Talbot, [The Oriel Window, South Gallery, Lacock Abbey], probably 1835.
+  The Metropolitan Museum of Art, object 282004, public domain (Open Access).
+  https://www.metmuseum.org/art/collection/search/282004
+  Used under *Love Outside Poems*.
+
+- `le-tambour.webp` — Pierre-Louis Pierson, Le tambour, 1860s.
+  The Metropolitan Museum of Art, object 261376, public domain (Open Access).
+  https://www.metmuseum.org/art/collection/search/261376
+  Used under *Musician’s Daughter*.
+
 ### Earlier studies
 
 - `eroded-strata.webp` — Timothy H. O'Sullivan, *Eroded Strata, Near Cottonwood
@@ -100,7 +130,7 @@ illustrates the poem by naming its objects back to it.
 ## Drawn fragments
 
 Made for this site, deterministic, no rights encumbrance. Six marks shared
-across fifteen poems on purpose: a found engraving at this scale always brings
+across twenty-one poems on purpose: a found engraving at this scale always brings
 labels and micro-detail with it, and the whole point of this layer is that
 there is almost nothing in it.
 

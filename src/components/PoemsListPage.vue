@@ -49,6 +49,7 @@
               >{{ poem.published_in }}<span class="ext" aria-hidden="true">&#8599;</span><span
                 class="sr-only"> — read at the publisher, opens in a new tab</span></a>
               <span v-else-if="poem.published_in" class="venue">{{ poem.published_in }}</span>
+              <span v-else-if="poem.unpublished" class="venue unpublished">unpublished</span>
               <span v-if="yearOf(poem)" class="yr">{{ yearOf(poem) }}</span>
               <button
                 type="button"
@@ -159,10 +160,14 @@ function startsYear(i) {
 }
 
 // stanzas[0][0] is already a complete HTML fragment from build-poems.js,
-// carrying the poet's emphasis and nothing added.
+// carrying the poet's emphasis and nothing added. A poem that opens on a
+// section header — Dallas on "1. Father", New Orleans on "1. River" — would
+// otherwise preview the header instead of a line of the poem.
+const SECTION_HEADER = /^<strong>[^<]*<\/strong>$/;
+
 function firstLine(poem) {
-  const first = poem.stanzas && poem.stanzas[0] && poem.stanzas[0][0];
-  return first || '';
+  const lines = (poem.stanzas || []).flat();
+  return lines.find(line => !SECTION_HEADER.test(line)) || lines[0] || '';
 }
 </script>
 
@@ -333,6 +338,11 @@ function firstLine(poem) {
 .where .yr {
   color: var(--a-faint);
   font-variant-numeric: tabular-nums;
+}
+
+.where .venue.unpublished {
+  color: var(--a-faint);
+  font-style: italic;
 }
 
 .where a.venue {

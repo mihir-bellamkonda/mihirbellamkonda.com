@@ -5,7 +5,7 @@ published_in: "the museum of americana"
 external_url: "https://themuseumofamericana.net/2024/01/23/americana-stories-poetry-37/"
 ---
 
-1. Father
+**1. Father**
 The dog is ash and mud-brown, sleeping.
 It did not know the time. The airport had no clocks.
 Don’t ask questions.
@@ -37,7 +37,7 @@ Your skinny wrists breaking against the lawnmower,
 your feckless humiliation, the letters I signed for your liberal school.
 Your pink toys, that high-pitched feedback from the news.
 
-2. Son
+**2. Son**
 Dreaming, dreaming, a mother’s faded colors,
 a child’s defiance. Iron covers for the drainage. Silence.
 The rubber soles of strangers beat the graffiti into ash.

@@ -33,6 +33,8 @@ const pathSlug = (value) => String(value || '')
  *     *We are the people by the water
  *     in the morning—*
  *
+ * A section header is the poet's own **bold**, marked the same way.
+ *
  * So emphasis is tracked across the whole stanza and closed and reopened at
  * each line break. Parsing line by line would leave an unclosed asterisk on
  * every line and print the asterisks literally.
@@ -41,24 +43,44 @@ const pathSlug = (value) => String(value || '')
  */
 function stanzaLines(block) {
   let out = '';
-  let inEm = false;
+  const open = [];                                  // outermost first
 
-  for (const ch of block) {
-    if (ch === '*') {
-      out += inEm ? '</em>' : '<em>';
-      inEm = !inEm;
+  const closeAll = () => open.map(t => `</${t}>`).reverse().join('');
+  const reopenAll = () => open.map(t => `<${t}>`).join('');
+
+  // Toggling a tag that is not innermost has to close what sits inside it
+  // first, drop it, and reopen the rest, or the HTML crosses over itself.
+  const toggle = tag => {
+    const at = open.lastIndexOf(tag);
+    if (at === -1) {
+      open.push(tag);
+      return `<${tag}>`;
+    }
+    const inner = open.splice(at);
+    const rest = inner.slice(1);
+    open.push(...rest);
+    return inner.map(t => `</${t}>`).reverse().join('') + rest.map(t => `<${t}>`).join('');
+  };
+
+  for (let i = 0; i < block.length; i += 1) {
+    const ch = block[i];
+    if (ch === '*' && block[i + 1] === '*') {
+      out += toggle('strong');
+      i += 1;
+    } else if (ch === '*') {
+      out += toggle('em');
     } else if (ch === '\n') {
-      out += inEm ? '</em>\n<em>' : '\n';
+      out += closeAll() + '\n' + reopenAll();
     } else {
       out += escapeHtml(ch);
     }
   }
-  if (inEm) out += '</em>';
+  out += closeAll();
 
   return out
     .split('\n')
     .map(line => line.trim())
-    .filter(line => line !== '' && line !== '<em></em>');
+    .filter(line => line !== '' && !/^(?:<em><\/em>|<strong><\/strong>)+$/.test(line));
 }
 
 const poems = poemFiles.map((file, index) => {
@@ -82,6 +104,7 @@ const poems = poemFiles.map((file, index) => {
     date: data.date || '',
     external_url: data.external_url || '',
     published_in: data.published_in || '',
+    unpublished: Boolean(data.unpublished),
     audio: data.audio || '',
     content: content,
     html: marked(content),

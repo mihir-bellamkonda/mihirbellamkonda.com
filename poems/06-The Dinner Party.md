@@ -25,9 +25,9 @@ the question floats in the air like
 the scent of spring beginning: what now?
 
 An old man flips a coin through his knuckles.
-A child begs: teach me, teach me.
+A child begs: *teach me, teach me.*
 
-Teach me, what is it to love the unholding center, teach me,
-what is it to lay tradition's head gentle in your lap?
+*Teach me, what is it to love the unholding center, teach me,
+what is it to lay tradition's head gentle in your lap?*
 
 The recipe always ends to taste.

@@ -71,6 +71,30 @@ const studies = {
   'a-quiet-family': {
     kind: 'field', focus: '58% 44%',
     primary: '/collage/eroded-strata.webp', secondary: '/collage/strata-contours.svg'
+  },
+  'old-man-at-dinner': {
+    kind: 'form',
+    primary: '/collage/vase-of-flowers.webp', secondary: '/collage/ripple-rings.svg'
+  },
+  'the-carpenter': {
+    kind: 'field', focus: '50% 52%',
+    primary: '/collage/woodchoppers.webp', secondary: '/collage/strata-contours.svg'
+  },
+  'the-economy': {
+    kind: 'field', focus: '50% 58%',
+    primary: '/collage/sutro-road.webp', secondary: '/collage/plumb-lines.svg'
+  },
+  epiphany: {
+    kind: 'field', focus: '50% 56%',
+    primary: '/collage/dustbowl-farm.webp', secondary: '/collage/hatch-field.svg'
+  },
+  'love-outside-poems': {
+    kind: 'field', focus: '50% 50%',
+    primary: '/collage/oriel-window.webp', secondary: '/collage/pulse-trace.svg'
+  },
+  'musician-s-daughter': {
+    kind: 'form',
+    primary: '/collage/le-tambour.webp', secondary: '/collage/orbit-trace.svg'
   }
 };
 

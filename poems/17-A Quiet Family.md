@@ -12,9 +12,9 @@ And loves them well, but silently. Like any parent,
 He teaches them their nature.
 
 I try to do the same. I give him names, taxonomies:
-I say Limestone is sedimentary.
+I say *Limestone is sedimentary.*
 
-He says Limestone is sedimentary
+He says *Limestone is sedimentary*
 And returns to his silence.
 
 One might think stones would make well-behaved grandchildren.

@@ -140,7 +140,7 @@ Beside the index, and on every poem page, `SpecimenCollage.vue` lays a few
 sheets over one another: a ground, one quiet photograph, one sparse drawn
 fragment, and the asemic hand. `src/collage-studies.js` says which material
 belongs to which poem — one photograph each, and six drawn marks shared across
-the fifteen, so the folio stays one thing rather than fifteen decorations. Moving the pointer shifts the layers and
+the corpus, so the folio stays one thing rather than a set of separate decorations. Moving the pointer shifts the layers and
 their crops; pressing parts them, the way paper comes apart in the hand.
 Hovering or focusing an index title returns that poem's title to the collage as
 a small found label at the lower right. On the index the collage is also a link

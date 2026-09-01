@@ -17,6 +17,7 @@ Useful commands:
 
 ```bash
 npm run poems       # compile poems/*.md into src/poems.json
+npm test            # test poem formatting edge cases
 npm run build       # build the app and generated poem pages
 npm run verify      # build plus release-integrity checks
 npm run check:links # check the current publication links
@@ -52,9 +53,10 @@ the poet's own emphasis; do not add typographic emphasis in the application.
 Audio files belong in `public/audio/`; playback time drives the adjacent asemic
 trace without changing or highlighting the poem itself.
 
-Run `npm run verify` before committing. The verifier checks source and rendered
-line counts, public paths, static reading copies, metadata, sitemap coverage,
-venue URL syntax, and deterministic asemic signatures.
+Run `npm run verify` before committing. The verifier runs the formatting tests,
+builds the site, and checks source and rendered line counts, public paths,
+static reading copies, share-image integrity, metadata, sitemap coverage, venue
+URL syntax, and deterministic asemic signatures.
 
 ## How pages are made
 

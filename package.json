@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "poems": "node scripts/build-poems.js",
+    "test": "node --test",
     "dev": "npm run poems && vite",
     "build": "npm run poems && vite build && node scripts/build-pages.js",
-    "verify": "npm run build && node scripts/verify-site.js",
+    "verify": "npm test && npm run build && node scripts/verify-site.js",
     "check:links": "npm run poems && node scripts/check-external-links.js",
     "preview": "vite preview"
   },
@@ -17,7 +18,6 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
     "gray-matter": "^4.0.3",
-    "marked": "^12.0.1",
     "vite": "^5.1.6"
   }
 }

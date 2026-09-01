@@ -4,8 +4,8 @@
  * Every fragment is a public-domain photograph cropped away from its mount and
  * flattened until it reads as weather rather than as illustration; sources and
  * rights are recorded in public/collage/README.md. The drawn fragments are a
- * deliberately small shared set — six marks across fifteen poems — so the folio
- * stays one thing rather than fifteen separate decorations.
+ * deliberately small shared set — six marks across the corpus — so the folio
+ * stays one thing rather than a set of separate decorations.
  *
  * `kind` decides how the photograph meets its panel: a `field` is a tonal
  * expanse and fills the crop, a `form` is a single shape that needs the space

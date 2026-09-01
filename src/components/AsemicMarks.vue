@@ -27,6 +27,9 @@ let raf = null;
 let ro = null;
 let mo = null;
 let mq = null;
+let retryRaf = null;
+let resizeTimer = null;
+let mounted = false;
 
 const reduced = () =>
   window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -79,9 +82,15 @@ function animate(duration = 1500) {
 }
 
 function run() {
+  if (!mounted) return;
   if (!build()) {
-    requestAnimationFrame(run);
+    if (retryRaf) cancelAnimationFrame(retryRaf);
+    retryRaf = requestAnimationFrame(run);
     return;
+  }
+  if (retryRaf) {
+    cancelAnimationFrame(retryRaf);
+    retryRaf = null;
   }
   if (raf) cancelAnimationFrame(raf);
 
@@ -99,6 +108,7 @@ function run() {
 }
 
 function repaint() {
+  if (!mounted) return;
   if (build()) draw(props.progress === null ? 1 : Math.max(0, Math.min(1, props.progress)));
 }
 
@@ -111,13 +121,13 @@ function replay() {
 defineExpose({ replay });
 
 onMounted(() => {
+  mounted = true;
   nextTick(run);
 
   if (window.ResizeObserver) {
-    let t = null;
     ro = new ResizeObserver(() => {
-      clearTimeout(t);
-      t = setTimeout(repaint, 180);
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(repaint, 180);
     });
     ro.observe(cv.value);
   } else {
@@ -135,12 +145,17 @@ onMounted(() => {
   }
 
   if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(repaint);
+    document.fonts.ready.then(() => {
+      if (mounted) repaint();
+    });
   }
 });
 
 onUnmounted(() => {
+  mounted = false;
   if (raf) cancelAnimationFrame(raf);
+  if (retryRaf) cancelAnimationFrame(retryRaf);
+  if (resizeTimer) clearTimeout(resizeTimer);
   if (ro) ro.disconnect();
   if (mo) mo.disconnect();
   if (mq) mq.removeEventListener('change', repaint);
@@ -149,6 +164,7 @@ onUnmounted(() => {
 
 watch(() => [props.text, props.seed], run);
 watch(() => props.progress, (value) => {
+  if (!mounted) return;
   if (value === null) return;
   if (!strokes.length && !build()) return;
   if (raf) cancelAnimationFrame(raf);

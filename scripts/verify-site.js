@@ -13,8 +13,116 @@ const check = (condition, message) => {
   if (!condition) failures.push(message);
 };
 
+function metaContent(html, attribute, value) {
+  const tags = html.match(/<meta\b[^>]*>/gi) || [];
+  for (const tag of tags) {
+    const attributes = {};
+    for (const match of tag.matchAll(/\b([:\w-]+)\s*=\s*(["'])(.*?)\2/g)) {
+      attributes[match[1].toLowerCase()] = match[3];
+    }
+    if (attributes[attribute] === value) return attributes.content || '';
+  }
+  return '';
+}
+
+function jpegDimensions(buffer) {
+  if (buffer.length < 4 || buffer[0] !== 0xff || buffer[1] !== 0xd8) return null;
+
+  const startOfFrameMarkers = new Set([
+    0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7,
+    0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf
+  ]);
+  let dimensions = null;
+  let offset = 2;
+
+  while (offset < buffer.length) {
+    if (buffer[offset] !== 0xff) return null;
+    while (buffer[offset] === 0xff) offset += 1;
+    const marker = buffer[offset];
+    offset += 1;
+
+    if (marker === 0xd9) return null;
+    if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) continue;
+    if (offset + 1 >= buffer.length) return null;
+
+    const segmentLength = buffer.readUInt16BE(offset);
+    if (segmentLength < 2 || offset + segmentLength > buffer.length) return null;
+    if (startOfFrameMarkers.has(marker) && segmentLength >= 7) {
+      dimensions = {
+        height: buffer.readUInt16BE(offset + 3),
+        width: buffer.readUInt16BE(offset + 5)
+      };
+    }
+    if (marker === 0xda) return dimensions;
+    offset += segmentLength;
+  }
+
+  return null;
+}
+
+function verifySocialPreview() {
+  const indexPath = path.join(dist, 'index.html');
+  if (!fs.existsSync(indexPath)) return;
+
+  const html = fs.readFileSync(indexPath, 'utf8');
+  const ogImage = metaContent(html, 'property', 'og:image');
+  const secureImage = metaContent(html, 'property', 'og:image:secure_url');
+  const twitterImage = metaContent(html, 'name', 'twitter:image');
+  const imageType = metaContent(html, 'property', 'og:image:type');
+  const imageWidth = Number(metaContent(html, 'property', 'og:image:width'));
+  const imageHeight = Number(metaContent(html, 'property', 'og:image:height'));
+  const imageAlt = metaContent(html, 'property', 'og:image:alt');
+  const twitterAlt = metaContent(html, 'name', 'twitter:image:alt');
+
+  check(Boolean(ogImage), 'Open Graph preview image is missing.');
+  check(secureImage === ogImage, 'Open Graph secure preview URL does not match og:image.');
+  check(twitterImage === ogImage, 'Twitter and Open Graph preview URLs do not match.');
+  check(imageType === 'image/jpeg', 'Preview image must declare image/jpeg.');
+  check(Boolean(imageAlt), 'Open Graph preview alt text is missing.');
+  check(twitterAlt === imageAlt, 'Twitter and Open Graph preview alt text do not match.');
+  if (!ogImage) return;
+
+  let imageUrl;
+  try {
+    imageUrl = new URL(ogImage);
+    check(imageUrl.protocol === 'https:', 'Preview image URL must use HTTPS.');
+    check(imageUrl.hostname === 'mihirbellamkonda.com', 'Preview image URL must use the canonical hostname.');
+  } catch {
+    failures.push('Preview image URL is invalid.');
+    return;
+  }
+
+  const publicRoot = path.resolve(root, 'public');
+  let imagePath;
+  try {
+    imagePath = path.resolve(publicRoot, `.${decodeURIComponent(imageUrl.pathname)}`);
+  } catch {
+    failures.push('Preview image path contains invalid URL encoding.');
+    return;
+  }
+  check(imagePath.startsWith(`${publicRoot}${path.sep}`), 'Preview image resolves outside public/.');
+  check(fs.existsSync(imagePath), `Preview image ${imageUrl.pathname} is missing.`);
+  if (!imagePath.startsWith(`${publicRoot}${path.sep}`) || !fs.existsSync(imagePath)) return;
+
+  const image = fs.readFileSync(imagePath);
+  const hasEndMarker = image.length >= 2
+    && image[image.length - 2] === 0xff
+    && image[image.length - 1] === 0xd9;
+  const dimensions = jpegDimensions(image);
+
+  check(image.length <= 500 * 1024, `Preview image is ${image.length} bytes; keep it below 500 KB.`);
+  check(hasEndMarker, 'Preview JPEG is truncated or missing its end marker.');
+  check(Boolean(dimensions), 'Preview image is not a readable JPEG.');
+  if (!dimensions) return;
+
+  check(dimensions.width >= 1200 && dimensions.height >= 630, 'Preview image dimensions are too small.');
+  check(imageWidth === dimensions.width, 'Declared preview width does not match the image.');
+  check(imageHeight === dimensions.height, 'Declared preview height does not match the image.');
+}
+
 check(poems.length > 0, 'No poems were generated.');
 check(fs.existsSync(path.join(dist, 'index.html')), 'The production index is missing.');
+verifySocialPreview();
 
 const paths = new Set();
 const titles = new Set();
@@ -104,4 +212,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`Verified ${poems.length} poems, specimen words, static reading copies, metadata, URLs, and signatures.`);
+console.log(`Verified ${poems.length} poems, social preview, static reading copies, metadata, URLs, and signatures.`);

@@ -439,6 +439,19 @@ h3 {
   color: var(--a-ink-2);
 }
 
+.static-home-group + .static-home-group {
+  margin-top: 3rem;
+}
+
+.static-home-group h3 {
+  margin-bottom: 0.8rem;
+  font-family: var(--f-cat);
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  color: var(--a-faint);
+}
+
 .static-home-index ol {
   list-style: none;
 }

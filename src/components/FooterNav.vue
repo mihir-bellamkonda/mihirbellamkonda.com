@@ -7,13 +7,13 @@
       </span>
 
       <span class="slot mid">
-        <a v-if="position" href="/#index">{{ position }} — index</a>
-        <a v-else href="/#index">index</a>
+        <a v-if="position" href="/#index">{{ position }} — all poems</a>
+        <a v-else href="/#index">poems</a>
       </span>
 
       <span class="slot end">
         <a v-if="next" :href="next.url" @click="follow($event, next.slug)">{{ short(next.title) }} →</a>
-        <a v-else href="/#index">read →</a>
+        <a v-else href="/#index">read poems →</a>
       </span>
     </nav>
   </footer>

@@ -2,11 +2,11 @@
   <div class="poem-plate" v-if="poem">
     <div class="chrome">
       <a href="/">mihir bellamkonda</a>
-      <a href="/#index">index</a>
+      <a href="/#index">poems</a>
     </div>
 
     <main class="grid" id="main" tabindex="-1">
-      <div class="col-margin">
+      <div class="margin-meta">
         <div class="num">{{ pad(index) }} / {{ pad(total) }}</div>
         <h1 data-page-heading tabindex="-1">{{ poem.title }}</h1>
         <p v-if="poem.subtitle" class="dedication">{{ poem.subtitle }}</p>
@@ -46,8 +46,8 @@
         <SpecimenVocabulary :poem="poem" />
 
         <div class="tools">
-          <button type="button" class="copy" @click="copyLink">
-            {{ copied ? 'link copied' : 'copy link' }}
+          <button type="button" class="copy" @click="sharePoem">
+            {{ copied ? 'link copied' : 'share poem' }}
           </button>
           <span class="sr-only" role="status" aria-live="polite">{{ copied ? 'Link copied' : '' }}</span>
         </div>
@@ -87,6 +87,9 @@
           <kbd>&#8592;</kbd><kbd>&#8594;</kbd> to move between poems
         </p>
 
+      </div>
+
+      <div class="study">
         <SpecimenCollage
           v-if="ghost && hasSpecimen"
           class="specimen-ghost"
@@ -192,12 +195,26 @@ function formatTime(seconds) {
 }
 
 /**
- * Copy this poem's canonical URL. Every poem has had a real shareable
- * address since the static pages landed; nothing on the page invited
- * anyone to take it.
+ * Open the native share sheet on touch devices; copy the canonical URL
+ * everywhere else. Every poem has a real shareable address and card.
  */
-async function copyLink() {
+async function sharePoem() {
   const url = window.location.origin + props.poem.url;
+  const shareData = {
+    title: `${props.poem.title} — Mihir Bellamkonda`,
+    text: `“${props.poem.title},” a poem by Mihir Bellamkonda.`,
+    url
+  };
+
+  if (window.matchMedia('(pointer: coarse)').matches && navigator.share) {
+    try {
+      await navigator.share(shareData);
+      return;
+    } catch (error) {
+      if (error?.name === 'AbortError') return;
+    }
+  }
+
   try {
     await navigator.clipboard.writeText(url);
   } catch (e) {
@@ -277,11 +294,16 @@ const stanzas = computed(() => {
   padding: clamp(5rem, 17vh, 10rem) clamp(1.25rem, 5vw, 4.5rem) 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  grid-template-areas:
+    'meta verse'
+    'study verse';
+  grid-template-rows: auto 1fr;
   gap: 0 clamp(2rem, 7vw, 7rem);
   align-items: start;
 }
 
-.col-margin {
+.margin-meta {
+  grid-area: meta;
   display: flex;
   flex-direction: column;
   gap: 1.4rem;
@@ -295,7 +317,7 @@ const stanzas = computed(() => {
   font-variant-numeric: tabular-nums;
 }
 
-.col-margin h1 {
+.margin-meta h1 {
   font-family: var(--f-display);
   font-weight: 300;
   font-size: clamp(2.3rem, 5.6vw, 3.7rem);
@@ -451,7 +473,12 @@ const stanzas = computed(() => {
   margin-top: 0.4rem;
 }
 
+.study {
+  grid-area: study;
+}
+
 .verse {
+  grid-area: verse;
   font-size: clamp(1.02rem, 1.45vw, 1.13rem);
   line-height: 1.78;
   max-width: 40rem;
@@ -498,6 +525,10 @@ const stanzas = computed(() => {
 
   .grid {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      'meta'
+      'verse'
+      'study';
     gap: 2.6rem;
     padding-top: clamp(4rem, 14vh, 7rem);
   }
@@ -512,17 +543,18 @@ const stanzas = computed(() => {
 }
 
 @media print {
-  .chrome, .tools, .hint, .reading, .ghost, .specimen-ghost { display: none; }
+  .chrome, .tools, .hint, .reading, .study { display: none; }
   .poem-plate { min-height: 0; }
   .grid {
     display: grid;
     grid-template-columns: minmax(1.3in, 0.42fr) minmax(0, 1fr);
+    grid-template-areas: 'meta verse';
     gap: 0 0.42in;
     max-width: none;
     padding: 0;
   }
-  .col-margin { gap: 0.16in; }
-  .col-margin h1 { font-size: 28pt; }
+  .margin-meta { gap: 0.16in; }
+  .margin-meta h1 { font-size: 28pt; }
   .dedication { font-size: 10pt; }
   .verse { max-width: none; font-size: 10.5pt; line-height: 1.48; }
   .stanza { margin-bottom: 1em; break-inside: avoid; }

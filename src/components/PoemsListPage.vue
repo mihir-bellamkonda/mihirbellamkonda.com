@@ -13,7 +13,8 @@
       <div class="index-stage">
       <main class="rows" id="main" tabindex="-1">
         <template v-for="(poem, i) in poems" :key="poem.slug">
-          <p v-if="startsYear(i)" class="year-mark" aria-hidden="true">{{ yearOf(poem) }}</p>
+          <h2 v-if="i === 0" class="section-mark">selected</h2>
+          <h2 v-else-if="i === 4" class="section-mark">archive</h2>
 
           <!-- Not a single <a> any more: the venue is its own link, and an
                anchor cannot legally contain another. The poem link is
@@ -62,21 +63,23 @@
 
             <!-- The poet's own line, unaltered, in the reading face. It is a
                  way in, not a caption. -->
-            <span
-              class="firstline"
-              :id="`excerpt-${i}`"
-              :aria-hidden="openSlug === poem.slug ? undefined : 'true'"
-              v-html="firstLine(poem)"
-            ></span>
+            <span class="preview">
+              <span
+                class="firstline"
+                :id="`excerpt-${i}`"
+                :aria-hidden="openSlug === poem.slug ? undefined : 'true'"
+                v-html="firstLine(poem)"
+              ></span>
 
-            <AsemicMarks
-              :ref="el => rememberSignature(poem.slug, el)"
-              class="sig"
-              :text="poem.content"
-              :seed="poem.slug + '::sig'"
-              :max-lines="1"
-              instant
-            />
+              <AsemicMarks
+                :ref="el => rememberSignature(poem.slug, el)"
+                class="sig"
+                :text="poem.content"
+                :seed="poem.slug + '::sig'"
+                :max-lines="1"
+                instant
+              />
+            </span>
           </div>
         </template>
       </main>
@@ -197,13 +200,6 @@ function yearOf(poem) {
   if (!poem.date) return '';
   const m = String(poem.date).match(/\d{4}/);
   return m ? m[0] : '';
-}
-
-// A year is marked where it first differs from the row above it.
-function startsYear(i) {
-  const y = yearOf(props.poems[i]);
-  if (!y) return false;
-  return i === 0 || yearOf(props.poems[i - 1]) !== y;
 }
 
 // stanzas[0][0] is already a complete HTML fragment from build-poems.js,
@@ -341,15 +337,16 @@ function firstLine(poem) {
   z-index: 1;
 }
 
-/* A year, set once where it changes. */
-.year-mark {
+/* The opening group is deliberately selected; the remainder is the archive.
+   Naming that choice keeps the non-chronological order from looking accidental. */
+.section-mark {
   margin: 0;
   padding: clamp(1.6rem, 3.5vw, 2.4rem) 0 0.55rem;
   font-family: var(--f-cat);
+  font-weight: 400;
   font-size: 0.58rem;
   letter-spacing: 0.22em;
   color: var(--a-faint);
-  font-variant-numeric: tabular-nums;
 }
 
 .no {
@@ -436,31 +433,47 @@ function firstLine(poem) {
   font-size: 0.85em;
 }
 
-/* The poet's first line, in the reading face, revealed on approach. It is
-   set exactly as the poem sets it — no emphasis added, none removed. */
-.firstline {
+/* Signature and excerpt share one reserved line, so browsing never makes the
+   rows jump under the pointer. */
+.preview {
   grid-column: 2 / 3;
+  position: relative;
+  display: block;
+  height: 2.1rem;
+  margin-top: 0.5rem;
+}
+
+.firstline {
+  position: absolute;
+  inset: 0;
+  display: block;
   font-family: var(--f-verse);
   font-weight: 300;
   font-size: 0.94rem;
   line-height: 1.6;
   color: var(--a-ink-2);
-  max-height: 0;
   opacity: 0;
   overflow: hidden;
-  transition: max-height 0.28s ease, opacity 0.28s ease, margin-top 0.28s ease;
+  white-space: normal;
+  transition: opacity 0.24s ease;
 }
 
 .row:hover .firstline,
 .row:focus-within .firstline,
 .row.peek-open .firstline {
-  max-height: 4rem;
   opacity: 1;
-  margin-top: 0.55rem;
 }
 
 @media (hover: none) {
   .peek { display: inline-block; }
+
+  .index-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .folio-field {
+    display: none;
+  }
 }
 
 .row:hover .title,
@@ -471,12 +484,18 @@ function firstLine(poem) {
   outline-offset: 4px;
 }
 
-/* One illegible line of the poem itself, so every row is distinguishable
-   at a glance without a thumbnail. */
 .sig {
-  grid-column: 2 / 3;
+  position: absolute;
+  inset: 0;
+  width: 100%;
   height: 26px;
-  margin-top: 0.5rem;
+  transition: opacity 0.24s ease;
+}
+
+.row:hover .sig,
+.row:focus-within .sig,
+.row.peek-open .sig {
+  opacity: 0;
 }
 
 .rest {
@@ -509,11 +528,7 @@ function firstLine(poem) {
   }
 
   .folio-field {
-    position: relative;
-    top: auto;
-    order: -1;
-    height: clamp(23rem, 72vw, 31rem);
-    margin-bottom: 1.5rem;
+    display: none;
   }
 
   .row {

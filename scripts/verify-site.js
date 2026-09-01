@@ -161,6 +161,9 @@ const rootHtml = fs.existsSync(path.join(dist, 'index.html'))
   : '';
 check(rootHtml.includes('class="static-home"'), 'Homepage no-JavaScript reading copy is missing.');
 check(rootHtml.includes('class="static-home-index"'), 'Homepage no-JavaScript poem index is missing.');
+check(rootHtml.includes('<h3>selected</h3>'), 'Homepage selected-poems group is missing.');
+check(rootHtml.includes('<h3>archive</h3>'), 'Homepage poem archive group is missing.');
+check(rootHtml.includes('read poems →'), 'Homepage reading call to action is unclear.');
 check(/<script\b[^>]*type="application\/ld\+json"/i.test(rootHtml), 'Homepage structured data is missing.');
 check(rootHtml.includes('"@type":"Person"'), 'Homepage Person structured data is missing.');
 check(rootHtml.includes('"@type":"WebSite"'), 'Homepage WebSite structured data is missing.');

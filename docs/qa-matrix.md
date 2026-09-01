@@ -25,13 +25,13 @@ magazines are occasionally offline or hostile to robots without being dead.
 
 | Environment | Viewport or assistive mode | Essential checks |
 | --- | --- | --- |
-| iPhone Safari | Current iOS, portrait and landscape | Open index excerpts; follow poem and venue links; copy link; play audio |
+| iPhone Safari | Current iOS, portrait and landscape | Open poem excerpts; follow poem and venue links; native share sheet; verse before visual study; play audio |
 | iPhone Safari + VoiceOver | Current iOS | Skip link; page-title announcement; index order; player labels; previous/next navigation |
 | Android Chrome | Current Android, portrait | Excerpt control; wrapping; touch targets; audio playback |
 | Android Chrome + TalkBack | Current Android | Reading order; control names; expanded excerpt state |
 | macOS Safari | Current release | Typography, keyboard navigation, print preview |
 | macOS Safari + VoiceOver | Current release | Route changes announced; poem lines read in order; player status |
-| Desktop Chrome | 1280px and 200% zoom | No horizontal scrolling; focus visibility; copy link; arrow keys |
+| Desktop Chrome | 1280px and 200% zoom | No horizontal scrolling; stable preview rows; focus visibility; copied share link; arrow keys |
 | Desktop Firefox | 1280px | Layout, external links, print preview |
 | Reduced motion | System setting enabled | Signatures appear without animation; no essential state depends on motion |
 | Print preview | Letter and A4 | One clean reading edition; no navigation, controls, or asemic marks |

@@ -143,7 +143,11 @@ belongs to which poem — one photograph each, and six drawn marks shared across
 the fifteen, so the folio stays one thing rather than fifteen decorations. Moving the pointer shifts the layers and
 their crops; pressing parts them, the way paper comes apart in the hand.
 Hovering or focusing an index title returns that poem's title to the collage as
-a small found label at the lower right.
+a small found label at the lower right. On the index the collage is also a link
+to that poem — `tabindex="-1"` inside the aria-hidden aside, because it repeats
+the row's own link and should not be announced or tabbed to twice. A press that
+lingers past 400ms or travels more than 8px is the layer-separating gesture, not
+a click, and does not navigate.
 
 - The imagery must **recede**. Large calm tonal areas, few edges, nothing
   captioned or labelled, nothing that reads as a second headline. Fragments end

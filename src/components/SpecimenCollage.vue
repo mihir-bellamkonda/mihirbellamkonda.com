@@ -12,7 +12,7 @@
     ]"
     :data-specimen="study?.kind || 'asemic'"
     :data-poem="poem.path"
-    :data-composition="settings.composition"
+    :data-composition="composition"
     aria-hidden="true"
     @pointermove="handlePointer"
     @pointerdown="beginHandling"
@@ -71,7 +71,10 @@
 import { computed, ref } from 'vue';
 import AsemicMarks from './AsemicMarks.vue';
 import { specimenWordsFor } from '../specimen-vocabulary.js';
-import { prototypeSettings as settings } from '../prototype-settings.js';
+
+// The published crop. The folio rules in the stylesheet are kept intact, so
+// the other composition is one word away.
+const composition = 'cutup';
 
 const props = defineProps({
   poem: { type: Object, required: true },
@@ -117,8 +120,7 @@ const largeMarkSize = computed(() => {
 });
 
 function respondsToHandling() {
-  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  return document.documentElement.dataset.prototypeMotion === 'responsive' && !reduced;
+  return !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 }
 
 function handlePointer(event) {

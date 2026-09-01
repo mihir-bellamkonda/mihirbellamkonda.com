@@ -235,9 +235,8 @@
   /* asemic inks, as rgb triples for canvas */
   --i-mark:  35, 33, 28;
   --i-green: 26, 74, 52;
-  --i-olive: 116, 110, 62;
-  --i-blue:  74, 88, 110;
-  --i-arc:   122, 110, 66;
+  --i-rust:  112, 49, 36;
+  --i-navy:  48, 48, 87;
 
   --f-display: 'Cormorant Garamond', 'Hoefler Text', Garamond, Georgia, serif;
   --f-verse:   'Spectral', 'Iowan Old Style', Georgia, serif;
@@ -270,9 +269,8 @@
 
     --i-mark:  230, 226, 214;
     --i-green: 122, 176, 142;
-    --i-olive: 176, 168, 110;
-    --i-blue:  140, 158, 185;
-    --i-arc:   168, 155, 96;
+    --i-rust:  184, 103, 78;
+    --i-navy:  130, 130, 177;
   }
 }
 
@@ -294,9 +292,8 @@
 
   --i-mark:  230, 226, 214;
   --i-green: 122, 176, 142;
-  --i-olive: 176, 168, 110;
-  --i-blue:  140, 158, 185;
-  --i-arc:   168, 155, 96;
+  --i-rust:  184, 103, 78;
+  --i-navy:  130, 130, 177;
 }
 
 /* ---------------- reset ---------------- */

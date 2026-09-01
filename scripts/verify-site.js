@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { ghost, rngFor } from '../src/asemic.js';
+import { normalizeWords, specimenVocabulary } from '../src/specimen-vocabulary.js';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const poems = JSON.parse(fs.readFileSync(path.join(root, 'src/poems.json'), 'utf8'));
@@ -55,6 +56,20 @@ for (const poem of poems) {
   const second = ghost(poem.content, { ...signatureOptions, rng: rngFor(`${poem.slug}::verify`) });
   check(JSON.stringify(first) === JSON.stringify(second), `${poem.slug}: signature is not deterministic.`);
 
+  const bodyWords = new Set(normalizeWords(poem.content));
+  const titleWords = new Set(normalizeWords(poem.title));
+  const specimenWords = specimenVocabulary[poem.path];
+  check(Boolean(specimenWords), `${poem.slug}: specimen vocabulary is missing.`);
+  if (specimenWords) {
+    check(specimenWords.length === 4, `${poem.slug}: specimen vocabulary must contain four words.`);
+    check(new Set(specimenWords).size === specimenWords.length, `${poem.slug}: specimen vocabulary repeats a word.`);
+    for (const word of specimenWords) {
+      const normalized = normalizeWords(word)[0];
+      check(bodyWords.has(normalized), `${poem.slug}: specimen word “${word}” is absent from the poem body.`);
+      check(!titleWords.has(normalized), `${poem.slug}: specimen word “${word}” also occurs in the title.`);
+    }
+  }
+
   const pagePath = path.join(dist, 'poem', poem.path, 'index.html');
   check(fs.existsSync(pagePath), `${poem.slug}: static poem page is missing.`);
   if (!fs.existsSync(pagePath)) continue;
@@ -83,4 +98,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`Verified ${poems.length} poems, static reading copies, metadata, URLs, and signatures.`);
+console.log(`Verified ${poems.length} poems, specimen words, static reading copies, metadata, URLs, and signatures.`);

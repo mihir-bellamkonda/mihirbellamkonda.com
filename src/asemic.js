@@ -19,7 +19,8 @@ const ASCENDERS = new Set('lhkbdtf');
 const DESCENDERS = new Set('gypjq');
 const BOWLS = new Set('aoec');
 const HUMPS = new Set('nmuw');
-const ACCENT_INKS = ['green', 'olive', 'blue', 'arc'];
+// Green recurs like an annotation; rust and navy are uncommon interruptions.
+const ACCENT_INKS = ['green', 'green', 'green', 'green', 'green', 'rust', 'navy'];
 
 /** Deterministic PRNG seeded from a string. */
 export function rngFor(seed) {
@@ -303,7 +304,7 @@ export function ghost(text, opts) {
       phraseRemaining--;
       return phraseInk;
     }
-    if (R() < 0.075) {
+    if (R() < 0.12) {
       phraseInk = ACCENT_INKS[Math.floor(R() * ACCENT_INKS.length)];
       phraseRemaining = R() < 0.28 ? 1 : 0;
       return phraseInk;
@@ -401,9 +402,8 @@ export function palette() {
   return {
     mark: v('--i-mark', '35,33,28'),
     green: v('--i-green', '26,74,52'),
-    olive: v('--i-olive', '116,110,62'),
-    blue: v('--i-blue', '74,88,110'),
-    arc: v('--i-arc', '122,110,66')
+    rust: v('--i-rust', '112,49,36'),
+    navy: v('--i-navy', '48,48,87')
   };
 }
 

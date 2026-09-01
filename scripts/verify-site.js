@@ -120,9 +120,50 @@ function verifySocialPreview() {
   check(imageHeight === dimensions.height, 'Declared preview height does not match the image.');
 }
 
+function verifyPoemSocialPreview(poem, page) {
+  const expectedUrl = `https://mihirbellamkonda.com/social/poems/${poem.path}.jpg`;
+  const ogImage = metaContent(page, 'property', 'og:image');
+  const imageAlt = metaContent(page, 'property', 'og:image:alt');
+
+  check(ogImage === expectedUrl, `${poem.slug}: Open Graph image does not use its poem card.`);
+  check(metaContent(page, 'property', 'og:image:secure_url') === expectedUrl, `${poem.slug}: secure Open Graph image does not match.`);
+  check(metaContent(page, 'name', 'twitter:image') === expectedUrl, `${poem.slug}: Twitter image does not match its poem card.`);
+  check(metaContent(page, 'property', 'og:image:type') === 'image/jpeg', `${poem.slug}: poem card must declare image/jpeg.`);
+  check(Number(metaContent(page, 'property', 'og:image:width')) === 1200, `${poem.slug}: poem card width must be 1200.`);
+  check(Number(metaContent(page, 'property', 'og:image:height')) === 630, `${poem.slug}: poem card height must be 630.`);
+  check(Boolean(imageAlt), `${poem.slug}: poem card alt text is missing.`);
+  check(metaContent(page, 'name', 'twitter:image:alt') === imageAlt, `${poem.slug}: poem card alt text differs between metadata formats.`);
+
+  const cardPath = path.join(root, 'public', 'social', 'poems', `${poem.path}.jpg`);
+  check(fs.existsSync(cardPath), `${poem.slug}: generated poem card is missing.`);
+  if (!fs.existsSync(cardPath)) return;
+
+  const card = fs.readFileSync(cardPath);
+  const dimensions = jpegDimensions(card);
+  const hasEndMarker = card.length >= 2
+    && card[card.length - 2] === 0xff
+    && card[card.length - 1] === 0xd9;
+
+  check(card.length <= 250 * 1024, `${poem.slug}: poem card is ${card.length} bytes; keep it below 250 KB.`);
+  check(hasEndMarker, `${poem.slug}: poem card is truncated or missing its end marker.`);
+  check(Boolean(dimensions), `${poem.slug}: poem card is not a readable JPEG.`);
+  if (dimensions) {
+    check(dimensions.width === 1200 && dimensions.height === 630, `${poem.slug}: poem card is not 1200 × 630.`);
+  }
+}
+
 check(poems.length > 0, 'No poems were generated.');
 check(fs.existsSync(path.join(dist, 'index.html')), 'The production index is missing.');
 verifySocialPreview();
+
+const rootHtml = fs.existsSync(path.join(dist, 'index.html'))
+  ? fs.readFileSync(path.join(dist, 'index.html'), 'utf8')
+  : '';
+check(rootHtml.includes('class="static-home"'), 'Homepage no-JavaScript reading copy is missing.');
+check(rootHtml.includes('class="static-home-index"'), 'Homepage no-JavaScript poem index is missing.');
+check(/<script\b[^>]*type="application\/ld\+json"/i.test(rootHtml), 'Homepage structured data is missing.');
+check(rootHtml.includes('"@type":"Person"'), 'Homepage Person structured data is missing.');
+check(rootHtml.includes('"@type":"WebSite"'), 'Homepage WebSite structured data is missing.');
 
 const paths = new Set();
 const titles = new Set();
@@ -189,12 +230,13 @@ for (const poem of poems) {
   if (!fs.existsSync(pagePath)) continue;
 
   const page = fs.readFileSync(pagePath, 'utf8');
-  check(page.includes('<script type="application/ld+json">'), `${poem.slug}: structured data is missing.`);
+  check(/<script\b[^>]*type="application\/ld\+json"/i.test(page), `${poem.slug}: structured data is missing.`);
   check(page.includes('https://schema.org'), `${poem.slug}: schema context is missing.`);
   check(page.includes('<noscript>'), `${poem.slug}: no-JavaScript reading copy is missing.`);
   check(page.includes('class="static-verse"'), `${poem.slug}: static verse is missing.`);
   check(page.includes(`<h1>${poem.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</h1>`), `${poem.slug}: static title does not match.`);
   check(page.includes(`https://mihirbellamkonda.com${poem.url}`), `${poem.slug}: canonical URL is missing.`);
+  verifyPoemSocialPreview(poem, page);
 }
 
 const sitemapPath = path.join(dist, 'sitemap.xml');
@@ -206,10 +248,18 @@ if (fs.existsSync(sitemapPath)) {
   }
 }
 
+
+const robotsPath = path.join(dist, 'robots.txt');
+check(fs.existsSync(robotsPath), 'robots.txt is missing.');
+if (fs.existsSync(robotsPath)) {
+  const robots = fs.readFileSync(robotsPath, 'utf8');
+  check(robots.includes('Sitemap: https://mihirbellamkonda.com/sitemap.xml'), 'robots.txt does not point to the sitemap.');
+}
+
 if (failures.length) {
   console.error(`Site verification failed (${failures.length}):`);
   failures.forEach(message => console.error(`- ${message}`));
   process.exit(1);
 }
 
-console.log(`Verified ${poems.length} poems, social preview, static reading copies, metadata, URLs, and signatures.`);
+console.log(`Verified ${poems.length} poems, social previews, static reading copies, metadata, URLs, and signatures.`);

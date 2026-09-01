@@ -23,8 +23,8 @@
             class="row"
             :class="{ 'peek-open': openSlug === poem.slug }"
             @mouseenter="approach(poem)"
-            @focusin="approach(poem)"
-            @pointerdown="approach(poem)"
+            @focusin="approach(poem, true)"
+            @pointerdown="approach(poem, true)"
           >
             <span class="no">{{ pad(i + 1) }}</span>
 
@@ -115,7 +115,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onUnmounted } from 'vue';
 import FooterNav from './FooterNav.vue';
 import AsemicMarks from './AsemicMarks.vue';
 import SpecimenCollage from './SpecimenCollage.vue';
@@ -131,6 +131,7 @@ const activePoem = ref(
 );
 const signatureRefs = new Map();
 const approached = new Set();
+let approachTimer = null;
 
 function toggleExcerpt(slug) {
   openSlug.value = openSlug.value === slug ? '' : slug;
@@ -141,13 +142,24 @@ function rememberSignature(slug, instance) {
   else signatureRefs.delete(slug);
 }
 
-function approach(poem) {
-  activePoem.value = poem;
+function approach(poem, immediate = false) {
+  clearTimeout(approachTimer);
+
+  const show = () => {
+    activePoem.value = poem;
+    approachTimer = null;
+  };
+
+  if (immediate) show();
+  else approachTimer = setTimeout(show, 80);
+
   const slug = poem.slug;
   if (approached.has(slug)) return;
   approached.add(slug);
   signatureRefs.get(slug)?.replay?.();
 }
+
+onUnmounted(() => clearTimeout(approachTimer));
 
 // Handling the collage — moving in it, pressing to separate the layers — must
 // not count as a click. A press that lingers or travels is the gesture; a

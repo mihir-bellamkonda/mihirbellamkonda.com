@@ -25,6 +25,12 @@ function setMeta(html, selector, value) {
 
 const jsonForHtml = (value) => JSON.stringify(value).replace(/</g, '\\u003c');
 
+function setStructuredData(html, value) {
+  const pattern = /(<script\s+id="structured-data"\s+type="application\/ld\+json">)[\s\S]*?(<\/script>)/i;
+  if (!pattern.test(html)) throw new Error('Missing structured-data template script.');
+  return html.replace(pattern, `$1${jsonForHtml(value)}$2`);
+}
+
 function structuredData(poem, canonical) {
   const personId = 'https://mihirbellamkonda.com/#mihir-bellamkonda';
   const work = {
@@ -102,6 +108,39 @@ function staticPoem(poem, index, total) {
   </noscript>`;
 }
 
+function staticHome(poems) {
+  const rows = poems.map((poem, index) => {
+    const year = String(poem.date || '').match(/\d{4}/)?.[0] || '';
+    const venue = poem.published_in || (poem.unpublished ? 'unpublished' : '');
+    return `<li>
+      <span class="static-home-number">${String(index + 1).padStart(2, '0')}</span>
+      <a href="${escapeHtml(poem.url)}">${escapeHtml(poem.title)}</a>
+      <span class="static-home-venue">${escapeHtml([venue, year].filter(Boolean).join(', '))}</span>
+    </li>`;
+  }).join('');
+
+  return `<noscript>
+    <div class="static-home">
+      <nav class="static-chrome" aria-label="Site">
+        <span>mihirbellamkonda.com</span>
+        <a href="#static-index">index</a>
+      </nav>
+      <main id="main">
+        <section class="static-home-about">
+          <h1>Mihir Bellamkonda</h1>
+          <p>Mihir Bellamkonda is a poet based in Brooklyn. They were a finalist for Black Lawrence Press's St. Lawrence Book Award, and their work appears in Oxford Poetry, Nashville Review, The Offing, Variant Literature, and elsewhere.</p>
+          <p>They can be found on <a href="https://x.com/MihirWords">X</a> and <a href="https://www.instagram.com/mihirwords/">Instagram</a> as @MihirWords, or reached by <a href="mailto:mihir.bellamkonda@gmail.com">email</a>. They are honored to be read.</p>
+          <p class="static-home-enter"><a href="#static-index">read →</a></p>
+        </section>
+        <section class="static-home-index" id="static-index">
+          <h2>Poems</h2>
+          <ol>${rows}</ol>
+        </section>
+      </main>
+    </div>
+  </noscript>`;
+}
+
 for (const [index, poem] of poems.entries()) {
   const year = String(poem.date || '').match(/\d{4}/)?.[0] || '';
   const venue = poem.published_in
@@ -110,22 +149,29 @@ for (const [index, poem] of poems.entries()) {
   const title = `${poem.title} — Mihir Bellamkonda`;
   const description = `“${poem.title},” a poem by Mihir Bellamkonda.${venue}`;
   const canonical = `https://mihirbellamkonda.com${poem.url}`;
+  const socialImage = `https://mihirbellamkonda.com/social/poems/${poem.path}.jpg`;
+  const socialAlt = `Share card for “${poem.title},” a poem by Mihir Bellamkonda.`;
 
   let html = template.replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(title)}</title>`);
+  html = setStructuredData(html, structuredData(poem, canonical));
   html = setMeta(html, 'name="description"', description);
   html = setMeta(html, 'property="og:type"', 'article');
   html = setMeta(html, 'property="og:title"', title);
   html = setMeta(html, 'property="og:description"', description);
   html = setMeta(html, 'property="og:url"', canonical);
+  html = setMeta(html, 'property="og:image"', socialImage);
+  html = setMeta(html, 'property="og:image:secure_url"', socialImage);
+  html = setMeta(html, 'property="og:image:type"', 'image/jpeg');
+  html = setMeta(html, 'property="og:image:width"', '1200');
+  html = setMeta(html, 'property="og:image:height"', '630');
+  html = setMeta(html, 'property="og:image:alt"', socialAlt);
   html = setMeta(html, 'name="twitter:title"', title);
   html = setMeta(html, 'name="twitter:description"', description);
+  html = setMeta(html, 'name="twitter:image"', socialImage);
+  html = setMeta(html, 'name="twitter:image:alt"', socialAlt);
   html = html.replace(
     /<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i,
     `<link rel="canonical" href="${escapeHtml(canonical)}">`
-  );
-  html = html.replace(
-    '</head>',
-    `  <script type="application/ld+json">${jsonForHtml(structuredData(poem, canonical))}</script>\n</head>`
   );
   html = html.replace(
     '<div id="app"></div>',
@@ -136,6 +182,9 @@ for (const [index, poem] of poems.entries()) {
   fs.mkdirSync(pageDir, { recursive: true });
   fs.writeFileSync(path.join(pageDir, 'index.html'), html);
 }
+
+const home = template.replace('<div id="app"></div>', `${staticHome(poems)}\n  <div id="app"></div>`);
+fs.writeFileSync(path.join(dist, 'index.html'), home);
 
 const urls = [
   'https://mihirbellamkonda.com/',

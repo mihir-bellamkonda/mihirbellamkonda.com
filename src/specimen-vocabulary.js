@@ -28,7 +28,13 @@ export const specimenVocabulary = {
   'circling-figures': ['loop-de-loop', 'signs', 'pigeon', 'beginning'],
   'the-horse': ['domesticity', 'rennet', 'marrow', 'distance'],
   brahmanda: ['egg', 'thyme', 'stars', 'oil'],
-  'a-quiet-family': ['taxonomies', 'basalt', 'quartz', 'shale']
+  'a-quiet-family': ['taxonomies', 'basalt', 'quartz', 'shale'],
+  'old-man-at-dinner': ['forgiveness', 'violet', 'chamomile', 'apron'],
+  'the-carpenter': ['seashells', 'wood', 'evening', 'hands'],
+  'the-economy': ['roadkill', 'basement', 'boot', 'commute'],
+  epiphany: ['afterimages', 'mirror', 'stars', 'kitchen'],
+  'love-outside-poems': ['wax', 'fox', 'plates', 'lobe'],
+  'musician-s-daughter': ['tuba', 'brass', 'glee', 'grace']
 };
 
 export function normalizeWords(value) {

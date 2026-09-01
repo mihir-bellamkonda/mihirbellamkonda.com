@@ -27,6 +27,12 @@ for (const poem of poems) {
   paths.add(poem.path);
   titles.add(poem.title);
 
+  if (poem.unpublished) {
+    check(!poem.published_in, `${poem.slug}: marked unpublished but names a venue.`);
+    check(!poem.external_url, `${poem.slug}: marked unpublished but carries a venue URL.`);
+    check(Boolean(poem.date), `${poem.slug}: unpublished poems still need a date for the year.`);
+  }
+
   if (poem.external_url) {
     try {
       const url = new URL(poem.external_url);

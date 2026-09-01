@@ -12,7 +12,12 @@
         <p v-if="poem.subtitle" class="dedication">{{ poem.subtitle }}</p>
 
         <div class="provenance">
-          <template v-if="poem.published_in">
+          <template v-if="poem.unpublished">
+            <span class="k">unpublished</span>
+            <span v-if="year">{{ year }}</span>
+          </template>
+
+          <template v-else-if="poem.published_in">
             <span class="k">first published</span>
             <a
               v-if="poem.external_url"
@@ -459,6 +464,13 @@ const stanzas = computed(() => {
 
 .stanza:last-child {
   margin-bottom: 0;
+}
+
+/* A section header the poet marked himself. Spectral is self-hosted at 200,
+   300 and 400 only, so 400 against the 300 body is a real weight rather than
+   the browser synthesising a bold it does not have. */
+.verse :deep(strong) {
+  font-weight: 400;
 }
 
 /* Each line is its own block with a hanging indent, so a wrap is visibly a

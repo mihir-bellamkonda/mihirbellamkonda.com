@@ -5,7 +5,7 @@ published_in: "the museum of americana"
 external_url: "https://themuseumofamericana.net/2024/01/23/americana-stories-poetry-37/"
 ---
 
-1. River
+**1. River**
 What a noise you make;
 I do not wonder you hide in your slouching city
 from the solemn and vanishing stars.
@@ -27,7 +27,7 @@ In truth, I have adopted you for my purpose.
 Only remember I have capacity enough for the ocean;
 your breath would fit within my shallowest reach.
 
-2. Player
+**2. Player**
 I wanted oblivion in my youth,
 wanted her as my friends wanted her:
 without understanding what flat eyes meant across the bar.
@@ -67,7 +67,7 @@ new chords for old songs.
 I wish for all a half-death, the body
 neither vanished nor tangible.
 
-3. Bottle
+**3. Bottle**
 Of course I have wanted to kill,
 and tasted like it. Of course I have wanted to love,
 

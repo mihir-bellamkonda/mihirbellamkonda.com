@@ -7,17 +7,25 @@ Guidance for Claude Code working in this repository.
 The poetry site of **Mihir Bellamkonda** (pronouns **they/he**; his published bios
 use "they"). Live at **https://mihirbellamkonda.com**.
 
-It is a **publication record** — a numbered index of published poems with venue and
-year, not a themed collection. Vue 3 SPA, Vite, real URLs at `/poem/<title>/` with
+It is a **record**, not a themed collection: a numbered index of poems with venue
+and year. Most are published; six are not, and say so where a venue would go. Vue 3 SPA, Vite, real URLs at `/poem/<title>/` with
 legacy `#poem/<slug>` links still honoured, markdown poems compiled to JSON at build
 time, deployed to GitHub Pages by GitHub Actions.
 
 ## Rules that are not negotiable
 
-1. **No line of a poem may be modified.** No added emphasis, no coloured lines, no
-   drop caps, no size changes, no auto-shrinking. Every line is set identically.
-   Emphasis already present in a source file is the poet's own and stays — the rule
-   is *add nothing*, not strip what he wrote.
+1. **No line of a poem may be modified.** No coloured lines, no drop caps, no size
+   changes, no auto-shrinking. Every line is set identically. Emphasis in a source
+   file is the poet's own and stays — the rule is *add nothing here*, not strip what
+   he wrote. Emphasis is marked in the markdown, never invented by a component:
+   - `*italic*` for **dialogue** — words spoken aloud, always italic and never in
+     quotation marks. Only speech reported inside a narrating voice is marked; a
+     poem spoken end to end (The Carpenter, The Economy, New Orleans) stays roman,
+     because italicising it would italicise the whole poem. *Questions and Answers*
+     keeps its roman question against its italic answer; that contrast is the poem.
+   - `**bold**` for a **section header** — `1. Father`, `2. Son`, `1. River`.
+     Spectral is self-hosted at 200/300/400 only, so `.verse strong` is 400 against
+     the 300 body: a real weight rather than a synthesised bold.
 2. **Do not use the word "plates"** anywhere user-facing. Numbers only: `01 / 18`.
 3. **No explanatory captions.** The index has no heading and no introductory
    sentence. It gets space instead.
@@ -154,6 +162,16 @@ a small found label at the lower right.
   its mount and caption before it is used.
 - A pale subject on a dark plate has to be **inverted**: `multiply` against the
   bone ground keeps the black and throws away the mark.
+
+## Unpublished poems
+
+`unpublished: true` in the frontmatter puts the word *unpublished* where a venue
+would go on the index, and prints `unpublished 2025` on the poem page instead of
+`first published`. `verify-site.js` fails if such a poem also names a venue or a
+venue URL, or if it has no date — the year is the only provenance it has.
+
+The index previews the first line of **verse**, skipping a leading section
+header, so Dallas shows its first line rather than `1. Father`.
 
 ## The four words
 

@@ -17,7 +17,9 @@ const escapeHtml = (value) => String(value)
 function setMeta(html, selector, value) {
   const escaped = escapeHtml(value);
   const pattern = new RegExp(`(<meta\\s+${selector}\\s+content=")[^"]*(")`, 'i');
-  if (!pattern.test(html)) return html;
+  if (!pattern.test(html)) {
+    throw new Error(`Missing metadata template tag: ${selector}`);
+  }
   return html.replace(pattern, `$1${escaped}$2`);
 }
 

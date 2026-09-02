@@ -103,7 +103,10 @@ illustrates the poem by naming its objects back to it.
 - `oriel-window.webp` — William Henry Fox Talbot, [The Oriel Window, South Gallery, Lacock Abbey], probably 1835.
   The Metropolitan Museum of Art, object 282004, public domain (Open Access).
   https://www.metmuseum.org/art/collection/search/282004
-  Used under *Love Outside Poems*.
+  Used under *Love Outside Poems*. Re-cropped and lifted in 2026: the earlier
+  crop measured 97% featureless — a flat dark rectangle — because this is one
+  of Talbot's faintest negatives and the tone had been compressed into almost
+  nothing. The window's own panes read now.
 
 - `le-tambour.webp` — Pierre-Louis Pierson, Le tambour, 1860s.
   The Metropolitan Museum of Art, object 261376, public domain (Open Access).
@@ -116,6 +119,8 @@ illustrates the poem by naming its objects back to it.
   Gillette, Wyoming. Photograph by Wikimedia Commons user Mr. Satterly, CC0
   (no rights reserved), 4896 × 3264.
   https://commons.wikimedia.org/wiki/File:Douglas_fir_trunk_cross-section_at_Lakeway_Learning_Center_in_Gillette,_Wyoming.jpg
+  Feathered at the edges like the rest of the library — it went up without
+  that and read as a hard rectangle among twenty soft ones.
   Cropped hard into the lower left of the disc — rings, one radial split and
   the bark at the edge. The whole photograph is a mounted section in a public
   hall, carrying its own interpretive placards, a year scale, a stand and a

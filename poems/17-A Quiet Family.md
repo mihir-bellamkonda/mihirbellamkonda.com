@@ -8,14 +8,14 @@ external_url: "https://partus.press/products/oxford-poetry-issue-99"
 My son is not like the other children.
 He builds a kingdom of stones
 
-And loves them well, but silently. Like any parent,
-He teaches them their nature.
+and loves them well, but silently. Like any parent,
+he teaches them their nature.
 
 I try to do the same. I give him names, taxonomies:
 I say *Limestone is sedimentary.*
 
 He says *Limestone is sedimentary*
-And returns to his silence.
+and returns to his silence.
 
 One might think stones would make well-behaved grandchildren.
 This is not the case.
@@ -35,11 +35,11 @@ Our triumphs.
 My son is like the other children.
 He knocks stones into the river to drink
 
-Beyond his gaze. He learns to love this hazard of distance
-Like any parent. I become anxious, some nights.
+beyond his gaze. He learns to love this hazard of distance
+like any parent. I become anxious, some nights.
 
 Some nights I go to his green room and unwrap his sleeping palm
-To find basalt, quartz,
+to find basalt, quartz,
 
-Crumbling pieces of shale, warm as though sustaining him,
-As though freshly born.
+crumbling pieces of shale, warm as though sustaining him,
+as though freshly born.

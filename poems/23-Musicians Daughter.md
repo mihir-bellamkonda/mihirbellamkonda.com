@@ -5,15 +5,15 @@ unpublished: true
 ---
 
 Night. The baby
-Crawls with glee into the tuba.
+crawls with glee into the tuba.
 She discovers grace
-Is round and brass and damp
-As night.
+is round and brass and damp
+as night.
 
 The baby grows up wise.
 She loves music; never plays it.
 She loves the artless day
-(Without scale,
+(without scale,
 tempo like light imponderable)
 the way
-It always goes brightly nowhere.
+it always goes brightly nowhere.

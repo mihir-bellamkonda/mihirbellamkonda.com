@@ -29,7 +29,9 @@ time, deployed to GitHub Pages by GitHub Actions.
 2. **Do not use the word "plates"** anywhere user-facing. Numbers only: `01 / 18`.
 3. **No explanatory captions.** The index has no heading and no introductory
    sentence. It gets space instead.
-4. The accent is **dark green**, never rust or red.
+4. The site accent is **dark green**, never rust or red. The asemic inks are a
+   separate palette: green recurs like an annotation, rust interrupts it now and then,
+   navy is rarer than either, and that order of frequency is fixed.
 
 ## Commands
 
@@ -94,6 +96,13 @@ The poem. Blank lines separate stanzas.
 *Emphasis is the poet's own* and may span line breaks.
 ```
 
+**Capitalisation.** A line begins with a capital only when it begins a sentence.
+A line that continues a sentence — across a line break or a stanza break — starts
+lowercase. `I` and proper nouns keep their capitals wherever they fall, and a line
+after a `**section header**` starts a sentence. The house style was applied across
+the book in 2026; if a poem arrives capitalised line by line, ask before changing it,
+because it is the poet's text and only he standardises it.
+
 `build-poems.js` emits a `stanzas` array: stanzas of lines, each line a complete HTML
 fragment. Emphasis is tracked **across the whole stanza** and closed and reopened at
 each line break, because his italics often span several lines. Parsing line by line
@@ -133,6 +142,32 @@ reintroduce anything like it.
   tracks that size; a fixed hairline vanishes once the hand scales up.
 - Canvas, never a handwriting font. Ink colour comes from CSS variables so marks
   follow the theme.
+- **The write-on is a hand, not a wipe.** `writingPlan()` measures the marks as one
+  journey in *time* and `paintProgress()` draws to a point along it, part-way into a
+  stroke if that is where the pen is. Revealing whole strokes in sequence, which is
+  what it used to do, reads as a slide across the page. Three things make the rest of
+  the difference between a path and a hand: a corner costs more than a straight run
+  (`TURN_COST`), a pen lift costs a beat (`LIFT_DWELL`), and a lift that reaches for
+  the next word costs several (`REACH_DWELL`). About 45% of the journey is corners and
+  hesitation. Duration comes from the length of the writing (`PEN_SPEED`), so a whole
+  poem takes five or six seconds and a single line takes one or two — a column written
+  in three was the reason it still felt mechanical after the first fix.
+- A ResizeObserver reports the size it starts with. `AsemicMarks.vue` therefore
+  redraws on resize only when the canvas has really changed size — otherwise every
+  write-on was cut off a fraction of a second in. Theme changes still repaint
+  unconditionally. A hidden tab is drawn finished rather than animated, because its
+  frames do not run.
+- On a poem page the **reader holds the pen**: the marks are written in step with how
+  far down the verse the page is scrolled, starting part-written so a short poem is
+  never a blank column. An audio reading takes the pen back the moment one starts.
+- `temper` is one dial on the hand, from −1 to +1. Below zero it is slow and careful:
+  steadier baseline, more upright, keeping the pen down, more ink, and a write-on that
+  takes nearly twice as long. Above zero it hurries. Zero is the ordinary hand and the
+  only value `verify-site.js` knows about, so signatures stay deterministic.
+- One poem per session, chosen in `src/slow-hand.js` and held in `sessionStorage`, is
+  written slowly — its collage *and* its row signature on the index, which is where a
+  reader is most likely to catch it. It is never announced, and the choice never
+  changes mid-visit. An earlier version of this hurried instead; nobody could see it.
 
 ## The folio
 
@@ -166,6 +201,28 @@ a click, and does not navigate.
   its mount and caption before it is used.
 - A pale subject on a dark plate has to be **inverted**: `multiply` against the
   bone ground keeps the black and throws away the mark.
+- **Every sheet is torn differently.** `src/marginalia.js` generates each layer's
+  `clip-path` and tilt from the poem's own seed and hands them to the figure as
+  `--clip-*` and `--spin-*` custom properties. `deckle()` works in two passes: corners
+  taken off at their own angles, which is what one plate has that the next does not at
+  arm's length, then a fine tear stepped along every side. Fixed polygons in the
+  stylesheet were the old arrangement and made twenty-one poems one sheet.
+- Two rules keep a tear a tear. **A cut corner must give up the vertex the clockwise
+  walk arrives at before the one it leaves by** — the other order folds the outline
+  through itself and the sheet comes out pinched, like a sweet wrapper. And **no two
+  cut corners may share a side**, or the edge between them is a pinch by construction.
+  A short edge is also torn more shallowly than a long one, so the tear cannot cross
+  the next edge and leave a spike.
+- The large hand's sheet is left **untorn on one side**, so that line runs off the
+  paper and is cut by the frame instead of stopping at an edge.
+- One **pencil mark** to a plate, meaning nothing: an arrow pointing at nothing, a
+  scrawl, a wound loop, or a crooked little x, chosen by the poem's seed. And the date
+  the poem was written in the corner — roman month, two-figure year, from the front
+  matter.
+- A resting pointer is **pressure**: the hand comes up about fifteen percent over half
+  a second and lets go as slowly. Hover only, so a tap does not leave a phone's plate
+  stuck at its darkest. These rules sit after the composition rules and before the
+  handling ones, so pressing still overrules hovering.
 
 ## Unpublished poems
 
@@ -176,6 +233,11 @@ venue URL, or if it has no date — the year is the only provenance it has.
 
 The index previews the first line of **verse**, skipping a leading section
 header, so Dallas shows its first line rather than `1. Father`.
+
+The rules between index rows are **drawn, not declared** — `DrawnRule.vue` over
+`ruleMarks()`, one seeded line per row, allowed to wobble, to lift once, and to
+overrun its end. They straddle the row edge rather than bounding a box. Print falls
+back to a real border, because paper takes a printed rule better than a drawn one.
 
 ## The four words
 
@@ -192,9 +254,16 @@ touch the verse.
 
 ## Notes
 
-- Navigation is ordinary links with real URLs. The card-stack swipe was removed: it
+- Navigation is ordinary links with real URLs. The card stack is not coming back: it
   hid the index behind a gesture and had no way back that wasn't a swipe. Arrow keys
-  move between poems as a convenience, never as the only route.
+  move between poems as a convenience, never as the only route, and a focused control
+  keeps its own arrow keys.
+- A **thumb swipe** between poems lives on the poem page (`PoemPage.vue`), on top of
+  that arrangement rather than in place of it: touch pointers only, 64px of mostly
+  horizontal travel, and a gesture that starts on the collage belongs to the collage.
+  Left is the next poem, right the previous.
+- The line that says the arrow keys work is remembered in `localStorage` and stops
+  appearing once a reader has used them twice.
 - Open Graph tags are per-poem. `npm run build` runs three stages: `build-poems.js`,
   then Vite, then `build-pages.js`, which emits one static HTML shell per poem — its
   own title, description, OG and Twitter fields, and a single canonical link — plus a

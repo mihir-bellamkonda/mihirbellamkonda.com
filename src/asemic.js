@@ -19,8 +19,9 @@ const ASCENDERS = new Set('lhkbdtf');
 const DESCENDERS = new Set('gypjq');
 const BOWLS = new Set('aoec');
 const HUMPS = new Set('nmuw');
-// Green recurs like an annotation; rust and navy are uncommon interruptions.
-const ACCENT_INKS = ['green', 'green', 'green', 'green', 'green', 'rust', 'navy'];
+// Green recurs like an annotation; rust interrupts it now and then, and navy
+// is rarer than either. The order of that frequency is fixed.
+const ACCENT_INKS = ['green', 'green', 'green', 'green', 'green', 'rust', 'rust', 'navy'];
 
 /** Deterministic PRNG seeded from a string. */
 export function rngFor(seed) {
@@ -57,12 +58,16 @@ function wordMark(x, y, word, size, R, hand) {
     if (cur.length > 1) strokes.push(cur);
     cur = [];
   };
+  // Temper is the same hand at a different speed. Above zero it is hurrying:
+  // wandering further, lifting more, leaning harder. Below zero it is taking
+  // its time, and a slow pen is steadier and leaves more ink.
+  const wander = 1 + (hand.temper >= 0 ? hand.temper * 1.8 : hand.temper * 0.55);
   const to = (px, py) => {
     // A hand wanders; it does not teleport independently at every point.
     // Keep that wander proportional to the letter size so the same hand does
     // not become shakier merely because its canvas is smaller.
-    hand.dx = hand.dx * 0.88 + (R() - 0.5) * size * 0.018;
-    hand.dy = hand.dy * 0.86 + (R() - 0.5) * size * 0.05;
+    hand.dx = hand.dx * 0.88 + (R() - 0.5) * size * 0.018 * wander;
+    hand.dy = hand.dy * 0.86 + (R() - 0.5) * size * 0.05 * wander;
     const lineY = py + hand.slope * (px - hand.startX);
     const yy = lineY + hand.dy;
     cur.push([px + hand.dx + (y - yy) * hand.slant, yy]);
@@ -193,7 +198,7 @@ function wordMark(x, y, word, size, R, hand) {
       }
     }
 
-    if (R() < 0.45) lift(); // loose print-cursive, not a continuous hand
+    if (R() < 0.45 + hand.temper * 0.16) lift(); // loose print-cursive, not a continuous hand
     cx += size * (0.035 + R() * 0.065);
   }
 
@@ -279,6 +284,7 @@ function fitSize(lines, width, height, maxLines) {
  */
 export function ghost(text, opts) {
   const { x = 0, width, height, maxLines = 0 } = opts;
+  const temper = clamp(opts.temper || 0, -1, 1);
   const R = opts.rng;
   const out = [];
   const sourceLines = String(text || '').split('\n');
@@ -304,7 +310,7 @@ export function ghost(text, opts) {
       phraseRemaining--;
       return phraseInk;
     }
-    if (R() < 0.12) {
+    if (R() < 0.17) {
       phraseInk = ACCENT_INKS[Math.floor(R() * ACCENT_INKS.length)];
       phraseRemaining = R() < 0.28 ? 1 : 0;
       return phraseInk;
@@ -314,19 +320,21 @@ export function ghost(text, opts) {
   };
 
   const beginLine = (indent = 0) => {
+    const sway = 1 + (temper >= 0 ? temper * 1.4 : temper * 0.6);
     baselineDrift = clamp(
-      baselineDrift * 0.72 + (R() - 0.5) * size * 0.24,
-      -size * 0.24,
-      size * 0.24
+      baselineDrift * 0.72 + (R() - 0.5) * size * 0.24 * sway,
+      -size * 0.24 * sway,
+      size * 0.24 * sway
     );
     const startX = x + indent + size * (0.08 + R() * 0.34);
     return {
       startX,
       baseline: by + baselineDrift,
-      slope: (R() - 0.5) * 0.0034,
-      slant: SLANT + (R() - 0.5) * 0.05,
+      slope: (R() - 0.5) * Math.max(0.0012, 0.0034 + temper * 0.003),
+      slant: SLANT * (1 + temper * 0.55) + (R() - 0.5) * Math.max(0.02, 0.05 + temper * 0.05),
       dx: 0,
-      dy: 0
+      dy: 0,
+      temper
     };
   };
 
@@ -363,7 +371,7 @@ export function ghost(text, opts) {
       const alpha = 0.6 + R() * 0.4;
       // Stroke weight tracks letter size — a pen keeps its nib whatever it
       // writes. A fixed hairline vanishes once the hand is scaled up.
-      const baseLw = Math.max(0.55, size * 0.072) * (0.88 + R() * 0.26);
+      const baseLw = Math.max(0.55, size * 0.072) * (0.88 + R() * 0.26) * (1 - temper * 0.2);
       for (const pts of m.strokes) {
         let previous = baseLw * 0.7;
         const lw = pts.map((point, index) => {
@@ -407,31 +415,159 @@ export function palette() {
   };
 }
 
-export function paint(ctx, strokes, upto) {
+function inkOf(pal, s) {
+  return 'rgba(' + (pal[s.ink] || pal.mark) + ',' + 0.85 * s.alpha + ')';
+}
+
+/**
+ * One stroke, optionally stopped part of the way along it.
+ *
+ * `upto` is {segment, fraction}: the index of the segment the pen is inside
+ * and how far it has crossed it. Without it the whole stroke is drawn.
+ */
+function drawStroke(ctx, s, pal, upto) {
+  const p = s.pts;
+  if (!p || p.length < 2) return;
+  const last = upto ? Math.min(upto.segment, p.length - 1) : p.length - 1;
+  if (last < 1) return;
+
+  ctx.strokeStyle = inkOf(pal, s);
+
+  for (let j = 1; j <= last; j++) {
+    const a = p[j - 1];
+    let b = p[j];
+    if (upto && j === last && upto.fraction < 1) {
+      b = [a[0] + (b[0] - a[0]) * upto.fraction, a[1] + (b[1] - a[1]) * upto.fraction];
+    }
+    ctx.beginPath();
+    ctx.moveTo(a[0], a[1]);
+    ctx.lineTo(b[0], b[1]);
+    ctx.lineWidth = Array.isArray(s.lw) ? (s.lw[j - 1] + s.lw[j]) * 0.5 : s.lw;
+    ctx.stroke();
+  }
+}
+
+export function paint(ctx, strokes) {
   const pal = palette();
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  const n = upto === undefined ? strokes.length : upto;
+  for (const s of strokes) drawStroke(ctx, s, pal, null);
+}
 
-  for (let i = 0; i < n; i++) {
-    const s = strokes[i];
+// A pen lift still takes time, but less of it than ink does: the hand travels
+// faster through the air than it does across the paper.
+const AIR_SPEED = 2.2;
+// What a corner costs. A hand cannot turn at speed; it arrives at the turn,
+// makes it, and leaves again.
+const TURN_COST = 1.7;
+// And what a lift costs, in mean segments: the beat where the pen is off the
+// paper. Lifting inside a letter is barely a pause; crossing to the next word
+// is where a hand actually stops, so a long reach is charged much more.
+const LIFT_DWELL = 0.7;
+const REACH_DWELL = 8;
+
+/**
+ * Measure the marks the way a hand would make them — as one continuous
+ * journey, in time rather than in strokes.
+ *
+ * Revealing whole strokes in sequence is what makes a write-on read as a
+ * wipe. Measuring the path fixes the worst of that, but a constant speed
+ * along it is still not a hand: it glides through corners it should slow for
+ * and crosses lifts it should pause at. So the cost of a segment is its
+ * length, plus what the turn into it costs, and every pen lift is charged
+ * both the air it crosses and a beat of hesitation.
+ */
+export function writingPlan(strokes) {
+  let ink = 0;
+  let segments = 0;
+  for (const s of strokes) {
     const p = s.pts;
     if (!p || p.length < 2) continue;
-    ctx.strokeStyle = 'rgba(' + (pal[s.ink] || pal.mark) + ',' + 0.85 * s.alpha + ')';
-    if (Array.isArray(s.lw)) {
-      for (let j = 1; j < p.length; j++) {
-        ctx.beginPath();
-        ctx.moveTo(p[j - 1][0], p[j - 1][1]);
-        ctx.lineTo(p[j][0], p[j][1]);
-        ctx.lineWidth = (s.lw[j - 1] + s.lw[j]) * 0.5;
-        ctx.stroke();
-      }
-    } else {
-      ctx.beginPath();
-      ctx.moveTo(p[0][0], p[0][1]);
-      for (let j = 1; j < p.length; j++) ctx.lineTo(p[j][0], p[j][1]);
-      ctx.lineWidth = s.lw;
-      ctx.stroke();
+    for (let j = 1; j < p.length; j++) {
+      ink += Math.hypot(p[j][0] - p[j - 1][0], p[j][1] - p[j - 1][1]);
+      segments++;
     }
+  }
+  const mean = segments ? ink / segments : 1;
+  const dwell = mean * LIFT_DWELL;
+
+  const spans = [];
+  let total = 0;
+  let previousEnd = null;
+
+  for (const s of strokes) {
+    const p = s.pts;
+    if (!p || p.length < 2) {
+      spans.push(null);
+      continue;
+    }
+
+    if (previousEnd) {
+      const reach = Math.hypot(p[0][0] - previousEnd[0], p[0][1] - previousEnd[1]);
+      total += reach / AIR_SPEED + dwell * (reach > mean * 2.5 ? REACH_DWELL : 1);
+    }
+
+    const marks = [];
+    let cost = 0;
+    let lastX = null;
+    let lastY = null;
+
+    for (let j = 1; j < p.length; j++) {
+      const dx = p[j][0] - p[j - 1][0];
+      const dy = p[j][1] - p[j - 1][1];
+      const length = Math.hypot(dx, dy);
+
+      let turn = 0;
+      if (lastX !== null && length > 0) {
+        const before = Math.hypot(lastX, lastY);
+        if (before > 0) {
+          // 0 running straight on, 2 doubling back on itself.
+          turn = 1 - Math.max(-1, Math.min(1, (dx * lastX + dy * lastY) / (length * before)));
+        }
+      }
+
+      cost += length * (1 + TURN_COST * turn * 0.5);
+      marks.push(cost);
+      lastX = dx;
+      lastY = dy;
+    }
+
+    spans.push({ start: total, marks, length: cost });
+    total += cost;
+    previousEnd = p[p.length - 1];
+  }
+
+  return { spans, total };
+}
+
+/** Draw the journey as far as `t` (0–1) along it. */
+export function paintProgress(ctx, strokes, plan, t) {
+  const pal = palette();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  const travelled = Math.max(0, Math.min(1, t)) * plan.total;
+
+  for (let i = 0; i < strokes.length; i++) {
+    const span = plan.spans[i];
+    if (!span) continue;
+    if (span.start >= travelled) break;
+
+    if (span.start + span.length <= travelled) {
+      drawStroke(ctx, strokes[i], pal, null);
+      continue;
+    }
+
+    // The pen is inside this stroke: find the segment it is crossing.
+    const into = travelled - span.start;
+    let segment = 0;
+    while (segment < span.marks.length - 1 && span.marks[segment] < into) segment++;
+    const before = segment === 0 ? 0 : span.marks[segment - 1];
+    const width = span.marks[segment] - before;
+    drawStroke(ctx, strokes[i], pal, {
+      segment: segment + 1,
+      fraction: width > 0 ? (into - before) / width : 1
+    });
+    break;
   }
 }

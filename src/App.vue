@@ -8,6 +8,7 @@
 <script setup>
 import { ref, computed, watchEffect, onMounted, onUnmounted, nextTick } from 'vue';
 import poemsData from './poems.json';
+import { arrowUsed } from './arrow-hint.js';
 import AboutPage from './components/AboutPage.vue';
 import PoemsListPage from './components/PoemsListPage.vue';
 import PoemPage from './components/PoemPage.vue';
@@ -21,9 +22,11 @@ import PoemPage from './components/PoemPage.vue';
  *   #poem/<slug> → one poem
  *   /poem/<path>/ → one poem, pre-rendered at build time for link previews
  *
- * The card-stack swipe that used to live here is gone. It hid the index
- * behind a gesture, behaved differently on desktop and phone, and had no
- * keyboard-free way back. Navigation is now ordinary links with real URLs.
+ * Navigation is ordinary links with real URLs. The card stack that once
+ * lived here is not coming back: it hid the index behind a gesture and left
+ * no keyboard-free way out of it. A thumb swipe between poems has returned
+ * on top of that arrangement rather than in place of it — see PoemPage.vue —
+ * and it moves along the same sequence these links do.
  */
 
 const route = ref(parseRoute());
@@ -139,6 +142,9 @@ const currentKey = computed(() =>
 function handleKeydown(e) {
   if (route.value.page !== 'poem') return;
   if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
+  // A focused control owns its own arrow keys: the reading-position slider
+  // seeks with them, and a link should not turn the page under a reader who
+  // is only tabbing through it.
   const target = e.target;
   if (
     target instanceof Element
@@ -146,8 +152,14 @@ function handleKeydown(e) {
   ) return;
   const i = poemIndex.value;
   if (i === -1) return;
-  if (e.key === 'ArrowLeft' && i > 0) navigate({ page: 'poem', slug: poemsData[i - 1].slug });
-  if (e.key === 'ArrowRight' && i < poemsData.length - 1) navigate({ page: 'poem', slug: poemsData[i + 1].slug });
+  if (e.key === 'ArrowLeft' && i > 0) {
+    arrowUsed();
+    navigate({ page: 'poem', slug: poemsData[i - 1].slug });
+  }
+  if (e.key === 'ArrowRight' && i < poemsData.length - 1) {
+    arrowUsed();
+    navigate({ page: 'poem', slug: poemsData[i + 1].slug });
+  }
 }
 
 function onHashChange() {

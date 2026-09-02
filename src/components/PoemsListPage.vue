@@ -12,6 +12,10 @@
 
       <div class="index-stage">
       <main class="rows" id="main" tabindex="-1">
+        <!-- The index is ruled by hand. Same seeds, same lines, every load —
+             but no two of them are the same line. -->
+        <DrawnRule class="rule opening-rule" seed="index::opening" />
+
         <template v-for="(poem, i) in poems" :key="poem.slug">
           <h2 v-if="i === 0" class="section-mark">selected</h2>
           <h2 v-else-if="i === 4" class="section-mark">archive</h2>
@@ -77,9 +81,12 @@
                 :text="poem.content"
                 :seed="poem.slug + '::sig'"
                 :max-lines="1"
+                :temper="temperFor(poem.path)"
                 instant
               />
             </span>
+
+            <DrawnRule class="rule" :seed="`${poem.slug}::rule`" />
           </div>
         </template>
       </main>
@@ -122,6 +129,8 @@ import { ref, onUnmounted } from 'vue';
 import FooterNav from './FooterNav.vue';
 import AsemicMarks from './AsemicMarks.vue';
 import SpecimenCollage from './SpecimenCollage.vue';
+import DrawnRule from './DrawnRule.vue';
+import { temperFor } from '../slow-hand.js';
 
 const props = defineProps({
   poems: Array,
@@ -268,7 +277,22 @@ function firstLine(poem) {
 .rows {
   display: flex;
   flex-direction: column;
-  border-top: 1px solid var(--a-hair);
+}
+
+/* The rules straddle the row edge rather than sitting on it, so the line
+   reads as drawn across the page and not as the boundary of a box. */
+.rule {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  color: var(--a-hair);
+}
+
+.opening-rule {
+  position: relative;
+  bottom: auto;
+  margin-bottom: -4px;
 }
 
 .folio-field {
@@ -309,7 +333,6 @@ function firstLine(poem) {
   width: 100%;
   padding: clamp(1rem, 2.1vw, 1.45rem) 0;
   border: 0;
-  border-bottom: 1px solid var(--a-hair);
   background: none;
   font: inherit;
   color: inherit;
@@ -543,5 +566,11 @@ function firstLine(poem) {
     gap: 0.6rem;
     margin-top: 0.45rem;
   }
+}
+
+/* Paper wants a printed rule; the drawn ones stay on the screen. */
+@media print {
+  .rows { border-top: 1px solid #d5d0c2; }
+  .row { border-bottom: 1px solid #d5d0c2; }
 }
 </style>

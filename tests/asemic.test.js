@@ -81,6 +81,26 @@ test('the pen rests longest between lines and least inside a word', () => {
   assert.ok(mean(rests.word) > 0.06, `word pause is only ${mean(rests.word)}s`);
 });
 
+test('a single-line mark never writes outside the box it was given', () => {
+  // The row signature is the tight case: twenty-six pixels of canvas, a hand
+  // that drifts, and an ascender that once came through the top of it.
+  for (const height of [20, 26, 34, 60]) {
+    for (const seed of ['mercy', 'circling-figures', 'the-horse', 'epiphany', 'dallas']) {
+      const strokes = ghost(POEM, {
+        rng: rngFor(`${seed}::sig`), x: 0, width: 257, height, maxLines: 1
+      });
+      for (const stroke of strokes) {
+        for (const [, y] of stroke.pts) {
+          assert.ok(
+            y >= 0 && y <= height,
+            `${seed} at ${height}px: the hand reached ${y.toFixed(2)}`
+          );
+        }
+      }
+    }
+  }
+});
+
 /** A canvas that keeps no pixels and counts what it was asked to draw. */
 function tally() {
   let strokes = 0;

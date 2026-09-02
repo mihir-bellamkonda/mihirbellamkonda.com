@@ -37,7 +37,7 @@ knocking.
 Thus, when there was no one to open a door,
 he would circle the walls with percussive hands,
 
-Making rhythms on cool stone, warm wood,
+making rhythms on cool stone, warm wood,
 the breastbones of friends—until admission.
 
 He came to love the sound.

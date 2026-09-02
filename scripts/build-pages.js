@@ -131,7 +131,7 @@ function staticHome(poems) {
         <section class="static-home-about">
           <h1>Mihir Bellamkonda</h1>
           <p>Mihir Bellamkonda is a poet based in Brooklyn. They were a finalist for Black Lawrence Press's St. Lawrence Book Award, and their work appears in Oxford Poetry, Nashville Review, The Offing, Variant Literature, and elsewhere.</p>
-          <p>They can be found on <a href="https://x.com/MihirWords">X</a> and <a href="https://www.instagram.com/mihirwords/">Instagram</a> as @MihirWords, or reached by <a href="mailto:mihir.bellamkonda@gmail.com">email</a>. They are honored to be read.</p>
+          <p>They can be found on <a href="https://x.com/MihirWords">Twitter</a> and <a href="https://www.instagram.com/mihirwords/">Instagram</a> as @MihirWords, or reached by <a href="mailto:mihir.bellamkonda@gmail.com">email</a>. They are honored to be read.</p>
           <p class="static-home-enter"><a href="#static-index">read poems →</a></p>
         </section>
         <section class="static-home-index" id="static-index">

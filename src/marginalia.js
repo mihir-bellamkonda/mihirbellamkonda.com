@@ -153,30 +153,14 @@ export function ruleMarks(seed, options = {}) {
     ]);
   }
 
-  // One lift, in the middle third, on some of the rules.
+  // One lift, in the middle third, on some of the rules: the pen leaves the
+  // paper and comes back to it.
   const lift = R() < gap ? 1 + Math.floor(R() * (steps - 2)) : -1;
+  const runs = lift < 0
+    ? [points]
+    : [points.slice(0, lift), points.slice(lift + 1)];
 
-  let d = '';
-  let pen = false;
-  for (let i = 0; i < points.length; i++) {
-    const [x, y] = points[i];
-    if (i === lift) {
-      pen = false;
-      continue;
-    }
-    if (!pen) {
-      d += `M${round(x)},${round(y)}`;
-      pen = true;
-      continue;
-    }
-    // Smooth through the midpoints: a drawn line curves between its wobbles
-    // rather than turning a corner at each one.
-    const [px, py] = points[i - 1];
-    d += `Q${round(px)},${round(py)} ${round((px + x) / 2)},${round((py + y) / 2)}`;
-    if (i === points.length - 1) d += `L${round(x)},${round(y)}`;
-  }
-
-  return d;
+  return runs.filter(run => run.length > 1).map(through).join('');
 }
 
 /**

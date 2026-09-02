@@ -4,8 +4,8 @@ Guidance for Claude Code working in this repository.
 
 ## Project
 
-The poetry site of **Mihir Bellamkonda** (pronouns **they/he**; his published bios
-use "they"). Live at **https://mihirbellamkonda.com**.
+The poetry site of **Mihir Bellamkonda** (pronouns **they/them** — not he/him; their
+published bios use "they"). Live at **https://mihirbellamkonda.com**.
 
 It is a **record**, not a themed collection: a numbered index of poems with venue
 and year. Most are published; six are not, and say so where a venue would go. Vue 3 SPA, Vite, real URLs at `/poem/<title>/` with
@@ -17,7 +17,7 @@ time, deployed to GitHub Pages by GitHub Actions.
 1. **No line of a poem may be modified.** No coloured lines, no drop caps, no size
    changes, no auto-shrinking. Every line is set identically. Emphasis in a source
    file is the poet's own and stays — the rule is *add nothing here*, not strip what
-   he wrote. Emphasis is marked in the markdown, never invented by a component:
+   they wrote. Emphasis is marked in the markdown, never invented by a component:
    - `*italic*` for **dialogue** — words spoken aloud, always italic and never in
      quotation marks. Only speech reported inside a narrating voice is marked; a
      poem spoken end to end (The Carpenter, The Economy, New Orleans) stays roman,
@@ -101,11 +101,11 @@ A line that continues a sentence — across a line break or a stanza break — s
 lowercase. `I` and proper nouns keep their capitals wherever they fall, and a line
 after a `**section header**` starts a sentence. The house style was applied across
 the book in 2026; if a poem arrives capitalised line by line, ask before changing it,
-because it is the poet's text and only he standardises it.
+because it is the poet's text and only they standardise it.
 
 `build-poems.js` emits a `stanzas` array: stanzas of lines, each line a complete HTML
 fragment. Emphasis is tracked **across the whole stanza** and closed and reopened at
-each line break, because his italics often span several lines. Parsing line by line
+each line break, because their italics often span several lines. Parsing line by line
 leaves an unclosed asterisk on every line and prints the asterisks literally.
 
 ## Design

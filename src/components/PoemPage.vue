@@ -137,6 +137,7 @@ import SpecimenCollage from './SpecimenCollage.vue';
 import SpecimenVocabulary from './SpecimenVocabulary.vue';
 import { studyFor } from '../collage-studies.js';
 import { needsArrowHint } from '../arrow-hint.js';
+import { prefersReducedMotion } from '../motion.js';
 
 const props = defineProps({
   poem: Object,
@@ -288,7 +289,9 @@ function beginSwipe(event) {
   if (event.pointerType !== 'touch') return;
   swipe = event.target?.closest?.('.specimen, a, button, input, audio, [contenteditable]')
     ? null
-    : { x: event.clientX, y: event.clientY, at: Date.now() };
+    // The pointer is identified, so the second finger of a pinch cannot
+    // finish a gesture the first one started.
+    : { id: event.pointerId, x: event.clientX, y: event.clientY, at: Date.now() };
 }
 
 function cancelSwipe() {
@@ -298,7 +301,7 @@ function cancelSwipe() {
 function endSwipe(event) {
   const start = swipe;
   swipe = null;
-  if (!start || event.pointerType !== 'touch') return;
+  if (!start || event.pointerType !== 'touch' || event.pointerId !== start.id) return;
   if (Date.now() - start.at > 800) return;
 
   const dx = event.clientX - start.x;
@@ -310,7 +313,7 @@ function endSwipe(event) {
 }
 
 onMounted(() => {
-  paced.value = !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  paced.value = !prefersReducedMotion();
   measure();
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll, { passive: true });

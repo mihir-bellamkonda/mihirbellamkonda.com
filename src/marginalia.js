@@ -153,9 +153,12 @@ export function ruleMarks(seed, options = {}) {
     ]);
   }
 
-  // One lift, in the middle third, on some of the rules: the pen leaves the
-  // paper and comes back to it.
-  const lift = R() < gap ? 1 + Math.floor(R() * (steps - 2)) : -1;
+  // One lift on some of the rules: the pen leaves the paper and comes back to
+  // it. It has to fall far enough from either end to leave a drawable run on
+  // both sides — a lift at the second point left a single point behind it,
+  // which is not a line, and the rule silently began a sixth of the way in.
+  const canLift = steps >= 6;
+  const lift = canLift && R() < gap ? 2 + Math.floor(R() * (steps - 4)) : -1;
   const runs = lift < 0
     ? [points]
     : [points.slice(0, lift), points.slice(lift + 1)];

@@ -571,9 +571,12 @@ function firstLine(poem) {
   }
 }
 
-/* Paper wants a printed rule; the drawn ones stay on the screen. */
+/* Paper wants a printed rule; the drawn ones stay on the screen. The marks do
+   not print either, so rather than leave the band they occupied empty, the
+   poet's own first line takes it — which is the more useful printed index. */
 @media print {
   .rows { border-top: 1px solid #d5d0c2; }
   .row { border-bottom: 1px solid #d5d0c2; }
+  .firstline { opacity: 1; }
 }
 </style>

@@ -284,21 +284,32 @@ function onScroll() {
  * collage, which has its own gesture.
  */
 let swipe = null;
+const fingers = new Set();
 
 function beginSwipe(event) {
   if (event.pointerType !== 'touch') return;
+  fingers.add(event.pointerId);
+
+  // Two fingers on the page is a pinch, or a reader steadying the phone, and
+  // neither is a swipe. Abandoning the gesture is not enough on its own: the
+  // second finger would otherwise start a gesture of its own and finish it.
+  if (fingers.size > 1) {
+    swipe = null;
+    return;
+  }
+
   swipe = event.target?.closest?.('.specimen, a, button, input, audio, [contenteditable]')
     ? null
-    // The pointer is identified, so the second finger of a pinch cannot
-    // finish a gesture the first one started.
     : { id: event.pointerId, x: event.clientX, y: event.clientY, at: Date.now() };
 }
 
-function cancelSwipe() {
+function cancelSwipe(event) {
+  fingers.delete(event.pointerId);
   swipe = null;
 }
 
 function endSwipe(event) {
+  fingers.delete(event.pointerId);
   const start = swipe;
   swipe = null;
   if (!start || event.pointerType !== 'touch' || event.pointerId !== start.id) return;

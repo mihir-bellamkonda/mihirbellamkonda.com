@@ -5,6 +5,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { rngFor, ghost, paint, paintProgress, writingPlan } from '../asemic.js';
+import { prefersReducedMotion } from '../motion.js';
 
 const props = defineProps({
   // The poem whose shape gets drawn — usually not the one on the page.
@@ -37,9 +38,6 @@ let mq = null;
 let retryRaf = null;
 let resizeTimer = null;
 let mounted = false;
-
-const reduced = () =>
-  window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function build() {
   const el = cv.value;
@@ -82,34 +80,21 @@ function draw(progress) {
 }
 
 /**
- * A hand is not a metronome and it is not a wipe.
+ * How long this mark takes to write.
  *
- * It keeps roughly one speed, varies a little inside that, and slows as it
- * arrives at the end of what it is writing. The pen's position along the
- * journey is what `t` means here; how far that is through the *marks* is the
- * plan's business, not this function's.
+ * The plan already answers that in seconds, and a mark short enough to be
+ * watched — a row signature, the one large line — comes in under the ceiling
+ * and so keeps its true rhythm: a tenth of a second of rest between words,
+ * which is a pause a reader can actually see. A whole poem's column asks for
+ * half a minute, which nobody would watch, so it is compressed. The
+ * proportions survive the squeeze; only the absolute pace changes.
  */
-function pace(t) {
-  const eased = 1 - Math.pow(1 - t, 1.22);
-  // The plan already slows the pen at corners and rests it at every lift, so
-  // this only has to keep the hand from running at one exact rate.
-  const varied = eased + 0.03 * Math.sin(t * Math.PI * 5.4);
-  return Math.max(0, Math.min(1, varied));
-}
-
-// Roughly the speed of a hand writing at this size, in canvas units a second.
-// A longer passage therefore takes longer to write, instead of every mark on
-// the site taking the same two seconds however much of it there is.
-const PEN_SPEED = 1500;
-
 function writingTime(rate = 1) {
-  const length = plan ? plan.total : 0;
-  const seconds = length / (PEN_SPEED * rate);
-  // A whole poem takes longer to write than a single line, but not so much
-  // longer that a reader is kept waiting for the end of it. A slow hand is
-  // then allowed past that ceiling, because being slow is the whole of it.
-  const span = Math.max(1100, Math.min(5500, seconds * 1000));
-  return Math.min(8000, span / (1 + props.temper * 0.55));
+  const seconds = (plan ? plan.total : 0) / rate;
+  const span = Math.max(1000, Math.min(9000, seconds * 1000));
+  // A slow hand is allowed past the ceiling, because being slow is the whole
+  // of it.
+  return Math.min(13000, span / (1 + props.temper * 0.55));
 }
 
 function animate(duration) {
@@ -136,7 +121,10 @@ function writeBetween(from, to, duration) {
   const step = (ts) => {
     if (t0 === null) t0 = ts;
     const t = Math.min(1, (ts - t0) / span);
-    draw(from + (to - from) * pace(t));
+    // No easing curve here. The plan is the pacing — it already runs the pen
+    // fast through a word, slows it into every corner and rests it between
+    // words — and a curve on top of that only smears those distinctions.
+    draw(from + (to - from) * t);
     if (t < 1) raf = requestAnimationFrame(step);
   };
   draw(from);
@@ -158,12 +146,12 @@ function run() {
 
   if (props.progress !== null) {
     const target = Math.max(0, Math.min(1, props.progress));
-    if (reduced()) draw(target);
+    if (prefersReducedMotion()) draw(target);
     else writeBetween(0, target, writingTime() * target);
     return;
   }
 
-  if (props.instant || reduced()) {
+  if (props.instant || prefersReducedMotion()) {
     draw(1);
     return;
   }
@@ -195,8 +183,8 @@ function resized() {
 
 function replay() {
   if (!build()) return;
-  if (reduced()) draw(1);
-  else animate(writingTime(1.7));
+  if (prefersReducedMotion()) draw(1);
+  else animate(writingTime(1.25));
 }
 
 defineExpose({ replay });
@@ -250,8 +238,10 @@ watch(() => props.progress, (value) => {
   if (!strokes.length && !build()) return;
   const target = Math.max(0, Math.min(1, value));
   const jump = Math.abs(target - drawn);
-  if (jump > 0.28 && !reduced()) {
-    writeBetween(drawn, target, writingTime(1.6) * jump);
+  if (jump > 0.28 && !prefersReducedMotion()) {
+    // Catching up with a reader who has jumped is a different gesture from
+    // writing, and it should not keep them waiting.
+    writeBetween(drawn, target, Math.min(1600, writingTime() * jump));
     return;
   }
   if (raf) cancelAnimationFrame(raf);

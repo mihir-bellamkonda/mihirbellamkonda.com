@@ -352,6 +352,10 @@ export function ghost(text, opts) {
     let cx = hand.startX;
     let wi = 0;
     let guard = 0;
+    // What the pen has just done, which is what decides how long it rests
+    // before the next mark. A hand pauses between words and rests hardest
+    // on the way back to the left margin; inside a word it barely stops.
+    let gap = 'line';
 
     while (wi < words.length && guard++ < 200) {
       const m = wordMark(cx, hand.baseline, words[wi], size, R, hand);
@@ -364,6 +368,7 @@ export function ghost(text, opts) {
         if (bottom && by > bottom) break;
         hand = beginLine(size * 0.9);
         cx = hand.startX;
+        gap = 'line';
         continue;
       }
 
@@ -372,8 +377,11 @@ export function ghost(text, opts) {
       // Stroke weight tracks letter size — a pen keeps its nib whatever it
       // writes. A fixed hairline vanishes once the hand is scaled up.
       const baseLw = Math.max(0.55, size * 0.072) * (0.88 + R() * 0.26) * (1 - temper * 0.2);
+      let opening = true;
       for (const pts of m.strokes) {
         let previous = baseLw * 0.7;
+        let lastDx = 0;
+        let lastDy = 0;
         const lw = pts.map((point, index) => {
           if (index === 0) return previous;
           const before = pts[index - 1];
@@ -381,17 +389,28 @@ export function ghost(text, opts) {
           const dy = point[1] - before[1];
           const length = Math.max(0.001, Math.hypot(dx, dy));
           const vertical = dy / length;
+          // A pen leaves more ink where it slows, and it slows to turn. The
+          // corners of a letter are its heaviest part for the same reason
+          // the downstrokes are.
+          const was = Math.hypot(lastDx, lastDy);
+          const turn = was > 0
+            ? 1 - Math.max(-1, Math.min(1, (dx * lastDx + dy * lastDy) / (length * was)))
+            : 0;
+          lastDx = dx;
+          lastDy = dy;
           const target = baseLw * (
             0.76 +
             Math.max(0, vertical) * 0.64 -
             Math.max(0, -vertical) * 0.22
-          );
+          ) * (1 + 0.28 * Math.min(turn, 1.2));
           previous = previous * 0.22 + target * 0.78;
           return previous;
         });
-        out.push({ pts, ink, alpha, lw });
+        out.push({ pts, ink, alpha, lw, gap: opening ? gap : 'letter' });
+        opening = false;
       }
 
+      gap = 'word';
       cx = m.end + size * (0.62 + R() * 0.5);
       wi++;
     }
@@ -454,43 +473,36 @@ export function paint(ctx, strokes) {
   for (const s of strokes) drawStroke(ctx, s, pal, null);
 }
 
-// A pen lift still takes time, but less of it than ink does: the hand travels
-// faster through the air than it does across the paper.
-const AIR_SPEED = 2.2;
-// What a corner costs. A hand cannot turn at speed; it arrives at the turn,
-// makes it, and leaves again.
-const TURN_COST = 1.7;
-// And what a lift costs, in mean segments: the beat where the pen is off the
-// paper. Lifting inside a letter is barely a pause; crossing to the next word
-// is where a hand actually stops, so a long reach is charged much more.
-const LIFT_DWELL = 0.7;
-const REACH_DWELL = 8;
+/**
+ * The time model, in seconds.
+ *
+ * Ink runs at a speed; corners are taken slowly; and the pen rests at the
+ * boundaries a hand actually rests at. The first attempt at this charged a
+ * beat to every one of five hundred pen lifts, which spread the hesitation
+ * so thinly that no single pause lasted longer than two frames. Almost all
+ * of the resting now happens between words, and most of the rest of it on
+ * the way back to the left margin.
+ */
+const PEN_SPEED = 1400;  // canvas units of ink a second
+const AIR_SPEED = 1900;  // and how fast the hand crosses a gap
+const TURN_COST = 2.1;   // how much a corner slows the pen, per unit of turn
+const REST = {
+  letter: 0.005,  // inside a word the pen hardly stops
+  word: 0.1,      // between words it does
+  line: 0.22      // and it rests hardest before starting a line
+};
 
 /**
- * Measure the marks the way a hand would make them — as one continuous
- * journey, in time rather than in strokes.
+ * Measure the marks the way a hand would make them — as one journey, in
+ * seconds, so the pacing is stated in a unit a reader can feel rather than
+ * in a share of some total.
  *
- * Revealing whole strokes in sequence is what makes a write-on read as a
- * wipe. Measuring the path fixes the worst of that, but a constant speed
- * along it is still not a hand: it glides through corners it should slow for
- * and crosses lifts it should pause at. So the cost of a segment is its
- * length, plus what the turn into it costs, and every pen lift is charged
- * both the air it crosses and a beat of hesitation.
+ * A short mark therefore keeps its real rhythm: ten words with a tenth of a
+ * second between them is a hand writing a line. A whole poem's column asks
+ * for far longer than anyone would watch, so the caller compresses it — the
+ * proportions survive, and the column reads as busy rather than as slow.
  */
 export function writingPlan(strokes) {
-  let ink = 0;
-  let segments = 0;
-  for (const s of strokes) {
-    const p = s.pts;
-    if (!p || p.length < 2) continue;
-    for (let j = 1; j < p.length; j++) {
-      ink += Math.hypot(p[j][0] - p[j - 1][0], p[j][1] - p[j - 1][1]);
-      segments++;
-    }
-  }
-  const mean = segments ? ink / segments : 1;
-  const dwell = mean * LIFT_DWELL;
-
   const spans = [];
   let total = 0;
   let previousEnd = null;
@@ -504,7 +516,7 @@ export function writingPlan(strokes) {
 
     if (previousEnd) {
       const reach = Math.hypot(p[0][0] - previousEnd[0], p[0][1] - previousEnd[1]);
-      total += reach / AIR_SPEED + dwell * (reach > mean * 2.5 ? REACH_DWELL : 1);
+      total += reach / AIR_SPEED + (REST[s.gap] ?? REST.letter);
     }
 
     const marks = [];
@@ -526,7 +538,7 @@ export function writingPlan(strokes) {
         }
       }
 
-      cost += length * (1 + TURN_COST * turn * 0.5);
+      cost += (length / PEN_SPEED) * (1 + TURN_COST * turn);
       marks.push(cost);
       lastX = dx;
       lastY = dy;

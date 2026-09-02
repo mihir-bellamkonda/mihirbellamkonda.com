@@ -103,6 +103,7 @@ import { studyFor } from '../collage-studies.js';
 import { rngFor } from '../asemic.js';
 import { deckle, marginMark } from '../marginalia.js';
 import { temperFor } from '../slow-hand.js';
+import { prefersReducedMotion } from '../motion.js';
 
 // The published crop. The folio rules in the stylesheet are kept intact, so
 // the other composition is one word away.
@@ -199,7 +200,7 @@ const notation = computed(() => {
 });
 
 function respondsToHandling() {
-  return !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  return !prefersReducedMotion();
 }
 
 function handlePointer(event) {

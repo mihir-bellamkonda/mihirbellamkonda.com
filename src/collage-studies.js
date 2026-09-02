@@ -77,8 +77,8 @@ const studies = {
     primary: '/collage/vase-of-flowers.webp', secondary: '/collage/ripple-rings.svg'
   },
   'the-carpenter': {
-    kind: 'field', focus: '50% 52%',
-    primary: '/collage/woodchoppers.webp', secondary: '/collage/strata-contours.svg'
+    kind: 'field', focus: '50% 50%',
+    primary: '/collage/fir-rings.webp', secondary: '/collage/hatch-field.svg'
   },
   'the-economy': {
     kind: 'field', focus: '50% 58%',

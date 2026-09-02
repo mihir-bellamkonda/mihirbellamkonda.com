@@ -90,11 +90,6 @@ illustrates the poem by naming its objects back to it.
   https://www.metmuseum.org/art/collection/search/270862
   Used under *Old Man at Dinner*.
 
-- `woodchoppers.webp` — Andrew Joseph Russell, Woodchoppers' Huts in a Virginia Forest. On the Orange & Alexandria Railroad. Wood Supplied U.S.M.R. Railroads under Supervision of Major Brayton, June 1863.
-  The Metropolitan Museum of Art, object 302357, public domain (Open Access).
-  https://www.metmuseum.org/art/collection/search/302357
-  Used under *The Carpenter*.
-
 - `sutro-road.webp` — Carleton E. Watkins, Road View to Sutro Tunnel, 1875, printed ca. 1876.
   The Metropolitan Museum of Art, object 264985, public domain (Open Access).
   https://www.metmuseum.org/art/collection/search/264985
@@ -114,6 +109,27 @@ illustrates the poem by naming its objects back to it.
   The Metropolitan Museum of Art, object 261376, public domain (Open Access).
   https://www.metmuseum.org/art/collection/search/261376
   Used under *Musician’s Daughter*.
+
+### Wikimedia Commons (CC0)
+
+- `fir-rings.webp` — Douglas fir trunk cross-section, Lakeway Learning Center,
+  Gillette, Wyoming. Photograph by Wikimedia Commons user Mr. Satterly, CC0
+  (no rights reserved), 4896 × 3264.
+  https://commons.wikimedia.org/wiki/File:Douglas_fir_trunk_cross-section_at_Lakeway_Learning_Center_in_Gillette,_Wyoming.jpg
+  Cropped hard into the lower left of the disc — rings, one radial split and
+  the bark at the edge. The whole photograph is a mounted section in a public
+  hall, carrying its own interpretive placards, a year scale, a stand and a
+  bin; none of that is inside this crop. Used under *The Carpenter*.
+
+  This is the one plate that does not come from a museum's open access
+  programme. It is CC0 rather than public domain by age, which is as free, and
+  it earned its place by being the only tree section available at a size worth
+  cropping. Everything else here is institutional.
+
+  It replaced Russell's *Woodchoppers' Huts in a Virginia Forest* (Met 302357),
+  which broke two rules at once: it named the poem's own object back to it, and
+  it had several equally strong things in it, including a man in a top hat
+  looking out of the frame.
 
 ### Earlier studies
 

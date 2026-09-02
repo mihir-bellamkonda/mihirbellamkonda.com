@@ -1,5 +1,11 @@
 <template>
-  <div class="poem-plate" v-if="poem">
+  <div
+    class="poem-plate"
+    v-if="poem"
+    @pointerdown="beginSwipe"
+    @pointerup="endSwipe"
+    @pointercancel="cancelSwipe"
+  >
     <div class="chrome">
       <a href="/">mihir bellamkonda</a>
       <a href="/#index">poems</a>
@@ -83,7 +89,7 @@
 
         <!-- The arrow keys have always worked; nothing ever said so. Hidden
              where there is no keyboard to press. -->
-        <p class="hint" v-if="prev || next">
+        <p class="hint" v-if="(prev || next) && showsHint">
           <kbd>&#8592;</kbd><kbd>&#8594;</kbd> to move between poems
         </p>
 
@@ -96,7 +102,7 @@
           :poem="poem"
           :mark-text="ghost.content"
           :mark-seed="`${poem.slug}::ghost`"
-          :progress="readingProgress"
+          :progress="handProgress"
           context="poem"
         />
 
@@ -105,13 +111,13 @@
           class="ghost"
           :text="ghost.content"
           :seed="poem.slug + '::ghost'"
-          :progress="readingProgress"
+          :progress="handProgress"
         />
       </div>
 
       <!-- Nothing in here is styled differently from anything else in here.
            Emphasis, where it appears, is the poet's own. -->
-      <div class="verse">
+      <div class="verse" ref="verseEl">
         <p class="stanza" v-for="(stanza, s) in stanzas" :key="s">
           <span class="l" v-for="(line, l) in stanza" :key="l" v-html="line"></span>
         </p>
@@ -124,12 +130,13 @@
 </template>
 
 <script setup>
-import { computed, ref, onUnmounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import FooterNav from './FooterNav.vue';
 import AsemicMarks from './AsemicMarks.vue';
 import SpecimenCollage from './SpecimenCollage.vue';
 import SpecimenVocabulary from './SpecimenVocabulary.vue';
 import { studyFor } from '../collage-studies.js';
+import { needsArrowHint } from '../arrow-hint.js';
 
 const props = defineProps({
   poem: Object,
@@ -146,6 +153,7 @@ function pad(n) {
 }
 
 const copied = ref(false);
+const showsHint = ref(needsArrowHint());
 let copyTimer = null;
 const audioEl = ref(null);
 const readingStarted = ref(false);
@@ -228,7 +236,92 @@ async function sharePoem() {
   copyTimer = setTimeout(() => { copied.value = false; }, 2000);
 }
 
-onUnmounted(() => clearTimeout(copyTimer));
+/**
+ * The hand keeps pace with the reader.
+ *
+ * Nothing else on the page knew how far into the poem anyone was: the marks
+ * beside it were written once, on arrival, at their own speed. Now the
+ * reader's descent through the verse holds the pen, and an audio reading
+ * takes it back the moment one starts — a recording of the poet reading is a
+ * better authority on where in the poem we are than the scrollbar is.
+ *
+ * The marks begin part-written. A reader who arrives at a short poem and
+ * never scrolls should still find a hand beside it, not a blank column.
+ */
+const verseEl = ref(null);
+const scrollDepth = ref(0);
+const paced = ref(true);
+let measuring = null;
+
+const handProgress = computed(() => {
+  if (readingProgress.value !== null) return readingProgress.value;
+  if (!paced.value) return null;
+  return 0.16 + 0.84 * scrollDepth.value;
+});
+
+function measure() {
+  measuring = null;
+  const el = verseEl.value;
+  if (!el) return;
+  const rect = el.getBoundingClientRect();
+  const travelled = (window.innerHeight || 1) * 0.78 - rect.top;
+  scrollDepth.value = Math.max(0, Math.min(1, travelled / Math.max(rect.height, 1)));
+}
+
+function onScroll() {
+  if (measuring) return;
+  measuring = requestAnimationFrame(measure);
+}
+
+/**
+ * Swipe between poems, on touch only.
+ *
+ * The card stack this site once had made the gesture the *only* way through
+ * the book and hid the index behind it. This is the opposite arrangement:
+ * every link, the footer and the arrow keys still do what they did, and a
+ * thumb gets a shortcut. A swipe that begins on the collage belongs to the
+ * collage, which has its own gesture.
+ */
+let swipe = null;
+
+function beginSwipe(event) {
+  if (event.pointerType !== 'touch') return;
+  swipe = event.target?.closest?.('.specimen, a, button, input, audio, [contenteditable]')
+    ? null
+    : { x: event.clientX, y: event.clientY, at: Date.now() };
+}
+
+function cancelSwipe() {
+  swipe = null;
+}
+
+function endSwipe(event) {
+  const start = swipe;
+  swipe = null;
+  if (!start || event.pointerType !== 'touch') return;
+  if (Date.now() - start.at > 800) return;
+
+  const dx = event.clientX - start.x;
+  const dy = event.clientY - start.y;
+  if (Math.abs(dx) < 64 || Math.abs(dx) < Math.abs(dy) * 1.7) return;
+
+  const destination = dx < 0 ? props.next : props.prev;
+  if (destination) props.onGo?.(destination.slug);
+}
+
+onMounted(() => {
+  paced.value = !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  measure();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+});
+
+onUnmounted(() => {
+  clearTimeout(copyTimer);
+  if (measuring) cancelAnimationFrame(measuring);
+  window.removeEventListener('scroll', onScroll);
+  window.removeEventListener('resize', onScroll);
+});
 
 const year = computed(() => {
   const d = props.poem && props.poem.date;
@@ -239,6 +332,7 @@ const year = computed(() => {
 
 // Every poem carries a study now, so the collage is the illegible column.
 const hasSpecimen = computed(() => Boolean(studyFor(props.poem?.path)));
+
 
 // Prefer the structured stanzas from the build script; fall back to splitting
 // the raw markdown so an older poems.json still renders.
@@ -254,11 +348,13 @@ const stanzas = computed(() => {
 
 <style scoped>
 .poem-plate {
+  position: relative;
   background: var(--a-bg);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
+
 
 .chrome {
   width: 100%;

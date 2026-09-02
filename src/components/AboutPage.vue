@@ -14,7 +14,7 @@
           Press's St.&nbsp;Lawrence Book Award, and their work appears in Oxford&nbsp;Poetry,
           Nashville&nbsp;Review, The&nbsp;Offing, Variant&nbsp;Literature, and elsewhere. They can
           be found on
-          <a href="https://x.com/MihirWords" rel="me noopener" target="_blank">X</a>
+          <a href="https://x.com/MihirWords" rel="me noopener" target="_blank">Twitter</a>
           and
           <a href="https://www.instagram.com/mihirwords/" rel="me noopener" target="_blank">Instagram</a>
           as @MihirWords, or reached by

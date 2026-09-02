@@ -13,7 +13,7 @@
     :data-specimen="study?.kind || 'asemic'"
     :data-poem="poem.path"
     :data-composition="composition"
-    :style="study?.focus ? { '--focus': study.focus } : null"
+    :style="plateStyle"
     aria-hidden="true"
     @pointermove="handlePointer"
     @pointerdown="beginHandling"
@@ -43,6 +43,7 @@
         :seed="`${handSeed}::large`"
         :size="largeMarkSize"
         :max-lines="1"
+        :temper="temper"
         instant
       />
     </div>
@@ -53,8 +54,34 @@
         :text="handText"
         :seed="handSeed"
         :progress="progress"
+        :temper="temper"
       />
     </div>
+
+    <!-- One mark to a plate: an arrow pointing at nothing, a scrawl, a loop,
+         a little crossing-out. The gesture of indicating, not an indication. -->
+    <svg
+      class="pencil-mark"
+      :class="`mark-${mark.kind}`"
+      viewBox="0 0 64 32"
+      :style="markStyle"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        :d="mark.d"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.1"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        vector-effect="non-scaling-stroke"
+      />
+    </svg>
+
+    <!-- When the sheet was written on, in the corner, the way a date gets
+         put on a drawing and then half forgotten. -->
+    <p v-if="notation" class="notation">{{ notation }}</p>
 
     <p class="title-fragment"><span>{{ returnedTitle }}</span></p>
 
@@ -73,6 +100,9 @@ import { computed, ref } from 'vue';
 import AsemicMarks from './AsemicMarks.vue';
 import { specimenWordsFor } from '../specimen-vocabulary.js';
 import { studyFor } from '../collage-studies.js';
+import { rngFor } from '../asemic.js';
+import { deckle, marginMark } from '../marginalia.js';
+import { temperFor } from '../slow-hand.js';
 
 // The published crop. The folio rules in the stylesheet are kept intact, so
 // the other composition is one word away.
@@ -102,8 +132,70 @@ const catalogueId = computed(() => {
   return `MB / ${number}`;
 });
 const largeMarkSize = computed(() => {
-  if (props.poem.path === 'in-of') return props.context === 'index' ? 35 : 30;
-  return props.context === 'index' ? 25 : 22;
+  if (props.poem.path === 'in-of') return props.context === 'index' ? 39 : 33;
+  return props.context === 'index' ? 28 : 25;
+});
+
+// One plate per session is written by a hand taking its time; every other
+// plate gets the ordinary one.
+const temper = computed(() => temperFor(props.poem.path));
+
+/**
+ * How this particular sheet was torn, and how it came to rest.
+ *
+ * Every plate used to share four hand-written polygons and six fixed angles,
+ * so twenty-one poems were torn from the same sheet in the same places and
+ * pinned at the same tilt. These are drawn from the poem's own seed instead:
+ * fixed for that poem forever, and different from its neighbours.
+ *
+ * The large hand's sheet is left untorn on one side, so that line runs off
+ * the paper and is cut by the frame rather than stopping at an edge.
+ */
+const plate = computed(() => {
+  const R = rngFor(`${props.poem.path}::plate`);
+  const spin = (base, range) => `${Math.round((base + (R() - 0.5) * range) * 100) / 100}deg`;
+  const overshoot = R() < 0.5 ? 'left' : 'right';
+
+  return {
+    '--clip-ground': deckle(R, { steps: 5, tear: 2.1 }),
+    '--clip-primary': deckle(R, { steps: 5, tear: 2.6 }),
+    '--clip-secondary': deckle(R, { steps: 5, tear: 2.6 }),
+    '--clip-tertiary': deckle(R, { steps: 4, tear: 3 }),
+    '--clip-large': deckle(R, { steps: 4, tear: 2.4, open: overshoot }),
+    '--clip-trace': deckle(R, { steps: 5, tear: 1.9 }),
+    '--spin-ground': spin(1.15, 1.8),
+    '--spin-primary': spin(-2.1, 2.6),
+    '--spin-secondary': spin(3, 2.8),
+    '--spin-tertiary': spin(-5, 3.4),
+    '--spin-large': spin(-6.5, 4.4),
+    '--spin-trace': spin(1.7, 2.4)
+  };
+});
+
+const plateStyle = computed(() => ({
+  ...plate.value,
+  ...(study.value?.focus ? { '--focus': study.value.focus } : null)
+}));
+
+const mark = computed(() => marginMark(`${props.poem.path}::arrow`));
+
+const markStyle = computed(() => ({
+  left: mark.value.left,
+  top: mark.value.top,
+  transform: `translate(var(--shift-x), var(--shift-y)) rotate(${mark.value.angle}) scale(${mark.value.scale})`
+}));
+
+const MONTHS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+
+// A date in the archival hand: month in roman, year in two figures. Taken
+// from the poem's own front matter, not from the visit.
+const notation = computed(() => {
+  const raw = String(props.poem.date || '');
+  const parts = raw.match(/^(\d{4})(?:-(\d{2}))?/);
+  if (!parts) return '';
+  const year = parts[1].slice(2);
+  const month = parts[2] ? MONTHS[Number(parts[2]) - 1] : '';
+  return month ? `${month} · ${year}` : year;
 });
 
 function respondsToHandling() {
@@ -194,6 +286,18 @@ function clearPointer(event) {
   --photo-y: 0px;
   --photo-x-reverse: 0px;
   --photo-y-reverse: 0px;
+  --clip-ground: none;
+  --clip-primary: none;
+  --clip-secondary: none;
+  --clip-tertiary: none;
+  --clip-large: none;
+  --clip-trace: none;
+  --spin-ground: 1.15deg;
+  --spin-primary: -2.1deg;
+  --spin-secondary: 3deg;
+  --spin-tertiary: -5deg;
+  --spin-large: -6.5deg;
+  --spin-trace: 1.7deg;
   position: relative;
   isolation: isolate;
   width: 100%;
@@ -317,9 +421,15 @@ function clearPointer(event) {
   top: 33%;
   width: 111%;
   height: 29%;
-  overflow: hidden;
-  opacity: 0.085;
+  opacity: 0.1;
   mix-blend-mode: multiply;
+  clip-path: var(--clip-large);
+  /* Pressure, not a switch: the hand darkens under a resting pointer over
+     about half a second, and lets go just as slowly. */
+  transition:
+    transform 620ms cubic-bezier(0.2, 0.74, 0.16, 1),
+    opacity 520ms ease,
+    clip-path 620ms cubic-bezier(0.2, 0.74, 0.16, 1);
   transform: translate(var(--shift-x), var(--shift-y)) rotate(-4.5deg);
 }
 
@@ -331,8 +441,8 @@ function clearPointer(event) {
 .has-large-hand .large-trace-sheet {
   top: 28%;
   height: 39%;
-  opacity: 0.19;
-  transform: translate(var(--shift-x), var(--shift-y)) rotate(-6.2deg);
+  opacity: 0.215;
+  transform: translate(var(--shift-x), var(--shift-y)) rotate(calc(var(--spin-large) + 0.3deg));
 }
 
 .trace-sheet {
@@ -353,6 +463,7 @@ function clearPointer(event) {
   width: 100%;
   height: 100%;
   opacity: 0.68;
+  transition: opacity 520ms ease;
 }
 
 .title-fragment {
@@ -375,6 +486,38 @@ function clearPointer(event) {
   opacity: 0.6;
   transform: translate(var(--shift-x-reverse), var(--shift-y-reverse)) rotate(0.35deg);
   transition: opacity 260ms ease, transform 520ms cubic-bezier(0.2, 0.74, 0.16, 1);
+}
+
+.pencil-mark {
+  position: absolute;
+  z-index: 6;
+  width: 3.4rem;
+  height: auto;
+  color: var(--a-ink);
+  opacity: 0.15;
+  pointer-events: none;
+  transform-origin: 50% 50%;
+  transition: opacity 520ms ease, transform 620ms cubic-bezier(0.2, 0.74, 0.16, 1);
+}
+
+/* A scrawl covers more paper than an arrow does; it does not need to be as
+   present to be seen. */
+.mark-scribble { opacity: 0.115; }
+.mark-spiral { width: 3rem; }
+
+.notation {
+  position: absolute;
+  z-index: 8;
+  left: 4.5%;
+  bottom: 4.4%;
+  margin: 0;
+  font-family: var(--f-cat);
+  font-size: 0.5rem;
+  letter-spacing: 0.2em;
+  color: var(--a-ink-2);
+  opacity: 0.3;
+  transform: translate(var(--shift-x), var(--shift-y)) rotate(-1.6deg);
+  transition: opacity 520ms ease;
 }
 
 .catalogue {
@@ -430,6 +573,7 @@ function clearPointer(event) {
   opacity: 0.73;
 }
 
+
 .specimen:not(.has-study) .sheet-ground {
   inset: 8% 9%;
 }
@@ -468,18 +612,18 @@ function clearPointer(event) {
 }
 
 .specimen[data-composition='folio'] .large-trace-sheet {
-  opacity: 0.06;
+  opacity: 0.07;
 }
 
 .specimen[data-composition='folio'].has-large-hand .large-trace-sheet {
-  opacity: 0.13;
+  opacity: 0.15;
 }
 
 /* Cut-up changes the crop and the spacing, not the volume. */
 .specimen[data-composition='cutup'] .sheet-ground {
   inset: 3% 4% 4% 5%;
-  clip-path: polygon(3% 3%, 96% 0, 100% 89%, 88% 97%, 9% 100%, 0 76%);
-  transform: translate(var(--shift-x-reverse), var(--shift-y-reverse)) rotate(1.15deg);
+  clip-path: var(--clip-ground);
+  transform: translate(var(--shift-x-reverse), var(--shift-y-reverse)) rotate(var(--spin-ground));
 }
 
 .specimen[data-composition='cutup'] .layer-primary {
@@ -487,8 +631,8 @@ function clearPointer(event) {
   top: 5%;
   width: 71%;
   height: 61%;
-  clip-path: polygon(0 9%, 88% 0, 100% 28%, 93% 96%, 21% 100%, 3% 57%);
-  transform: translate(var(--shift-x), var(--shift-y)) rotate(-2.1deg);
+  clip-path: var(--clip-primary);
+  transform: translate(var(--shift-x), var(--shift-y)) rotate(var(--spin-primary));
 }
 
 .specimen[data-composition='cutup'] .layer-primary img {
@@ -501,8 +645,8 @@ function clearPointer(event) {
   width: 57%;
   height: 47%;
   opacity: 0.64;
-  clip-path: polygon(11% 0, 100% 8%, 93% 82%, 66% 100%, 0 90%, 7% 21%);
-  transform: translate(var(--shift-x-reverse), var(--shift-y-reverse)) rotate(3deg);
+  clip-path: var(--clip-secondary);
+  transform: translate(var(--shift-x-reverse), var(--shift-y-reverse)) rotate(var(--spin-secondary));
 }
 
 .specimen[data-composition='cutup'] .layer-secondary img,
@@ -516,8 +660,8 @@ function clearPointer(event) {
   width: 51%;
   height: 49%;
   opacity: 0.24;
-  clip-path: polygon(13% 5%, 91% 0, 100% 72%, 77% 100%, 0 83%, 4% 21%);
-  transform: translate(var(--shift-x-reverse), var(--shift-y-reverse)) rotate(-5deg);
+  clip-path: var(--clip-tertiary);
+  transform: translate(var(--shift-x-reverse), var(--shift-y-reverse)) rotate(var(--spin-tertiary));
 }
 
 .specimen[data-composition='cutup'] .large-trace-sheet {
@@ -525,15 +669,15 @@ function clearPointer(event) {
   top: 29%;
   width: 124%;
   height: 37%;
-  opacity: 0.115;
-  clip-path: polygon(0 15%, 96% 0, 100% 75%, 9% 100%);
-  transform: translate(var(--shift-x), var(--shift-y)) rotate(-6.5deg);
+  opacity: 0.135;
+  clip-path: var(--clip-large);
+  transform: translate(var(--shift-x), var(--shift-y)) rotate(var(--spin-large));
 }
 
 .specimen[data-composition='cutup'].has-large-hand .large-trace-sheet {
   top: 23%;
   height: 48%;
-  opacity: 0.2;
+  opacity: 0.225;
 }
 
 .specimen[data-composition='cutup'] .trace-sheet {
@@ -543,9 +687,9 @@ function clearPointer(event) {
   height: 88%;
   padding: 9% 8%;
   border: 0;
-  clip-path: polygon(10% 0, 100% 4%, 94% 82%, 73% 100%, 0 92%, 5% 21%);
+  clip-path: var(--clip-trace);
   background: color-mix(in srgb, var(--a-bg) 54%, transparent);
-  transform: translate(var(--shift-x-reverse), var(--shift-y-reverse)) rotate(1.7deg);
+  transform: translate(var(--shift-x-reverse), var(--shift-y-reverse)) rotate(var(--spin-trace));
 }
 
 .specimen[data-composition='cutup']:not(.has-study) .trace-sheet {
@@ -556,26 +700,60 @@ function clearPointer(event) {
   background: color-mix(in srgb, var(--a-bg) 37%, transparent);
 }
 
+/* A resting pointer is pressure rather than a switch: the hand comes up
+   under it over about half a second, and lets go just as slowly. Placed
+   after the composition rules and before the handling ones, so pressing a
+   plate still overrules merely hovering over it. */
+@media (hover: hover) {
+  .specimen:hover .trace {
+    opacity: 0.78;
+  }
+
+  .specimen:hover .large-trace-sheet {
+    opacity: 0.155;
+  }
+
+  .specimen:hover.has-large-hand .large-trace-sheet {
+    opacity: 0.258;
+  }
+
+  .specimen:hover .pencil-mark {
+    opacity: 0.24;
+  }
+
+  .specimen:hover .mark-scribble {
+    opacity: 0.185;
+  }
+
+  .specimen:hover .notation {
+    opacity: 0.46;
+  }
+}
+
 /* Pressing separates the layers the way paper comes apart in the hand: they
    part a little and settle. They do not scatter. These follow the composition
    rules on purpose — same specificity, later in the file, so they win. */
 .specimen.is-handled .trace-sheet {
   opacity: 0.62;
-  transform: translate(calc(var(--shift-x-reverse) + 3.2%), calc(var(--shift-y-reverse) - 1.6%)) rotate(1.5deg);
+  transform: translate(calc(var(--shift-x-reverse) + 3.2%), calc(var(--shift-y-reverse) - 1.6%)) rotate(calc(var(--spin-trace) - 0.2deg));
 }
 
 .specimen.is-handled .large-trace-sheet {
-  opacity: 0.17;
-  transform: translate(calc(var(--shift-x) - 1.2%), calc(var(--shift-y) + 1.8%)) rotate(-5.4deg) scale(1.012);
+  opacity: 0.19;
+  transform: translate(calc(var(--shift-x) - 1.2%), calc(var(--shift-y) + 1.8%)) rotate(calc(var(--spin-large) + 1.1deg)) scale(1.012);
+}
+
+.specimen.is-handled.has-large-hand .large-trace-sheet {
+  opacity: 0.27;
 }
 
 .specimen.is-handled .layer-primary {
-  transform: translate(calc(var(--shift-x) - 0.9%), calc(var(--shift-y) + 0.9%)) rotate(-1.6deg);
+  transform: translate(calc(var(--shift-x) - 0.9%), calc(var(--shift-y) + 0.9%)) rotate(calc(var(--spin-primary) + 0.5deg));
 }
 
 .specimen.is-handled .layer-secondary {
   opacity: 0.66;
-  transform: translate(calc(var(--shift-x-reverse) + 1.3%), calc(var(--shift-y-reverse) - 0.9%)) rotate(2.4deg);
+  transform: translate(calc(var(--shift-x-reverse) + 1.3%), calc(var(--shift-y-reverse) - 0.9%)) rotate(calc(var(--spin-secondary) - 0.6deg));
 }
 
 .specimen.is-handled .layer-tertiary {

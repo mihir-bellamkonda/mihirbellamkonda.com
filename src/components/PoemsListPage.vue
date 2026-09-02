@@ -458,26 +458,30 @@ function firstLine(poem) {
 
 /* Signature and excerpt share one reserved line, so browsing never makes the
    rows jump under the pointer. */
+/* The signature and the poet's line occupy one cell and cross-fade in it, so
+   the reserved area is exactly as tall as the taller of the two and the row
+   does not move when a reader arrives at it. It used to be a fixed 2.1rem,
+   which was one line of verse: any first line long enough to wrap was cut
+   through the middle, and ten of the twenty-one are. */
 .preview {
   grid-column: 2 / 3;
-  position: relative;
-  display: block;
-  height: 2.1rem;
+  display: grid;
   margin-top: 0.5rem;
 }
 
+.preview > * {
+  grid-area: 1 / 1;
+}
+
 .firstline {
-  position: absolute;
-  inset: 0;
   display: block;
+  align-self: center;
   font-family: var(--f-verse);
   font-weight: 300;
   font-size: 0.94rem;
   line-height: 1.6;
   color: var(--a-ink-2);
   opacity: 0;
-  overflow: hidden;
-  white-space: normal;
   transition: opacity 0.24s ease;
 }
 
@@ -508,8 +512,7 @@ function firstLine(poem) {
 }
 
 .sig {
-  position: absolute;
-  inset: 0;
+  align-self: center;
   width: 100%;
   height: 26px;
   transition: opacity 0.24s ease;

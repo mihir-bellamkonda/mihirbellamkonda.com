@@ -278,6 +278,55 @@ function fitSize(lines, width, height, maxLines) {
 }
 
 /**
+ * Settle a single-line mark inside the box it was given.
+ *
+ * fitSize() chooses a letter size from the space available, but the hand it
+ * is sizing wanders: the baseline drifts, the pen shakes, an ascender runs
+ * tall, and a line that should have cleared the top of its box by a hair
+ * clears it by less than nothing. On a row signature — twenty-six pixels of
+ * canvas — that shows as a mark with its head sliced off.
+ *
+ * Rather than leave more headroom and hope, this measures what was actually
+ * drawn and settles it: centred in the box, and scaled down only if the hand
+ * genuinely wrote taller than the room it had. Only whole marks are settled.
+ * A poem's column is meant to run past the bottom of its plate, and moving it
+ * would be moving the composition.
+ */
+function settle(strokes, height) {
+  let top = Infinity;
+  let bottom = -Infinity;
+
+  for (const stroke of strokes) {
+    for (const point of stroke.pts) {
+      if (point[1] < top) top = point[1];
+      if (point[1] > bottom) bottom = point[1];
+    }
+  }
+
+  if (!Number.isFinite(top) || !Number.isFinite(bottom)) return strokes;
+
+  const pad = Math.max(0.5, height * 0.04);
+  const room = Math.max(1, height - pad * 2);
+  const span = bottom - top;
+  const scale = span > room ? room / span : 1;
+  const shift = pad + (room - span * scale) / 2 - top * scale;
+
+  if (scale === 1 && Math.abs(shift) < 0.01) return strokes;
+
+  for (const stroke of strokes) {
+    for (const point of stroke.pts) {
+      point[0] *= scale;
+      point[1] = point[1] * scale + shift;
+    }
+    if (scale !== 1 && Array.isArray(stroke.lw)) {
+      stroke.lw = stroke.lw.map(width => width * scale);
+    }
+  }
+
+  return strokes;
+}
+
+/**
  * Render a poem's real lines as unreadable writing inside a box.
  * Blank lines in the source become stanza gaps, so the block keeps the
  * poem's actual shape.
@@ -419,7 +468,7 @@ export function ghost(text, opts) {
     used++;
   }
 
-  return out;
+  return maxLines === 1 ? settle(out, height) : out;
 }
 
 /** Reads the ink triples from CSS so marks follow the active theme. */

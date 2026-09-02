@@ -118,8 +118,8 @@ function staticHome(poems) {
       <span class="static-home-venue">${escapeHtml([venue, year].filter(Boolean).join(', '))}</span>
     </li>`;
   };
-  const selected = poems.slice(0, 4).map(row).join('');
-  const archive = poems.slice(4).map((poem, index) => row(poem, index + 4)).join('');
+  const selected = poems.slice(0, 5).map(row).join('');
+  const archive = poems.slice(5).map((poem, index) => row(poem, index + 5)).join('');
 
   return `<noscript>
     <div class="static-home">
@@ -142,7 +142,7 @@ function staticHome(poems) {
           </div>
           <div class="static-home-group">
             <h3>archive</h3>
-            <ol start="5">${archive}</ol>
+            <ol start="6">${archive}</ol>
           </div>
         </section>
       </main>

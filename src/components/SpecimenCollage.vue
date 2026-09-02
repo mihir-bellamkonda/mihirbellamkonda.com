@@ -221,6 +221,13 @@ function handlePointer(event) {
   el.style.setProperty('--crop-y', `${-dy * 0.92}px`);
   el.style.setProperty('--crop-x-reverse', `${dx * 0.62}px`);
   el.style.setProperty('--crop-y-reverse', `${dy * 0.62}px`);
+  // The found label is on nothing else's plane. It follows the pointer across
+  // and resists it downward, and it swings a little, the way a card laid on a
+  // sheet moves differently from the sheet.
+  el.style.setProperty('--title-x', `${dx * 0.52}px`);
+  el.style.setProperty('--title-y', `${-dy * 0.3}px`);
+  el.style.setProperty('--title-tilt', `${nx * 1.3}deg`);
+
   // A photograph is heavier than a line of writing: it moves less, and later.
   el.style.setProperty('--photo-x', `${-dx * 0.34}px`);
   el.style.setProperty('--photo-y', `${-dy * 0.34}px`);
@@ -266,10 +273,13 @@ function clearPointer(event) {
     '--photo-x',
     '--photo-y',
     '--photo-x-reverse',
-    '--photo-y-reverse'
+    '--photo-y-reverse',
+    '--title-x',
+    '--title-y'
   ]) {
     el.style.setProperty(name, '0px');
   }
+  el.style.setProperty('--title-tilt', '0deg');
 }
 </script>
 
@@ -287,6 +297,9 @@ function clearPointer(event) {
   --photo-y: 0px;
   --photo-x-reverse: 0px;
   --photo-y-reverse: 0px;
+  --title-x: 0px;
+  --title-y: 0px;
+  --title-tilt: 0deg;
   --clip-ground: none;
   --clip-primary: none;
   --clip-secondary: none;
@@ -485,7 +498,7 @@ function clearPointer(event) {
   color: var(--a-ink);
   text-align: right;
   opacity: 0.6;
-  transform: translate(var(--shift-x-reverse), var(--shift-y-reverse)) rotate(0.35deg);
+  transform: translate(var(--title-x), var(--title-y)) rotate(calc(0.35deg + var(--title-tilt)));
   transition: opacity 260ms ease, transform 520ms cubic-bezier(0.2, 0.74, 0.16, 1);
 }
 
@@ -767,7 +780,7 @@ function clearPointer(event) {
 
 .specimen.is-handled .title-fragment {
   opacity: 0.82;
-  transform: translate(calc(var(--shift-x-reverse) - 1%), calc(var(--shift-y-reverse) - 4%)) rotate(-0.5deg);
+  transform: translate(calc(var(--title-x) - 1%), calc(var(--title-y) - 4%)) rotate(calc(-0.5deg + var(--title-tilt)));
 }
 
 /* A field is a tonal expanse: it fills the panel, and --focus decides what

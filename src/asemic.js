@@ -409,7 +409,10 @@ export function ghost(text, opts) {
     while (wi < words.length && guard++ < 200) {
       const m = wordMark(cx, hand.baseline, words[wi], size, R, hand);
 
-      if (m.end > x + width) {
+      // A word that will not fit even on a line of its own is written anyway.
+      // Wrapping it again only moves it to another line it cannot fit either,
+      // and the guard below then gives up with nothing drawn at all.
+      if (m.end > x + width && cx > hand.startX + 0.01) {
         // the line wraps, and the continuation is indented
         by += leading * (0.965 + R() * 0.07);
         used++;

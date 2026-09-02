@@ -3,7 +3,7 @@ title: "Questions and Answers"
 subtitle: "For L.H."
 date: 2025-03-28
 published_in: "Trampset"
-external_url: "https://trampset.org/questions-and-answers-897ad8c17bd0"
+external_url: "https://www.trampset.org/post/questions-and-answers"
 ---
 
 Who are we?

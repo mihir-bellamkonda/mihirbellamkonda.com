@@ -107,7 +107,7 @@ function tally() {
   return {
     strokes: () => strokes,
     set lineCap(v) {}, set lineJoin(v) {}, set strokeStyle(v) {}, set lineWidth(v) {},
-    beginPath() {}, moveTo() {}, lineTo() {}, stroke() { strokes++; }
+    beginPath() {}, moveTo() {}, lineTo() {}, quadraticCurveTo() {}, stroke() { strokes++; }
   };
 }
 

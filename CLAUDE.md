@@ -142,10 +142,24 @@ reintroduce anything like it.
 - The column beside a poem draws the **next poem in sequence**, wrapping at the end.
 - **Seeded from the slug**, so a poem's signature is identical on every load for every
   reader. Never make it random per visit.
-- Letterforms follow Mihir's hand from photographed notebook pages: angular rather
-  than looped, sharp peaks joined by straight segments, ascenders near three times the
-  x-height, long hooked descenders, frequent pen lifts, overshooting crossbars, a fine
-  even line, slight forward lean.
+- Letterforms are ascenders near three times the x-height, long hooked descenders,
+  frequent pen lifts, overshooting crossbars, a fine even line, and `SLANT = 0.055`,
+  a slight forward lean. This file used to say they were taken from Mihir's hand in
+  photographed notebook pages. **They are not** — nothing in the repo derives from a
+  sample, and the constants are a description written from memory. Measured against
+  the photographs, the generated hand is 10–38% too narrow and leans the wrong way.
+- **The painter reads the points as curves.** The generator lays down points that
+  describe curves, and joining them with straight lines is what made a hand of curves
+  come out as a hand of angles — every shoulder arrived as a corner. `drawStroke()`
+  now runs a quadratic between the midpoints of each pair of segments, with the point
+  they share as its control. The generator is untouched. A quadratic stays inside the
+  triangle of its own control points, so a mark still cannot leave the box its points
+  sat in, and the single-line regression test holds by construction.
+- **The lean is measurably the wrong way round.** A flat-on photograph of the notebook
+  (2 September 2026), rectified against the page's own printed dot grid and checked by
+  the line pitch landing on exactly two 5mm squares, reads **−1.15°**: the hand is
+  upright to backward. The site leans forward +3.1°. Flipping `SLANT` to about −0.06
+  changes every mark on the site, so it waits on the poet.
 - The hand **scales to the space it is given** — `fitSize()` picks a size so the
   longest line nearly fills the width and the poem fits the height. Stroke weight
   tracks that size; a fixed hairline vanishes once the hand scales up.

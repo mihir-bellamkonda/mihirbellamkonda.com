@@ -96,7 +96,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import AsemicMarks from './AsemicMarks.vue';
 import { specimenWordsFor } from '../specimen-vocabulary.js';
 import { studyFor } from '../collage-studies.js';
@@ -119,6 +119,56 @@ const props = defineProps({
 
 
 const frame = ref(null);
+
+/**
+ * The plate fades while the poem is being read.
+ *
+ * Five minutes from arrival to nothing, on a poem page only — the index keeps
+ * its collage, because a reader is passing through it rather than sitting with
+ * it. A reload brings the plate back, so it is a property of the sitting rather
+ * than anything remembered about the reader.
+ *
+ * It fades on the clock the reader is actually reading on: the animation is
+ * paused whenever the tab is hidden, so a poem left open in a background tab is
+ * still there on return. Without that, a reader who steps away for lunch comes
+ * back to a page that has quietly emptied itself while nobody was looking at it.
+ *
+ * Being a CSS animation rather than a per-frame redraw, it costs nothing over
+ * the five minutes and the compositor carries it. Restarting it needs the
+ * remove-reflow-add idiom, because moving between poems on this site does not
+ * remount the collage — the same figure is handed a new poem, and an animation
+ * that has already run would stay finished.
+ */
+const READING_FADE = 'is-reading';
+
+function syncFadeClock() {
+  const el = frame.value;
+  if (el) el.style.animationPlayState = document.hidden ? 'paused' : 'running';
+}
+
+async function restartFade() {
+  await nextTick();
+  const el = frame.value;
+  if (!el) return;
+  el.classList.remove(READING_FADE);
+  void el.offsetWidth;
+  if (props.context === 'poem') el.classList.add(READING_FADE);
+  syncFadeClock();
+}
+
+onMounted(() => {
+  document.addEventListener('visibilitychange', syncFadeClock);
+  restartFade();
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('visibilitychange', syncFadeClock);
+});
+
+// Moving between poems is a prop change here, not a remount, so the fade has
+// to be told to begin again — otherwise the second poem inherits the first
+// one's spent animation and its plate is already gone on arrival.
+watch(() => props.poem?.path, restartFade);
 const handled = ref(false);
 const study = computed(() => studyFor(props.poem.path));
 const vocabulary = computed(() => specimenWordsFor(props.poem));
@@ -554,6 +604,30 @@ function clearPointer(event) {
   font-size: 0.53rem;
   line-height: 1.5;
   letter-spacing: 0.14em;
+}
+
+/* The plate fades while the poem is read — five minutes from arrival to
+   nothing, and a reload brings it back. The curve is an ease-in rather than a
+   straight ramp: a linear opacity fade is perceived as fast-then-lingering,
+   and the point here is that the first minute should be impossible to catch
+   happening. `forwards` holds it at nothing rather than snapping back.
+
+   Only on a poem page. The index keeps its collage — a reader is passing
+   through the index, not sitting with it — which is why this hangs off
+   .context-poem and not off .specimen. */
+.context-poem.is-reading {
+  animation: plate-read 300s cubic-bezier(0.62, 0.02, 0.86, 0.55) forwards;
+}
+
+@keyframes plate-read {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* A reader who has asked for less movement is not asking to watch a five
+   minute dissolve. */
+@media (prefers-reduced-motion: reduce) {
+  .context-poem.is-reading { animation: none; }
 }
 
 .catalogue-line {

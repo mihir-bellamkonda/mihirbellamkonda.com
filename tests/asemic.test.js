@@ -136,3 +136,94 @@ test('the write-on reveals the marks forwards and arrives at all of them', async
   paint(whole, strokes);
   assert.equal(last, whole.strokes(), 'the write-on ends short of the finished marks');
 });
+
+test('the hand the site had before the notebook is still reachable', () => {
+  // Faithful and beautiful are different axes. The plain hand is the way back,
+  // and an escape hatch nobody exercises is an escape hatch that has rotted.
+  const options = { rng: rngFor('mercy'), x: 0, width: 320, height: 260 };
+  const notebook = ghost(POEM, { ...options, hand: 'notebook' });
+  const plain = ghost(POEM, { ...options, hand: 'plain' });
+
+  assert.ok(plain.length > 0, 'the plain hand wrote nothing');
+  assert.notDeepEqual(notebook, plain);
+  // It joined its points with straight lines, and that is most of what made it
+  // read as drawn rather than written.
+  assert.ok(plain.every(s => s.curve === false), 'the plain hand went curved');
+  assert.ok(notebook.every(s => s.curve === true), 'the notebook hand went straight');
+  // It also lifted the pen far more often, so it makes many more strokes.
+  assert.ok(
+    plain.length > notebook.length * 1.2,
+    `plain ${plain.length} strokes vs notebook ${notebook.length} — the lift rate is not taking effect`
+  );
+});
+
+test('a letter is never made the same way twice, so the writing stays unreadable', () => {
+  // The one thing these marks must not be is legible. What keeps them illegible
+  // is not bad letterforms — it is letters landing on top of one another, and
+  // the e landing on the o above all. Giving six letters their true shapes
+  // pulled them apart far enough that sentences came back off the page, and the
+  // fix was to make a traced form what the hand reaches for rather than what it
+  // always lands on. This is that fix, held in place.
+  const G = 10;
+  const raster = (letter, i) => {
+    const strokes = ghost(letter, {
+      rng: rngFor(`${letter}#${i}`), x: 0, width: 600, height: 300,
+      size: 60, maxLines: 1, temper: 0
+    });
+    const points = strokes.flatMap(s => s.pts);
+    if (!points.length) return null;
+    const xs = points.map(p => p[0]);
+    const ys = points.map(p => p[1]);
+    const x0 = Math.min(...xs), y0 = Math.min(...ys);
+    const w = Math.max(1e-6, Math.max(...xs) - x0);
+    const h = Math.max(1e-6, Math.max(...ys) - y0);
+    const cells = new Array(G * G).fill(0);
+    for (const s of strokes) {
+      for (let j = 1; j < s.pts.length; j++) {
+        const a = s.pts[j - 1], b = s.pts[j];
+        for (let t = 0; t <= 1; t += 0.1) {
+          const gx = Math.min(G - 1, Math.floor((a[0] + (b[0] - a[0]) * t - x0) / w * G));
+          const gy = Math.min(G - 1, Math.floor((a[1] + (b[1] - a[1]) * t - y0) / h * G));
+          cells[gy * G + gx]++;
+        }
+      }
+    }
+    const norm = Math.sqrt(cells.reduce((s, v) => s + v * v, 0)) || 1;
+    return cells.map(v => v / norm);
+  };
+  const apart = (a, b) => Math.sqrt(a.reduce((s, v, i) => s + (v - b[i]) ** 2, 0));
+
+  const bank = {};
+  for (const letter of ['e', 'o', 'a']) {
+    bank[letter] = [];
+    for (let i = 0; i < 14; i++) {
+      const r = raster(letter, i);
+      if (r) bank[letter].push(r);
+    }
+  }
+
+  const mean = list => list.reduce((a, b) => a + b, 0) / list.length;
+  const spread = letter => {
+    const d = [];
+    for (let i = 0; i < bank[letter].length; i++)
+      for (let j = i + 1; j < bank[letter].length; j++) d.push(apart(bank[letter][i], bank[letter][j]));
+    return mean(d);
+  };
+  const between = (a, b) => {
+    const d = [];
+    for (const p of bank[a]) for (const q of bank[b]) d.push(apart(p, q));
+    return mean(d);
+  };
+
+  // An e that is reliably further from an o than one e is from another e is an
+  // e a reader can pick out, and once the vowels separate the sentences return.
+  for (const other of ['o', 'a']) {
+    const ratio = between('e', other) / ((spread('e') + spread(other)) / 2);
+    assert.ok(
+      ratio < 1.12,
+      `e and ${other} have pulled apart (${ratio.toFixed(2)}); the writing is becoming readable`
+    );
+  }
+  // And the hand must genuinely vary: one shape every time would be a font.
+  assert.ok(spread('e') > 0, 'the e is drawn identically every time');
+});

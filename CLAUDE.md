@@ -142,12 +142,34 @@ reintroduce anything like it.
 - The column beside a poem draws the **next poem in sequence**, wrapping at the end.
 - **Seeded from the slug**, so a poem's signature is identical on every load for every
   reader. Never make it random per visit.
-- Letterforms are ascenders near three times the x-height, long hooked descenders,
-  frequent pen lifts, overshooting crossbars, a fine even line, and `SLANT = 0.055`,
-  a slight forward lean. This file used to say they were taken from Mihir's hand in
-  photographed notebook pages. **They are not** — nothing in the repo derives from a
-  sample, and the constants are a description written from memory. Measured against
-  the photographs, the generated hand is 10–38% too narrow and leans the wrong way.
+- **There are two hands, and `HAND` at the top of `asemic.js` picks one.** Change
+  that one word to `plain` and every mark on the site goes back to what it was
+  before the notebook photographs: forward lean, narrow, angular, lifting the pen
+  on 45% of letters. It is not a reader's choice and has no interface. It exists
+  because a hand can be more faithful and less beautiful at once, and that is a
+  judgement to make by looking rather than by reading a diff. Everything the
+  photographs changed lives in one profile per hand, `HANDS`, so the two can be
+  compared honestly — including `units`, below.
+- Six letterforms are **traced from the photographs** rather than described:
+  `b` is a numeral 6 (the stem sweeps down and left and closes a bowl at the foot),
+  `e` is a small flat angular epsilon whose crossbar comes first, `g` drops almost
+  straight and turns left into a flat tail, `w` is two round valleys with a low
+  middle and both ends rising, `s` is a round S, and **`th` is one gesture** — a
+  modest crossed stem and then a single low shoulder, the h losing its ascender
+  entirely. The rest of the alphabet is still a description written from memory.
+  This file once claimed all of it came from a sample. Only these six do.
+- **A traced form is what the hand reaches for, not what it always lands on**
+  (`steady`). Drawing all six every time made the writing *readable*, which is the
+  one thing it must not be — the `e` stopped colliding with the `o`, "the" arrived
+  as a shape a reader knows, and whole sentences came back. Rendering each letter
+  many times and comparing the shapes, confusable pairs fell from 10 in 190 to 5.
+  At `steady` 0.55 that count is exactly what it was before; it ships at 0.45. A
+  test holds the `e`/`o` collision in place, and it is the gate that matters:
+  isolated words resolving is normal and always has been, a readable sentence is a
+  failure.
+- Letters **bounce individually** on the baseline, not only line by line, and the
+  notebook hand keeps the pen down — it lifts on 16% of letters where the plain one
+  lifts on 45%, because a real word runs together.
 - **The painter reads the points as curves.** The generator lays down points that
   describe curves, and joining them with straight lines is what made a hand of curves
   come out as a hand of angles — every shoulder arrived as a corner. `drawStroke()`
@@ -155,11 +177,24 @@ reintroduce anything like it.
   they share as its control. The generator is untouched. A quadratic stays inside the
   triangle of its own control points, so a mark still cannot leave the box its points
   sat in, and the single-line regression test holds by construction.
-- **The lean is measurably the wrong way round.** A flat-on photograph of the notebook
-  (2 September 2026), rectified against the page's own printed dot grid and checked by
-  the line pitch landing on exactly two 5mm squares, reads **−1.15°**: the hand is
-  upright to backward. The site leans forward +3.1°. Flipping `SLANT` to about −0.06
-  changes every mark on the site, so it waits on the poet.
+- **The lean is backward.** A flat-on photograph of the notebook (2 September 2026),
+  rectified against the page's own printed dot grid and checked by the line pitch
+  landing on exactly two 5mm squares, reads **−1.15°**. The site leaned forward
+  +3.1° for as long as it existed; `slant` is now −0.06.
+- **The page furniture.** A notebook is full of second thoughts, so the columns now
+  carry them: a word struck out as a tight scribbled blob rather than ruled through,
+  a caret with the word it wants squeezed in small above the line, a number ringed
+  in the left margin, and an arrow at the foot carrying the sentence over. It is
+  held back from a single-line mark — a row signature is twenty-six pixels tall and
+  a strike-out on it is a smudge. The plain hand has none of it.
+- **`lineUnits()` is a model of the hand's width and does not track the constants.**
+  Its coefficients live on each hand as `units`, measured by least squares over the
+  whole corpus. **Re-measure whenever a glyph's advance moves.** It went stale once
+  already: the width constants moved, this did not, and `fitSize()` went on sizing
+  for the old narrow hand. Nothing failed — no test, no build — and every index
+  signature was drawn a third too large and clipped. It was only visible in a
+  browser. A single line also keeps more of its width margin (0.92, not 0.96) than
+  a column does, because it has no wrap to save it.
 - The hand **scales to the space it is given** — `fitSize()` picks a size so the
   longest line nearly fills the width and the poem fits the height. Stroke weight
   tracks that size; a fixed hairline vanishes once the hand scales up.

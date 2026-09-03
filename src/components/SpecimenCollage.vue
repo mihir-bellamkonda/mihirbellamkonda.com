@@ -88,9 +88,9 @@
     <p class="catalogue">
       <span class="catalogue-line">
         <span class="catalogue-id">{{ catalogueId }}</span>
-        <span v-if="showsWords" class="catalogue-field"> · {{ vocabulary.field }}</span>
+        <span class="catalogue-field"> · {{ vocabulary.field }}</span>
       </span>
-      <span v-if="showsWords" class="catalogue-coordinates">{{ vocabulary.coordinates.join(' · ') }}</span>
+      <span class="catalogue-coordinates">{{ vocabulary.coordinates.join(' · ') }}</span>
     </p>
   </figure>
 </template>
@@ -122,9 +122,16 @@ const frame = ref(null);
 const handled = ref(false);
 const study = computed(() => studyFor(props.poem.path));
 const vocabulary = computed(() => specimenWordsFor(props.poem));
-// On a poem page SpecimenVocabulary.vue is the single appearance of the four
-// words, so the collage keeps only its identifier.
-const showsWords = computed(() => props.context !== 'poem');
+// A poem page carries exactly one set of the four words, but which element
+// holds them depends on the width. On a wide screen they belong to the left
+// margin, beside the verse, where SpecimenVocabulary.vue sets them; the
+// collage then keeps only its identifier. There is no margin on a phone —
+// the meta block sits in the reading flow, above the verse — so the words
+// were arriving as a third heading between the provenance and the poem. On a
+// narrow screen the collage takes them instead, the way the index does, and
+// the margin gives them up. The swap is a media query in both files rather
+// than a reactive breakpoint here, so a pre-rendered shell cannot flash the
+// wrong one before Vue picks up.
 const returnedTitle = computed(() => String(props.poem.title || ''));
 const handText = computed(() => props.markText || props.poem.content);
 const handSeed = computed(() => props.markSeed || `${props.poem.slug}::folio`);
@@ -161,12 +168,15 @@ const plate = computed(() => {
     '--clip-tertiary': deckle(R, { steps: 4, tear: 3 }),
     '--clip-large': deckle(R, { steps: 4, tear: 2.4, open: overshoot }),
     '--clip-trace': deckle(R, { steps: 5, tear: 1.9 }),
-    '--spin-ground': spin(1.15, 1.8),
-    '--spin-primary': spin(-2.1, 2.6),
-    '--spin-secondary': spin(3, 2.8),
-    '--spin-tertiary': spin(-5, 3.4),
-    '--spin-large': spin(-6.5, 4.4),
-    '--spin-trace': spin(1.7, 2.4)
+    '--spin-ground': spin(1.15, 2.6),
+    '--spin-primary': spin(-2.1, 4.2),
+    '--spin-secondary': spin(3, 4.6),
+    '--spin-tertiary': spin(-5, 5.4),
+    // The hand's own sheets carry the widest spread of any layer, and the
+    // small one is allowed to cross zero: it leans left on some poems and
+    // right on others rather than always settling the same way over.
+    '--spin-large': spin(-6, 8.5),
+    '--spin-trace': spin(1.1, 9.4)
   };
 });
 
@@ -452,7 +462,7 @@ function clearPointer(event) {
 .has-large-hand .large-trace-sheet {
   top: 28%;
   height: 39%;
-  opacity: 0.215;
+  opacity: 0.25;
   transform: translate(var(--shift-x), var(--shift-y)) rotate(calc(var(--spin-large) + 0.3deg));
 }
 
@@ -473,7 +483,7 @@ function clearPointer(event) {
 .trace {
   width: 100%;
   height: 100%;
-  opacity: 0.68;
+  opacity: 0.79;
   transition: opacity 520ms ease;
 }
 
@@ -554,6 +564,16 @@ function clearPointer(event) {
 .catalogue-id {
   color: var(--accent);
   opacity: 0.72;
+}
+
+/* See the note by the template: on a poem page the margin owns the words
+   above this width, so the collage lets them go. Below it the margin gives
+   them up instead (PoemPage.vue), and these are the only set on the page. */
+@media (min-width: 861px) {
+  .context-poem .catalogue-field,
+  .context-poem .catalogue-coordinates {
+    display: none;
+  }
 }
 
 .catalogue-field {

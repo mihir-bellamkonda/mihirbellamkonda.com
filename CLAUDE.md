@@ -334,9 +334,14 @@ in the title, repeats, or if a poem has no set.
 
 They appear twice over: recessed beside the identifier in the index collage, and
 fainter still in the poem page's left margin, with no label and no heading.
-Each poem page carries **exactly one** set — the collaged pages keep their
-`MB / NN` identifier and give their words up to the margin. The words never
-touch the verse.
+Each poem page carries **exactly one** set, but which element holds it depends on
+the width. Above 860px the margin has them and the collage keeps only its
+`MB / NN` identifier. There is no margin on a phone — the meta block sits in the
+reading flow above the verse — so the words arrived as a third heading between
+the provenance and the poem; below 860px the collage takes them the way the index
+does and the margin gives them up. The swap is a media query in both files, not a
+reactive breakpoint, so a pre-rendered shell cannot flash the wrong one. The words
+never touch the verse.
 
 ## Notes
 

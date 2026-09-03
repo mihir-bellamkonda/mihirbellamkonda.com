@@ -625,6 +625,14 @@ const stanzas = computed(() => {
 }
 
 @media (max-width: 860px) {
+  /* There is no left margin at this width — the meta block is in the reading
+     flow, above the verse — so the four words were reading as a heading
+     between the provenance and the poem rather than as a note in the margin.
+     The collage takes them at this width, the way the index does. */
+  :deep(.specimen-vocabulary) {
+    display: none;
+  }
+
   .ghost {
     height: 8rem;
   }

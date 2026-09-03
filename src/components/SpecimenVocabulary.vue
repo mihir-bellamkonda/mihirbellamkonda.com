@@ -4,7 +4,7 @@
        language, so it is not announced. -->
   <p class="specimen-vocabulary" aria-hidden="true">
     <span class="field">{{ vocabulary.field }}</span>
-    <span class="coordinates">{{ vocabulary.coordinates.join(' · ') }}</span>
+    <span class="coordinates"><span v-for="word in vocabulary.coordinates" :key="word">{{ word }}</span></span>
   </p>
 </template>
 
@@ -41,7 +41,10 @@ const vocabulary = computed(() => specimenWordsFor(props.poem));
   transition: opacity 420ms ease;
 }
 
+/* Set apart by space rather than by middots, matching the collage. */
 .coordinates {
+  display: flex;
+  gap: 0.62em;
   color: var(--a-ink-2);
   opacity: 0.11;
   letter-spacing: 0.08em;

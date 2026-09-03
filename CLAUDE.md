@@ -154,10 +154,19 @@ reintroduce anything like it.
   `b` is a numeral 6 (the stem sweeps down and left and closes a bowl at the foot),
   `e` is a small flat angular epsilon whose crossbar comes first, `g` drops almost
   straight and turns left into a flat tail, `w` is two round valleys with a low
-  middle and both ends rising, `s` is a round S, and **`th` is one gesture** — a
+  middle and both ends rising, `s` is a round S, and **`th` can be one gesture** — a
   modest crossed stem and then a single low shoulder, the h losing its ascender
   entirely. The rest of the alphabet is still a description written from memory.
   This file once claimed all of it came from a sample. Only these six do.
+- **The `th` shoulder is a *connecting* stroke and only happens when the h has
+  somewhere to go.** Of the seven `th` on the photographed page, the five that run on
+  into another letter are all flattened this way — *the*, *that*, *father* — and the
+  two that end their word are not: both spellings of *with* keep a full ascender on
+  the h, because there is nothing after it to reach for. A word-final `th` is
+  therefore never ligatured. How often it happens when it *can* is `ligature`, and
+  that number is a taste setting rather than a measurement — the page says almost
+  always, the poet says their hand humps less often than that, and on seven samples
+  their eye is the better evidence. It ships at 0.3.
 - **A traced form is what the hand reaches for, not what it always lands on**
   (`steady`). Drawing all six every time made the writing *readable*, which is the
   one thing it must not be — the `e` stopped colliding with the `o`, "the" arrived

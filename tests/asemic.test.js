@@ -227,3 +227,43 @@ test('a letter is never made the same way twice, so the writing stays unreadable
   // And the hand must genuinely vary: one shape every time would be a font.
   assert.ok(spread('e') > 0, 'the e is drawn identically every time');
 });
+
+test('a th that ends its word keeps the h standing up', () => {
+  // The shoulder is a connecting stroke. Of the seven `th` on the photographed
+  // page, the five that run on into another letter are flattened into a single
+  // gesture — the, that, father — and the two that end their word are not: both
+  // spellings of `with` keep a full ascender on the h, because there is nothing
+  // after it to reach for.
+  //
+  // The ligature takes a visible bite out of a word's width, so measuring the
+  // narrowest rendering against the widest catches it. These words are chosen
+  // because no *other* letter in them has a traced form, which makes the pair
+  // the only thing that can vary: with the rule in place they sit around 0.75,
+  // and with it removed they fall to 0.56-0.64.
+  const spread = word => {
+    let narrowest = Infinity;
+    let widest = 0;
+    for (let i = 0; i < 120; i++) {
+      const strokes = ghost(word, {
+        rng: rngFor(`${word}~${i}`), x: 0, width: 1e6, height: 400,
+        size: 60, maxLines: 1, temper: 0
+      });
+      const xs = strokes.flatMap(s => s.pts.map(p => p[0]));
+      const run = Math.max(...xs) - Math.min(...xs);
+      if (run < narrowest) narrowest = run;
+      if (run > widest) widest = run;
+    }
+    return narrowest / widest;
+  };
+
+  for (const word of ['path', 'cloth', 'faith', 'oath']) {
+    assert.ok(
+      spread(word) > 0.7,
+      `${word}: the narrowest rendering is ${spread(word).toFixed(2)} of the widest — the h is being flattened at the end of a word`
+    );
+  }
+
+  // And it must still happen where the h does run on, or the letterform is dead.
+  const runsOn = ['the', 'other', 'that'].some(w => spread(w) < 0.7);
+  assert.ok(runsOn, 'the th ligature never fires, even where the h connects onward');
+});

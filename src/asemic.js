@@ -47,11 +47,11 @@ const HAND = 'notebook';
 const HANDS = {
   notebook: {
     slant: -0.06, wide: 1.35, gap: 1.8, lift: 0.16, bounce: 1, steady: 0.45,
-    traced: true, curve: true, furniture: true, units: [0.578, 0.852]
+    ligature: 0.3, traced: true, curve: true, furniture: true, units: [0.578, 0.852]
   },
   plain: {
     slant: 0.055, wide: 1, gap: 1, lift: 0.45, bounce: 0, steady: 0,
-    traced: false, curve: false, furniture: false, units: [0.422, 0.863]
+    ligature: 0, traced: false, curve: false, furniture: false, units: [0.422, 0.863]
   }
 };
 
@@ -155,7 +155,19 @@ function wordMark(x, y, word, size, R, hand) {
     // modest stem, nothing like a full ascender, its crossbar overshoots on
     // both sides, and the h behind it is reduced to a single low shoulder —
     // it loses its ascender entirely. This is the hand already asemic at speed.
-    if (traces && char === 't' && glyphs[gi + 1] === 'h') {
+    //
+    // But only when the h has somewhere to go. The shoulder is a *connecting*
+    // stroke: of the seven `th` on the photographed page, the five that run on
+    // into another letter are all flattened this way — the, that, father — and
+    // the two that end their word are not. Both spellings of `with` keep a full
+    // ascender on the h, because there is nothing after it to reach for.
+    //
+    // `ligature` is then how often it happens when it can. The page says almost
+    // always; the poet says their hand is humped less often than that, and on
+    // seven samples their eye is better evidence than the count. It is a taste
+    // setting, deliberately below what the photograph alone would support.
+    const joinsOn = gi + 2 < glyphs.length;
+    if (pen.traced && char === 't' && glyphs[gi + 1] === 'h' && joinsOn && R() < pen.ligature) {
       const w = size * (0.3 + R() * 0.05) * pen.wide;
       const stem = xh * (1.46 + R() * 0.24);
       to(cx + w * 0.26, y - stem);

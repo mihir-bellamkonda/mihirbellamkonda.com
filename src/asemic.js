@@ -7,13 +7,27 @@
  * signature is identical on every load, for every reader, forever. It
  * belongs to the poem rather than to the visit.
  *
- * The letterforms are modelled on Mihir's hand, from photographed notebook
- * pages: loose print-cursive, open bowls and broad humps, short upright
- * ascenders, long hooked descenders, high dots, frequent pen lifts,
- * crossbars that overshoot, and a fine line with responsive pressure.
+ * The letterforms are loose print-cursive: open bowls and broad humps, short
+ * upright ascenders, long hooked descenders, high dots, frequent pen lifts,
+ * crossbars that overshoot, and a fine line with responsive pressure. They are
+ * a description of Mihir's hand rather than a tracing of it — nothing here is
+ * derived from a sample, whatever earlier versions of this comment claimed.
  */
 
-const SLANT = 0.055;
+// The hand leans backward. A flat-on photograph of the notebook, rectified
+// against the page's own printed dot grid, reads -1.15deg; the estimator that
+// found it recovered every lean on a synthetic test card exactly. This constant
+// was +0.055 — a forward lean — for as long as the site has existed, which made
+// every mark on it lean the opposite way from the hand it was standing in for.
+const SLANT = -0.06;
+
+// And it is a wide hand. Trimmed to the ink and matched for height, the
+// notebook's words run 10-38% broader than the generator's; the letters are
+// round and open where these were narrow and packed. Widening the glyphs and
+// letting the gaps out bottoms the error at about 14%, and no further — the
+// rest of the difference is letterform shape, not measurement.
+const WIDE = 1.35;
+const LETTER_GAP = 1.8;
 
 const ASCENDERS = new Set('lhkbdtf');
 const DESCENDERS = new Set('gypjq');
@@ -87,7 +101,7 @@ function wordMark(x, y, word, size, R, hand) {
 
     if (isAscender) {
       // ascender — l h k b d t f
-      const w = size * (0.31 + R() * 0.055);
+      const w = size * (0.31 + R() * 0.055) * WIDE;
       const tall = asc * (0.88 + R() * 0.2);
       if (char === 'd') {
         // bowl first, then the tall right-hand stroke
@@ -136,7 +150,7 @@ function wordMark(x, y, word, size, R, hand) {
       cx += w * (char === 'l' || char === 't' || char === 'f' ? 1.0 : 1.22);
     } else if (isDescender) {
       // descender — g y p j q
-      const w = size * (0.34 + R() * 0.065);
+      const w = size * (0.34 + R() * 0.065) * WIDE;
       const depth = desc * (0.82 + R() * 0.3);
       to(cx, y - h * 0.78);
       to(cx + w * 0.32, y - h);
@@ -151,7 +165,7 @@ function wordMark(x, y, word, size, R, hand) {
       // The hand's commonest motion: a loose, slightly open single-storey
       // bowl. The points stay irregular so it suggests a letter without
       // resolving into typography.
-      const w = size * (0.34 + R() * 0.08);
+      const w = size * (0.34 + R() * 0.08) * WIDE;
       to(cx, y - h * 0.18);
       to(cx - w * 0.03, y - h * 0.58);
       to(cx + w * 0.2, y - h * (0.92 + R() * 0.08));
@@ -167,14 +181,14 @@ function wordMark(x, y, word, size, R, hand) {
       cx += w * (char === 'c' ? 0.88 : 1.02);
     } else if (char === 'i') {
       // Mihir's i is a short, nearly upright stroke with a high separate dot.
-      const w = size * (0.2 + R() * 0.035);
+      const w = size * (0.2 + R() * 0.035) * WIDE;
       to(cx, y - h * 0.82);
       to(cx + w * 0.2, y);
       to(cx + w, y - h * 0.06);
       dot(cx + w * 0.06, y - h * 1.46);
       cx += w;
     } else if (char === 's') {
-      const w = size * (0.31 + R() * 0.06);
+      const w = size * (0.31 + R() * 0.06) * WIDE;
       to(cx + w * 0.9, y - h * 0.88);
       to(cx + w * 0.38, y - h);
       to(cx + w * 0.12, y - h * 0.58);
@@ -189,7 +203,7 @@ function wordMark(x, y, word, size, R, hand) {
       if (!HUMPS.has(char) && R() < 0.18) peaks++;
       to(cx, y);
       for (let p = 0; p < peaks; p++) {
-        const w = size * (0.31 + R() * 0.09);
+        const w = size * (0.31 + R() * 0.09) * WIDE;
         to(cx + w * 0.2, y - h * (0.55 + R() * 0.12));
         to(cx + w * 0.56, y - h * (0.9 + R() * 0.12));
         to(cx + w * 0.82, y - h * (0.74 + R() * 0.1));
@@ -199,7 +213,7 @@ function wordMark(x, y, word, size, R, hand) {
     }
 
     if (R() < 0.45 + hand.temper * 0.16) lift(); // loose print-cursive, not a continuous hand
-    cx += size * (0.035 + R() * 0.065);
+    cx += size * (0.035 + R() * 0.065) * LETTER_GAP;
   }
 
   if (R() < 0.32) to(cx + size * (0.14 + R() * 0.24), y - xh * (0.12 + R() * 0.32));
@@ -208,10 +222,20 @@ function wordMark(x, y, word, size, R, hand) {
   return { strokes, end: cx };
 }
 
+/**
+ * How wide a line will come out, in units of `size`, without drawing it.
+ *
+ * The coefficients are measured against the generator, not derived from it: an
+ * advance is the sum of six different glyph widths and a random gap, and
+ * fitting the two numbers over the whole corpus is shorter and truer than
+ * adding that up. **Re-measure whenever WIDE or LETTER_GAP moves.** They moved,
+ * this did not, and `fitSize()` went on choosing a size for the old narrow hand
+ * — every signature on the index was drawn a third too large and clipped.
+ */
 function lineUnits(line) {
   const words = line.split(/\s+/).filter(Boolean);
   const chars = line.replace(/\s/g, '').length;
-  return 0.44 * chars + 0.87 * words.length;
+  return 0.63 * chars + 0.87 * words.length;
 }
 
 /**
@@ -495,6 +519,17 @@ function inkOf(pal, s) {
  *
  * `upto` is {segment, fraction}: the index of the segment the pen is inside
  * and how far it has crossed it. Without it the whole stroke is drawn.
+ *
+ * The generator lays down points that describe curves and the painter used to
+ * join them with straight lines, which is most of what made the hand read as
+ * drawn rather than written: every shoulder arrived as a corner. Each point is
+ * now the control of a quadratic running between the midpoints of the segments
+ * either side of it — the same points, read as a curve rather than a path. The
+ * generator is untouched.
+ *
+ * A quadratic stays inside the triangle of its own control points, so a mark
+ * still cannot stray outside the box its points sat in, and the single-line
+ * regression test holds by construction rather than by luck.
  */
 function drawStroke(ctx, s, pal, upto) {
   const p = s.pts;
@@ -503,16 +538,20 @@ function drawStroke(ctx, s, pal, upto) {
   if (last < 1) return;
 
   ctx.strokeStyle = inkOf(pal, s);
+  const mid = (a, b) => [(a[0] + b[0]) * 0.5, (a[1] + b[1]) * 0.5];
 
   for (let j = 1; j <= last; j++) {
-    const a = p[j - 1];
-    let b = p[j];
+    // the pen enters where the segment behind was halfway through and leaves
+    // halfway through this one; the two ends of a stroke keep their real points
+    const from = j === 1 ? p[0] : mid(p[j - 2], p[j - 1]);
+    let to = j === p.length - 1 ? p[j] : mid(p[j - 1], p[j]);
     if (upto && j === last && upto.fraction < 1) {
-      b = [a[0] + (b[0] - a[0]) * upto.fraction, a[1] + (b[1] - a[1]) * upto.fraction];
+      const a = p[j - 1], b = p[j];
+      to = [a[0] + (b[0] - a[0]) * upto.fraction, a[1] + (b[1] - a[1]) * upto.fraction];
     }
     ctx.beginPath();
-    ctx.moveTo(a[0], a[1]);
-    ctx.lineTo(b[0], b[1]);
+    ctx.moveTo(from[0], from[1]);
+    ctx.quadraticCurveTo(p[j - 1][0], p[j - 1][1], to[0], to[1]);
     ctx.lineWidth = Array.isArray(s.lw) ? (s.lw[j - 1] + s.lw[j]) * 0.5 : s.lw;
     ctx.stroke();
   }

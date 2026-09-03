@@ -75,6 +75,7 @@ src/components/
 src/collage-studies.js            which found material sits under which poem
 src/specimen-vocabulary.js        the curated four words per poem
 src/style.css                     design tokens only
+scripts/prepare-plate.js          a found photograph -> a plate, in the house treatment
 scripts/verify-site.js            production checks; `npm run verify`
 public/collage/                   collage imagery, with sources and rights
 ```
@@ -90,11 +91,19 @@ subtitle: "For L.H."                 # optional, shown as a dedication
 date: 2024-10-15
 published_in: "Bluestem Magazine"    # optional
 external_url: "https://..."          # optional
+catalogue: 19                        # optional, see below
 ---
 
 The poem. Blank lines separate stanzas.
 *Emphasis is the poet's own* and may span line breaks.
 ```
+
+**The catalogue number is not the position.** The margin number (`01 / 21`) is where
+a poem sits in the book and changes whenever the order does. The plate's `MB / NN` is
+the number it was accessioned under and should not. It defaults to the digits the
+filename starts with; a poem that moves to a different place in the book keeps its
+number by naming `catalogue:` in the front matter. The Carpenter is first in the book
+and MB / 19 on its plate.
 
 **Capitalisation.** A line begins with a capital only when it begins a sentence.
 A line that continues a sentence — across a line break or a stanza break — starts
@@ -199,6 +208,17 @@ a click, and does not navigate.
 - Sources and rights for everything in `public/collage/` are recorded in its
   own README. Public domain or CC0 only, and every plate is cropped away from
   its mount and caption before it is used.
+- **Prepare a new plate with the script, not by eye.**
+  `node scripts/prepare-plate.js <source> <name> [--crop l,t,w,h] [--negate]`
+  crops, greys, settles the tone onto the library's range and applies the house
+  feather. `npm run verify` then checks the result against the same standard —
+  the plate exists, it has a feathered edge, its tone is inside the range, and it
+  has enough variation to be a picture. All three failures have happened: a plate
+  went up with no feather and read as a hard rectangle; another was 97%
+  featureless; and a study once named a file that did not exist, which nothing
+  caught until it 404'd in a browser.
+- Tone is measured **inside the feather**. Measuring the whole file measures the
+  transparent border, which is dark, and every reading comes out wrong.
 - A pale subject on a dark plate has to be **inverted**: `multiply` against the
   bone ground keeps the black and throws away the mark.
 - **Every sheet is torn differently.** `src/marginalia.js` generates each layer's
@@ -238,6 +258,14 @@ The rules between index rows are **drawn, not declared** — `DrawnRule.vue` ove
 `ruleMarks()`, one seeded line per row, allowed to wobble, to lift once, and to
 overrun its end. They straddle the row edge rather than bounding a box. Print falls
 back to a real border, because paper takes a printed rule better than a drawn one.
+
+## The name page
+
+The opening carries one word of asemic writing in its lower right, drawn at random
+from the eighty-four the poems have already given up in `specimen-vocabulary.js`. It
+is the one mark on the site that is *not* fixed per reader: the choosing is random,
+the writing is not — the same word always comes out in the same hand. The rule about
+seeding from the slug is about a poem's own signature and does not reach here.
 
 ## The four words
 

@@ -165,11 +165,13 @@ reintroduce anything like it.
   crossed stroke; the poet's own description is that their t is a regular t, or
   at speed closer to a plus. The bar crosses high on that short stem, overshoots
   both sides and tilts up to the right.
-- **The crossbar is sometimes joined to the stem rather than laid across it.**
-  About two in five: the pen reaches the foot, runs back up the stem it just
-  drew, and goes straight out into the bar without leaving the page. `futures`
-  is the clearest instance and `soft` carries one bar across both the f and the
-  t. A joined bar doubles the upper stem and meets it at a junction instead of a
+- **The crossbar is joined to the stem, not laid across it.** The pen reaches
+  the foot, runs back up the stem it just drew, and goes straight out into the
+  bar without leaving the page. `futures` on the first page is the clearest
+  instance and `soft` carries one bar across both the f and the t; the writing
+  test of 3 September bears it out across *little*, *attempts*, *still* and
+  *flat*. It was one time in three while the shape was being chosen; the poet
+  picked the always-joined form off a sheet of six, and `tJoin` is the dial. A joined bar doubles the upper stem and meets it at a junction instead of a
   crossing, which is most of why a written t does not look drawn.
 - **The `th` shoulder is a *connecting* stroke and only happens when the h has
   somewhere to go.** Of the seven `th` on the photographed page, the five that run on

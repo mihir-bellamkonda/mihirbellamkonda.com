@@ -47,11 +47,11 @@ const HAND = 'notebook';
 const HANDS = {
   notebook: {
     slant: -0.06, wide: 1.35, gap: 1.8, lift: 0.16, bounce: 1, steady: 0.45,
-    ligature: 0.3, traced: true, curve: true, furniture: true, units: [0.583, 0.892]
+    ligature: 0.3, tJoin: 1, traced: true, curve: true, furniture: true, units: [0.586, 0.875]
   },
   plain: {
     slant: 0.055, wide: 1, gap: 1, lift: 0.45, bounce: 0, steady: 0,
-    ligature: 0, traced: false, curve: false, furniture: false, units: [0.422, 0.863]
+    ligature: 0, tJoin: 0, traced: false, curve: false, furniture: false, units: [0.422, 0.863]
   }
 };
 
@@ -212,8 +212,11 @@ function wordMark(x, y, word, size, R, hand) {
       // through it — and `soft` carries one bar across both the f and the t.
       // A lifted bar and a joined one are different marks: the joined one
       // doubles the upper stem and meets it at a junction rather than a
-      // crossing, which is most of why a written t does not look drawn.
-      if (R() < 0.42) {
+      // crossing, which is most of why a written t does not look drawn. The
+      // poet picked the always-joined form off a sheet of six, and the writing
+      // test they sent back bears it out — `little`, `attempts`, `still` and
+      // `flat` all carry the bar out of the stroke rather than across it.
+      if (R() < pen.tJoin) {
         to(cx + w * 0.36, y - stem * (bar - 0.06));
         to(cx - w * (0.08 + R() * 0.1), y - stem * (bar - 0.02));
         to(cx + w * (0.84 + R() * 0.18), y - stem * (bar + 0.05));

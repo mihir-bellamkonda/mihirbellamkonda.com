@@ -234,6 +234,15 @@ reintroduce anything like it.
   hesitation. Duration comes from the length of the writing (`PEN_SPEED`), so a whole
   poem takes five or six seconds and a single line takes one or two — a column written
   in three was the reason it still felt mechanical after the first fix.
+- **The pen rests unevenly.** Beyond the letter, word and line boundaries, a
+  hand comes off the end of a stanza and does not start the next one at once,
+  and now and then it stops mid-line for no reason the page records. Neither is
+  common: about a third of stanza breaks are rested on, and one word gap in
+  forty is caught. A pause that arrives on schedule is a rhythm rather than a
+  hesitation and stops reading as a person. Which ones happen is drawn from the
+  poem's own seed, so a mark hesitates in the same places for every reader. The
+  cost is about a second on a half-minute column, and since the caller
+  compresses a column it is the proportions that survive, not the seconds.
 - A ResizeObserver reports the size it starts with. `AsemicMarks.vue` therefore
   redraws on resize only when the canvas has really changed size — otherwise every
   write-on was cut off a fraction of a second in. Theme changes still repaint

@@ -735,10 +735,19 @@ export function ghost(text, opts) {
     };
   };
 
+  // A hand does not rest evenly. It comes off the end of a stanza and does not
+  // start the next one immediately, and now and then it stops in the middle of
+  // a line for no reason the page records. Neither happens often — a pause that
+  // arrives on schedule is a rhythm rather than a hesitation, and stops reading
+  // as a person. Which ones happen is drawn from the poem's own seed, so a
+  // given mark hesitates in the same places for every reader, forever.
+  let afterStanza = false;
+
   for (const raw of lines) {
     const line = raw.replace(/\*/g, '').trim();
     if (!line) {
       by += leading * 0.62;
+      afterStanza = true;
       continue;
     }
     if (maxLines && used >= maxLines) break;
@@ -752,7 +761,9 @@ export function ghost(text, opts) {
     // What the pen has just done, which is what decides how long it rests
     // before the next mark. A hand pauses between words and rests hardest
     // on the way back to the left margin; inside a word it barely stops.
-    let gap = 'line';
+    // A little over a third of the stanza breaks are also rested on.
+    let gap = afterStanza && R() < 0.38 ? 'stanza' : 'line';
+    afterStanza = false;
 
     while (wi < words.length && guard++ < 200) {
       const m = wordMark(cx, hand.baseline, words[wi], size, R, hand);
@@ -844,7 +855,11 @@ export function ghost(text, opts) {
         }
       }
 
-      gap = 'word';
+      // Once in every forty-odd words the pen simply stops, mid-line, and picks
+      // the sentence up again. Rare enough that a reader meets it perhaps once
+      // in a column, which is what makes it read as a thought rather than as
+      // a stutter.
+      gap = R() < 0.024 ? 'caught' : 'word';
       cx = m.end + size * (0.62 + R() * 0.5);
       wi++;
     }
@@ -981,7 +996,9 @@ const TURN_COST = 2.1;   // how much a corner slows the pen, per unit of turn
 const REST = {
   letter: 0.005,  // inside a word the pen hardly stops
   word: 0.1,      // between words it does
-  line: 0.22      // and it rests hardest before starting a line
+  caught: 0.29,   // and once in a while it stops mid-line for no reason
+  line: 0.22,     // it rests hardest before starting a line
+  stanza: 0.46    // and hardest of all coming off the end of a stanza
 };
 
 /**

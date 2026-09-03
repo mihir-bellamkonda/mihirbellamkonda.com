@@ -266,6 +266,22 @@ the row's own link and should not be announced or tabbed to twice. A press that
 lingers past 400ms or travels more than 8px is the layer-separating gesture, not
 a click, and does not navigate.
 
+- **The plate fades while the poem is read.** Five minutes from arrival to
+  nothing, on a poem page only — the index keeps its collage, because a reader is
+  passing through the index rather than sitting with it. A reload brings it back,
+  so it belongs to the sitting and nothing is remembered about the reader. The
+  curve is an ease-in, not a straight ramp: a linear opacity fade reads as
+  fast-then-lingering, and the first minute here should be impossible to catch
+  happening — it is still at 0.97 after sixty seconds, 0.83 at two and a half
+  minutes, 0.48 at four. It is a CSS animation rather than a redraw, so it costs
+  nothing over the five minutes, and it is **paused whenever the tab is hidden**,
+  so a poem left open in a background tab is still there on return. Two traps:
+  moving between poems does not remount the collage, so the fade has to be
+  restarted by hand or the second poem inherits the first one's spent animation
+  and arrives invisible; and `prefers-reduced-motion` turns it off, because a
+  reader asking for less movement is not asking for a five minute dissolve.
+  On a phone this takes the four words with it — below 860px they live on the
+  plate, so after five minutes they are gone from the page.
 - The imagery must **recede**. Large calm tonal areas, few edges, nothing
   captioned or labelled, nothing that reads as a second headline. Fragments end
   by dissolving through a gradient mask, not on a hard border.

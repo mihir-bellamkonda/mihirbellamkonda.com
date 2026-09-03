@@ -128,10 +128,7 @@ const showsWords = computed(() => props.context !== 'poem');
 const returnedTitle = computed(() => String(props.poem.title || ''));
 const handText = computed(() => props.markText || props.poem.content);
 const handSeed = computed(() => props.markSeed || `${props.poem.slug}::folio`);
-const catalogueId = computed(() => {
-  const number = String(props.poem.slug || '').match(/^\d+/)?.[0] || '00';
-  return `MB / ${number}`;
-});
+const catalogueId = computed(() => `MB / ${props.poem.catalogue || '00'}`);
 const largeMarkSize = computed(() => {
   if (props.poem.path === 'in-of') return props.context === 'index' ? 39 : 33;
   return props.context === 'index' ? 28 : 25;

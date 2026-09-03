@@ -42,6 +42,11 @@ const poems = poemFiles.map(file => {
     external_url: data.external_url || '',
     published_in: data.published_in || '',
     unpublished: Boolean(data.unpublished),
+    // The archive number, which is not the position in the book. It defaults
+    // to the digits the filename starts with, because that is where it lived
+    // before the two could differ — but a poem that moves keeps its number by
+    // naming it here.
+    catalogue: String(data.catalogue ?? (path.basename(file, '.md').match(/^\d+/)?.[0] ?? '')).padStart(2, '0'),
     audio: data.audio || '',
     content,
     stanzas

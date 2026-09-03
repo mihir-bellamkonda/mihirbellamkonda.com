@@ -330,6 +330,27 @@ a click, and does not navigate.
   transparent border, which is dark, and every reading comes out wrong.
 - A pale subject on a dark plate has to be **inverted**: `multiply` against the
   bone ground keeps the black and throws away the mark.
+- **A photograph is not always cut to a torn rectangle.** `deckle()` varies the
+  tear beautifully but never the shape under it, so twenty-one plates rhymed
+  harder than they should have. `crop()` in `marginalia.js` gives the image
+  sheets one of five shapes, each from a particular moment: a **Braque**
+  quadrilateral with no two sides parallel and one edge held square to the frame
+  (papier collé, 1912-14); a **Schwitters** band of extreme proportion laid at an
+  angle and run off both ends (Merz, 1919-); a **Matisse** sweep of three or four
+  swells with no straight edge in it (the cut-outs, 1947-54); a **Villeglé** bite
+  that opens a sheet so the one beneath shows through (décollage, 1949-60s); and
+  a **Bearden** seam, where two photographs abut along one shared tear instead of
+  overlapping (1964-). The house tear is still the commonest. One family to a
+  poem, fixed to it forever, so a plate is one idea rather than a sampler — and
+  the ground, the hand's sheets and the large hand stay torn whatever the
+  photographs do, because they are the paper and not the picture.
+  Two things learned by looking rather than by reasoning: the arcs must have a
+  **wide** spread of reach over **few** lobes, or every plate comes out a circle,
+  and a porthole is a different idea from a piece of cut paper; and the bite is a
+  share of an outline rather than a count of its points, since a fixed handful is
+  a deep bite out of a quadrilateral and nothing at all out of a torn edge
+  carrying forty. A band is never bitten — it is thin by construction, and
+  pulling its outline toward the middle severs it rather than opening it.
 - **Every sheet is torn differently.** `src/marginalia.js` generates each layer's
   `clip-path` and tilt from the poem's own seed and hands them to the figure as
   `--clip-*` and `--spin-*` custom properties. `deckle()` works in two passes: corners

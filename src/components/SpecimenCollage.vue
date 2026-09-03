@@ -101,7 +101,7 @@ import AsemicMarks from './AsemicMarks.vue';
 import { specimenWordsFor } from '../specimen-vocabulary.js';
 import { studyFor } from '../collage-studies.js';
 import { rngFor } from '../asemic.js';
-import { deckle, marginMark } from '../marginalia.js';
+import { deckle, marginMark, crop, cropFamily, seamPair } from '../marginalia.js';
 import { temperFor } from '../slow-hand.js';
 import { prefersReducedMotion } from '../motion.js';
 
@@ -211,11 +211,31 @@ const plate = computed(() => {
   const spin = (base, range) => `${Math.round((base + (R() - 0.5) * range) * 100) / 100}deg`;
   const overshoot = R() < 0.5 ? 'left' : 'right';
 
+  // How this poem's photographs are cut out.
+  //
+  // Every plate in the folio used to be a torn rectangle. deckle() varies the
+  // tear beautifully but never the shape under it, so twenty-one plates rhymed
+  // harder than they should have. The photographs now take one of five shapes,
+  // each from a particular moment in the history of the thing: a clean Braque
+  // quadrilateral with no two sides parallel, a Schwitters band of extreme
+  // proportion run off both ends, a Matisse sweep cut freehand with no straight
+  // edge in it, a Villeglé bite that opens the sheet so the one beneath shows
+  // through, and a Bearden seam where two photographs abut along one shared
+  // tear instead of overlapping. The house tear is still the commonest of them.
+  //
+  // One family to a poem, so a plate is one idea rather than a sampler, and
+  // fixed to that poem forever. The ground, the hand's sheets and the large
+  // hand stay torn whatever the photographs do — they are the paper, not the
+  // picture.
+  const family = cropFamily(`${props.poem.path}::crop`);
+  const seam = family === 'seam' ? seamPair(`${props.poem.path}::seam`) : null;
+  const cutTo = (options) => crop(R, { family: seam ? 'torn' : family, bite: 0.34, ...options });
+
   return {
     '--clip-ground': deckle(R, { steps: 5, tear: 2.1 }),
-    '--clip-primary': deckle(R, { steps: 5, tear: 2.6 }),
-    '--clip-secondary': deckle(R, { steps: 5, tear: 2.6 }),
-    '--clip-tertiary': deckle(R, { steps: 4, tear: 3 }),
+    '--clip-primary': seam ? seam.left : cutTo({ steps: 5, tear: 2.6 }),
+    '--clip-secondary': seam ? seam.right : cutTo({ steps: 5, tear: 2.6 }),
+    '--clip-tertiary': cutTo({ steps: 4, tear: 3 }),
     '--clip-large': deckle(R, { steps: 4, tear: 2.4, open: overshoot }),
     '--clip-trace': deckle(R, { steps: 5, tear: 1.9 }),
     '--spin-ground': spin(1.15, 2.6),

@@ -307,3 +307,181 @@ function crossPath(R) {
 
   return first + second;
 }
+
+/* ------------------------------------------------------------------------ *
+ * Crops that are not torn rectangles.
+ *
+ * Every plate in the folio was a torn rectangle, which is why they rhymed so
+ * strongly with one another: deckle() varies the tear but never the shape
+ * underneath it. These are the other ways paper has been cut for a collage,
+ * each taken from a specific one. They are all polygons in percentage units,
+ * including the arcs — clip-path: path() takes no percentages, so a curve is
+ * sampled rather than described, which costs a few dozen points and keeps the
+ * sheet sizing in the stylesheet where it belongs.
+ * ------------------------------------------------------------------------ */
+
+const TAU = Math.PI * 2;
+const asPolygon = points =>
+  'polygon(' + points.map(([x, y]) => `${round(x)}% ${round(y)}%`).join(', ') + ')';
+
+/**
+ * Papier collé — the cut quadrilateral. Braque and Picasso, 1912-14.
+ *
+ * The founding move of collage was cut, not torn: clean-edged shapes of
+ * faux-bois and newsprint, with no two sides parallel, so the fragment reads
+ * as placed rather than as a window. One edge is left square to the frame,
+ * which is what keeps it a decision instead of an accident.
+ */
+function cutQuad(R) {
+  const inset = () => 1.5 + R() * 9;
+  const points = [
+    [inset(), inset()],
+    [100 - inset(), inset()],
+    [100 - inset(), 100 - inset()],
+    [inset(), 100 - inset()]
+  ];
+  // one edge held true to the frame; which one is the poem's own business
+  const square = Math.floor(R() * 4);
+  if (square === 0) points[1][1] = points[0][1];
+  else if (square === 1) points[2][0] = points[1][0];
+  else if (square === 2) points[3][1] = points[2][1];
+  else points[0][0] = points[3][0];
+  return points;
+}
+
+/**
+ * Merz — the found band. Schwitters, 1919 onward.
+ *
+ * His fragments keep their origin as objects: a tram ticket stays ticket
+ * shaped, a strip of newsprint stays a strip. So this is a band of extreme
+ * proportion laid at an angle and run off both ends, cut by the frame rather
+ * than stopping inside it.
+ */
+function foundBand(R) {
+  const lean = (R() - 0.5) * 0.58;
+  const middle = 26 + R() * 48;
+  const half = 6.5 + R() * 7;
+  const rise = Math.tan(lean) * 70;
+  return [
+    [-25, middle - rise - half],
+    [125, middle + rise - half],
+    [125, middle + rise + half],
+    [-25, middle - rise + half]
+  ];
+}
+
+/**
+ * The cut-out — scissor arcs. Matisse, 1947-54.
+ *
+ * Cut freehand straight into colour with no drawing first, which gives large
+ * alternating concave and convex sweeps and no straight edge anywhere. A few
+ * radii around the turn, blended into one another so the shape swells and
+ * narrows without ever cornering.
+ */
+function scissorArcs(R) {
+  // Three or four swells, not five or six, and a wide spread of reach between
+  // them. The first pass used a narrow one over more lobes and every plate
+  // came out a circle — which is the one shape this must not be, a porthole
+  // being a different idea from a cut piece of paper. A little jitter on top,
+  // because scissors do not travel on a radius.
+  const lobes = 3 + Math.floor(R() * 2);
+  const radii = Array.from({ length: lobes }, () => 0.54 + R() * 0.52);
+  const turn = R() * TAU;
+  const points = [];
+  for (let i = 0; i < 54; i++) {
+    const angle = (i / 54) * TAU;
+    const place = ((angle + turn) / TAU) * lobes;
+    const from = Math.floor(place) % lobes;
+    const blend = (1 - Math.cos((place - Math.floor(place)) * Math.PI)) / 2;
+    const reach = (radii[from] * (1 - blend) + radii[(from + 1) % lobes] * blend)
+      + (R() - 0.5) * 0.035;
+    points.push([
+      50 + Math.cos(angle) * 49 * reach,
+      50 + Math.sin(angle) * 47 * reach
+    ]);
+  }
+  return points;
+}
+
+/**
+ * Décollage — the revealed stratum. Villeglé, Hains and Rotella, 1949-60s.
+ *
+ * The affichistes tore down through layered posters, so the tear exposes what
+ * is under it rather than where the paper ends. This takes a bite out of a
+ * run of an outline and pulls it toward the middle, which opens the sheet and
+ * lets the one beneath show through the hole.
+ */
+function biteInto(points, R) {
+  const count = points.length;
+  // A fixed handful of points is a deep bite out of a four-cornered shape and
+  // nothing at all out of a torn edge carrying forty, so the bite is a share
+  // of the outline rather than a count of its points.
+  const width = Math.max(2, Math.round(count * (0.09 + R() * 0.06)));
+  const at = Math.floor(R() * count);
+  const depth = 0.3 + R() * 0.32;
+  const bitten = points.map(p => [p[0], p[1]]);
+  for (let i = 0; i < width; i++) {
+    const index = (at + i) % count;
+    const edge = (1 - Math.cos(((i + 0.5) / width) * TAU)) / 2;
+    const pull = depth * edge;
+    bitten[index][0] += (50 - bitten[index][0]) * pull;
+    bitten[index][1] += (50 - bitten[index][1]) * pull;
+  }
+  return bitten;
+}
+
+/**
+ * A seam two sheets can be torn along. Bearden, 1964 onward.
+ *
+ * His photostat collages assemble a figure out of mismatched fragments that
+ * abut along a shared edge instead of overlapping. One wandering line is
+ * generated here and handed to both sheets — the right-hand boundary of the
+ * first and the left-hand boundary of the second — so two photographs meet
+ * along it and neither is laid over the other.
+ */
+export function seamPair(seed) {
+  const R = typeof seed === 'function' ? seed : rngFor(seed);
+  const base = 38 + R() * 24;
+  const seam = [];
+  for (let i = 0; i <= 8; i++) {
+    seam.push([clamp(base + (R() - 0.5) * 17, 8, 92), (i / 8) * 100]);
+  }
+  const reversed = seam.slice().reverse();
+  return {
+    left: asPolygon([[0, 0], ...seam, [0, 100]]),
+    right: asPolygon([[100, 0], [100, 100], ...reversed])
+  };
+}
+
+/** Which of the shapes a plate is cut to. Torn stays the commonest. */
+const FAMILIES = ['torn', 'torn', 'torn', 'torn', 'cut', 'cut', 'seam', 'band', 'arc'];
+
+export function cropFamily(seed) {
+  const R = typeof seed === 'function' ? seed : rngFor(seed);
+  return FAMILIES[Math.floor(R() * FAMILIES.length)];
+}
+
+/**
+ * One sheet's outline.
+ *
+ * `family` names the shape; `bite` is the décollage hole, which any of them
+ * can be given; `open` is deckle()'s untorn side and means nothing to the
+ * others, whose ends are already run off the frame or cut square.
+ */
+export function crop(seed, options = {}) {
+  const R = typeof seed === 'function' ? seed : rngFor(seed);
+  const { family = 'torn', bite = 0, open = null, steps = 5, tear = 2.1 } = options;
+
+  if (family === 'torn') return deckle(R, { steps, tear, open });
+
+  let points;
+  if (family === 'cut') points = cutQuad(R);
+  else if (family === 'band') points = foundBand(R);
+  else if (family === 'arc') points = scissorArcs(R);
+  else return deckle(R, { steps, tear, open });
+
+  // Not a band: it is thin by construction, and pulling a run of its outline
+  // toward the middle does not open a hole in it, it severs it.
+  if (bite && family !== 'band' && R() < bite) points = biteInto(points, R);
+  return asPolygon(points);
+}

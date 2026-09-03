@@ -280,8 +280,17 @@ a click, and does not navigate.
   restarted by hand or the second poem inherits the first one's spent animation
   and arrives invisible; and `prefers-reduced-motion` turns it off, because a
   reader asking for less movement is not asking for a five minute dissolve.
-  On a phone this takes the four words with it — below 860px they live on the
-  plate, so after five minutes they are gone from the page.
+  **What the fade leaves behind is the four words, and nothing else.** It does
+  not run on the figure — opacity multiplies, and a child cannot climb back out
+  of a parent at zero — so every layer is faded on its own, and the plate's frame
+  with them: border and ground to transparent, and the wedge of ground moved off
+  the figure onto `::before` so it can go too, since a gradient is not
+  interpolable and would otherwise flip at the halfway mark and leave a rectangle
+  standing where the plate had been. The paper veil on `::after` fades with it.
+  `.catalogue` is the one child left out, and `MB / NN` is faded back in on its
+  own, so the identifier goes the way of the picture. The keyframe has no `from`
+  on purpose: an explicit one would snap every sheet to full opacity before
+  starting, where an implicit one starts each layer from wherever it already sat.
 - The imagery must **recede**. Large calm tonal areas, few edges, nothing
   captioned or labelled, nothing that reads as a second headline. Fragments end
   by dissolving through a gradient mask, not on a hard border.
@@ -363,7 +372,8 @@ coordinates — curated in `src/specimen-vocabulary.js`. None may appear in the
 poem's title. `npm run verify` fails if a word is missing from the body, occurs
 in the title, repeats, or if a poem has no set.
 
-They appear twice over: recessed beside the identifier in the index collage, and
+They are set apart by space rather than by middots, in both places. They appear
+twice over: recessed beside the identifier in the index collage, and
 fainter still in the poem page's left margin, with no label and no heading.
 Each poem page carries **exactly one** set, but which element holds it depends on
 the width. Above 860px the margin has them and the collage keeps only its

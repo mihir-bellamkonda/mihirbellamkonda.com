@@ -88,9 +88,9 @@
     <p class="catalogue">
       <span class="catalogue-line">
         <span class="catalogue-id">{{ catalogueId }}</span>
-        <span class="catalogue-field"> · {{ vocabulary.field }}</span>
+        <span class="catalogue-field">{{ vocabulary.field }}</span>
       </span>
-      <span class="catalogue-coordinates">{{ vocabulary.coordinates.join(' · ') }}</span>
+      <span class="catalogue-coordinates"><span v-for="word in vocabulary.coordinates" :key="word">{{ word }}</span></span>
     </p>
   </figure>
 </template>
@@ -374,9 +374,7 @@ function clearPointer(event) {
   width: 100%;
   overflow: hidden;
   border: 1px solid var(--a-hair);
-  background:
-    linear-gradient(114deg, transparent 0 64%, color-mix(in srgb, var(--accent) 3%, transparent) 64% 100%),
-    color-mix(in srgb, var(--a-bg) 94%, var(--accent));
+  background-color: color-mix(in srgb, var(--a-bg) 94%, var(--accent));
   color: var(--a-ink);
   cursor: grab;
   touch-action: pan-y;
@@ -384,6 +382,22 @@ function clearPointer(event) {
 
 .specimen:active {
   cursor: grabbing;
+}
+
+/* The wedge of ground the plate is laid on. It used to be the figure's own
+   background, alongside the flat tint. A gradient cannot be animated away —
+   background-image is not interpolable, so it would flip at the halfway mark —
+   and at the end of the reading fade it was the one thing left drawing a
+   rectangle where the plate had been. On its own element it fades like
+   everything else. */
+.specimen::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(114deg, transparent 0 64%, color-mix(in srgb, var(--accent) 3%, transparent) 64% 100%);
 }
 
 /* The veil that makes everything beneath it read as one sheet of paper. */
@@ -615,24 +629,55 @@ function clearPointer(event) {
    Only on a poem page. The index keeps its collage — a reader is passing
    through the index, not sitting with it — which is why this hangs off
    .context-poem and not off .specimen. */
-.context-poem.is-reading {
+/* What the fade leaves behind is the four words, and nothing else.
+
+   So it does not run on the figure — that would take the words with it, since
+   opacity multiplies and a child cannot climb back out of a parent at zero.
+   Every layer is faded on its own instead, and the plate's frame with them:
+   the border and the ground go to transparent, leaving only the 3% gradient
+   wedge, which is imperceptible. `.catalogue` is the one child left out of it,
+   and its identifier is faded back in on its own, so `MB / NN` goes the way of
+   the picture and the words stay.
+
+   The keyframe has no `from` on purpose. An explicit `from: 1` would snap every
+   sheet to full opacity before starting — they sit at 0.1 to 0.79 — where an
+   implicit one starts each layer from wherever it already was. */
+.context-poem.is-reading > *:not(.catalogue),
+.context-poem.is-reading::before,
+.context-poem.is-reading::after,
+.context-poem.is-reading .catalogue-id {
   animation: plate-read 300s cubic-bezier(0.62, 0.02, 0.86, 0.55) forwards;
 }
 
+.context-poem.is-reading {
+  animation: plate-frame 300s cubic-bezier(0.62, 0.02, 0.86, 0.55) forwards;
+}
+
 @keyframes plate-read {
-  from { opacity: 1; }
   to { opacity: 0; }
+}
+
+@keyframes plate-frame {
+  to {
+    border-color: transparent;
+    background-color: transparent;
+  }
 }
 
 /* A reader who has asked for less movement is not asking to watch a five
    minute dissolve. */
 @media (prefers-reduced-motion: reduce) {
-  .context-poem.is-reading { animation: none; }
+  .context-poem.is-reading,
+  .context-poem.is-reading > *,
+  .context-poem.is-reading::before,
+  .context-poem.is-reading::after,
+  .context-poem.is-reading .catalogue-id { animation: none; }
 }
 
 .catalogue-line {
   display: flex;
   align-items: baseline;
+  gap: 0.62em;
 }
 
 .catalogue-id {
@@ -657,7 +702,11 @@ function clearPointer(event) {
   transition: opacity 300ms ease;
 }
 
+/* The words were separated by middots. They are set apart by space now, which
+   is the quieter reading of a list that is not a sentence. */
 .catalogue-coordinates {
+  display: flex;
+  gap: 0.62em;
   color: var(--a-ink-2);
   opacity: 0.2;
   letter-spacing: 0.08em;

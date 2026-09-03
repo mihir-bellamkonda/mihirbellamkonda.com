@@ -25,6 +25,11 @@
       </main>
 
       <div class="rest"></div>
+
+      <!-- One word from the poems, in the hand, in the corner. It is a real
+           word out of a real poem and it is unreadable, which is this whole
+           site in miniature. -->
+      <AsemicMarks class="corner-word" :text="word" :seed="`about::${word}`" :size="22" :max-lines="1" />
     </div>
 
     <FooterNav />
@@ -33,6 +38,20 @@
 
 <script setup>
 import FooterNav from './FooterNav.vue';
+import AsemicMarks from './AsemicMarks.vue';
+import { specimenVocabulary } from '../specimen-vocabulary.js';
+
+/**
+ * A different word every visit.
+ *
+ * Everywhere else the marks are seeded from the poem, so a poem's signature is
+ * the same for every reader forever. That rule is about a poem's own hand and
+ * does not reach here: this is the house drawing one word out of the hat on
+ * the way in. The choosing is random; the writing is not — the same word comes
+ * out in the same hand every time it comes up.
+ */
+const words = Object.values(specimenVocabulary).flat();
+const word = words[Math.floor(Math.random() * words.length)];
 </script>
 
 <style scoped>
@@ -46,6 +65,7 @@ import FooterNav from './FooterNav.vue';
 }
 
 .inner {
+  position: relative;
   flex: 1;
   width: 100%;
   max-width: 1200px;
@@ -132,5 +152,22 @@ import FooterNav from './FooterNav.vue';
 
 .rest {
   height: clamp(6rem, 22vh, 14rem);
+}
+
+/* Low and to the right, where a hand signs off. */
+.corner-word {
+  position: absolute;
+  right: clamp(1.25rem, 5vw, 4.5rem);
+  bottom: clamp(1.5rem, 5vh, 3.5rem);
+  width: clamp(9rem, 16vw, 12rem);
+  height: 3rem;
+  opacity: 0.62;
+}
+
+@media (max-width: 860px) {
+  .corner-word {
+    width: 7rem;
+    opacity: 0.42;
+  }
 }
 </style>

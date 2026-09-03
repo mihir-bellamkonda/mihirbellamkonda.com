@@ -3,6 +3,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { ghost, rngFor } from '../src/asemic.js';
 import { normalizeWords, specimenVocabulary } from '../src/specimen-vocabulary.js';
+import studies from '../src/collage-studies.js';
+import sharp from 'sharp';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const poems = JSON.parse(fs.readFileSync(path.join(root, 'src/poems.json'), 'utf8'));
@@ -252,6 +254,57 @@ if (fs.existsSync(sitemapPath)) {
 }
 
 
+/**
+ * The folio's own standards, checked rather than remembered.
+ *
+ * Nothing here used to be verified at all: a plate could be renamed, mistyped
+ * or left out of the studies entirely and the build would pass, because the
+ * only thing that noticed was a 404 in a reader's browser. Both plate faults
+ * found in the September audit — one missing its feathered edge, one so flat
+ * it was 97% featureless — would have been caught here for nothing.
+ */
+const plates = new Map();
+for (const poem of poems) {
+  const study = studies[poem.path];
+  check(Boolean(study), `${poem.slug}: no collage study.`);
+  if (!study) continue;
+  for (const layer of ['primary', 'secondary', 'tertiary']) {
+    const asset = study[layer];
+    if (!asset) continue;
+    const file = path.join(root, 'public', asset.replace(/^\//, ''));
+    check(fs.existsSync(file), `${poem.slug}: ${layer} plate ${asset} is missing.`);
+    if (asset.endsWith('.webp') && fs.existsSync(file)) plates.set(asset, file);
+  }
+}
+
+for (const [asset, file] of plates) {
+  const { data, info } = await sharp(file).toColourspace('srgb').ensureAlpha()
+    .raw().toBuffer({ resolveWithObject: true });
+  if (info.channels !== 4) {
+    failures.push(`${asset}: could not be read as RGBA.`);
+    continue;
+  }
+
+  // Measured inside the feather. Measuring the whole file measures the
+  // transparent border, which is dark, and says nothing about the picture.
+  let opaque = 0, sum = 0, sumSquares = 0;
+  for (let i = 0; i < info.width * info.height; i++) {
+    if (data[i * 4 + 3] < 200) continue;
+    const value = 0.299 * data[i * 4] + 0.587 * data[i * 4 + 1] + 0.114 * data[i * 4 + 2];
+    opaque++;
+    sum += value;
+    sumSquares += value * value;
+  }
+  const mean = sum / opaque;
+  const deviation = Math.sqrt(sumSquares / opaque - mean * mean);
+  const share = opaque / (info.width * info.height);
+
+  check(share < 0.95, `${asset}: no feathered edge — it will read as a hard rectangle beside twenty soft ones.`);
+  check(mean > 140 && mean < 232, `${asset}: tone sits at ${mean.toFixed(0)}, outside the folio's range; it has probably not been through the house treatment.`);
+  check(deviation > 3, `${asset}: almost no tonal variation (${deviation.toFixed(0)}); the plate is effectively blank.`);
+  check(deviation < 45, `${asset}: contrast of ${deviation.toFixed(0)} will shout against the rest.`);
+}
+
 const robotsPath = path.join(dist, 'robots.txt');
 check(fs.existsSync(robotsPath), 'robots.txt is missing.');
 if (fs.existsSync(robotsPath)) {
@@ -265,4 +318,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`Verified ${poems.length} poems, social previews, static reading copies, metadata, URLs, and signatures.`);
+console.log(`Verified ${poems.length} poems, ${plates.size} plates, social previews, static reading copies, metadata, URLs, and signatures.`);

@@ -158,6 +158,19 @@ reintroduce anything like it.
   modest crossed stem and then a single low shoulder, the h losing its ascender
   entirely. The rest of the alphabet is still a description written from memory.
   This file once claimed all of it came from a sample. Only these six do.
+- **The t is not an ascender.** It stands about one and a half x-heights where h,
+  l, d, b and k run to nearly three — `soft`, `Most`, `futures` and `Fantasy` all
+  show it barely clearing the letters beside it. Drawing it at full ascender
+  height is what made it read as a stem with a hump next to it rather than as a
+  crossed stroke; the poet's own description is that their t is a regular t, or
+  at speed closer to a plus. The bar crosses high on that short stem, overshoots
+  both sides and tilts up to the right.
+- **The crossbar is sometimes joined to the stem rather than laid across it.**
+  About two in five: the pen reaches the foot, runs back up the stem it just
+  drew, and goes straight out into the bar without leaving the page. `futures`
+  is the clearest instance and `soft` carries one bar across both the f and the
+  t. A joined bar doubles the upper stem and meets it at a junction instead of a
+  crossing, which is most of why a written t does not look drawn.
 - **The `th` shoulder is a *connecting* stroke and only happens when the h has
   somewhere to go.** Of the seven `th` on the photographed page, the five that run on
   into another letter are all flattened this way — *the*, *that*, *father* — and the
@@ -166,7 +179,9 @@ reintroduce anything like it.
   therefore never ligatured. How often it happens when it *can* is `ligature`, and
   that number is a taste setting rather than a measurement — the page says almost
   always, the poet says their hand humps less often than that, and on seven samples
-  their eye is the better evidence. It ships at 0.3.
+  their eye is the better evidence. It ships at 0.3, and the shoulder itself was
+  flattened from 0.86-0.98 of the x-height to 0.60-0.68 — at the old height it
+  was a full arch and read as a hump rather than as a sweep between two letters.
 - **A traced form is what the hand reaches for, not what it always lands on**
   (`steady`). Drawing all six every time made the writing *readable*, which is the
   one thing it must not be — the `e` stopped colliding with the `o`, "the" arrived

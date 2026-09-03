@@ -47,7 +47,7 @@ const HAND = 'notebook';
 const HANDS = {
   notebook: {
     slant: -0.06, wide: 1.35, gap: 1.8, lift: 0.16, bounce: 1, steady: 0.45,
-    ligature: 0.3, traced: true, curve: true, furniture: true, units: [0.578, 0.852]
+    ligature: 0.3, traced: true, curve: true, furniture: true, units: [0.583, 0.892]
   },
   plain: {
     slant: 0.055, wide: 1, gap: 1, lift: 0.45, bounce: 0, steady: 0,
@@ -169,13 +169,13 @@ function wordMark(x, y, word, size, R, hand) {
     const joinsOn = gi + 2 < glyphs.length;
     if (pen.traced && char === 't' && glyphs[gi + 1] === 'h' && joinsOn && R() < pen.ligature) {
       const w = size * (0.3 + R() * 0.05) * pen.wide;
-      const stem = xh * (1.46 + R() * 0.24);
+      const stem = xh * (1.44 + R() * 0.22);
       to(cx + w * 0.26, y - stem);
       to(cx + w * 0.36, y - h * 0.44);
       to(cx + w * 0.46, y - h * 0.06);
-      to(cx + w * 0.68, y - h * 0.64);
-      to(cx + w * 0.98, y - h * (0.86 + R() * 0.12));
-      to(cx + w * 1.24, y - h * 0.44);
+      to(cx + w * 0.68, y - h * 0.46);
+      to(cx + w * 0.98, y - h * (0.6 + R() * 0.08));
+      to(cx + w * 1.24, y - h * 0.34);
       to(cx + w * 1.34, y - h * 0.06);
       lift();
       to(cx - w * (0.12 + R() * 0.14), y - stem * 0.56);
@@ -183,6 +183,49 @@ function wordMark(x, y, word, size, R, hand) {
       lift();
       cx += w * 1.5;
       gi++;
+      if (R() < pen.lift + hand.temper * 0.16) lift();
+      cx += size * (0.035 + R() * 0.065) * pen.gap;
+      continue;
+    }
+
+    // The t is not an ascender, and drawing it as one is what made it read as
+    // a stem with a hump next to it rather than as a crossed stroke. On the
+    // page it stands about one and a half x-heights — `soft`, `Most`,
+    // `futures`, `Fantasy` all show it barely clearing the letters beside it —
+    // where h, l, d, b and k run to nearly three. The bar crosses high on that
+    // short stem and overshoots on both sides, tilting up to the right. The
+    // poet describes the result as a regular t, or at speed something closer
+    // to a plus, and `bar` is which of the two this one comes out as.
+    if (pen.traced && char === 't') {
+      const w = size * (0.26 + R() * 0.05) * pen.wide;
+      const stem = xh * (1.46 + R() * 0.26);
+      const bar = R() < 0.34 ? 0.56 + R() * 0.09 : 0.74 + R() * 0.1;
+      to(cx + w * 0.3, y - stem);
+      to(cx + w * 0.34, y - h * 0.5);
+      to(cx + w * 0.4, y - h * 0.05);
+
+      // Sometimes the bar is not laid across the stem afterwards but grows out
+      // of it: the pen reaches the foot, runs back up the stem it has just
+      // drawn, and goes straight out into the crossbar without leaving the
+      // page. `futures` on the photographed page is the clearest instance —
+      // the bar arrives out of the letter before it and the stem comes down
+      // through it — and `soft` carries one bar across both the f and the t.
+      // A lifted bar and a joined one are different marks: the joined one
+      // doubles the upper stem and meets it at a junction rather than a
+      // crossing, which is most of why a written t does not look drawn.
+      if (R() < 0.42) {
+        to(cx + w * 0.36, y - stem * (bar - 0.06));
+        to(cx - w * (0.08 + R() * 0.1), y - stem * (bar - 0.02));
+        to(cx + w * (0.84 + R() * 0.18), y - stem * (bar + 0.05));
+        lift();
+      } else {
+        to(cx + w * 0.72, y - h * 0.1);
+        lift();
+        to(cx - w * (0.1 + R() * 0.12), y - stem * (bar - 0.03));
+        to(cx + w * (0.84 + R() * 0.18), y - stem * (bar + 0.04));
+        lift();
+      }
+      cx += w * 0.98;
       if (R() < pen.lift + hand.temper * 0.16) lift();
       cx += size * (0.035 + R() * 0.065) * pen.gap;
       continue;

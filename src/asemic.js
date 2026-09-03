@@ -14,20 +14,46 @@
  * derived from a sample, whatever earlier versions of this comment claimed.
  */
 
-// The hand leans backward. A flat-on photograph of the notebook, rectified
-// against the page's own printed dot grid, reads -1.15deg; the estimator that
-// found it recovered every lean on a synthetic test card exactly. This constant
-// was +0.055 — a forward lean — for as long as the site has existed, which made
-// every mark on it lean the opposite way from the hand it was standing in for.
-const SLANT = -0.06;
+/**
+ * Two hands, and a way back.
+ *
+ * `notebook` is the hand as the photographs have it. The lean is backward:
+ * a flat-on photograph rectified against the page's own printed dot grid
+ * reads -1.15deg, and the estimator that found it recovered every lean on a
+ * synthetic test card exactly. `slant` was +0.055 — a forward lean — for as
+ * long as the site existed, so every mark leaned the opposite way from the
+ * hand it stood in for. The hand is also wide: trimmed to the ink and matched
+ * for height, the notebook's words run 10-38% broader than the generator's.
+ * Width alone bottoms that error at about 14% and no further, and `traced`
+ * covers the rest — the six letterforms taken off the page rather than
+ * described from memory.
+ *
+ * `plain` is the hand the site had before any of that. Faithful and beautiful
+ * are different axes, and until now the only way back was git.
+ */
+/**
+ * Which hand the site writes in.
+ *
+ * Change this one word to `plain` and every mark on the site — signatures,
+ * columns, the name page, the folio — goes back to what it was before the
+ * notebook photographs. That is the whole switch; there is no interface for it
+ * and it is not meant to be a reader's choice. It exists because the only way
+ * back used to be git, and because a hand can be more faithful and less
+ * beautiful at the same time, which is a judgement the poet should be able to
+ * make by looking rather than by reasoning about a diff.
+ */
+const HAND = 'notebook';
 
-// And it is a wide hand. Trimmed to the ink and matched for height, the
-// notebook's words run 10-38% broader than the generator's; the letters are
-// round and open where these were narrow and packed. Widening the glyphs and
-// letting the gaps out bottoms the error at about 14%, and no further — the
-// rest of the difference is letterform shape, not measurement.
-const WIDE = 1.35;
-const LETTER_GAP = 1.8;
+const HANDS = {
+  notebook: {
+    slant: -0.06, wide: 1.35, gap: 1.8, lift: 0.16, bounce: 1, steady: 0.45,
+    traced: true, curve: true, furniture: true, units: [0.578, 0.852]
+  },
+  plain: {
+    slant: 0.055, wide: 1, gap: 1, lift: 0.45, bounce: 0, steady: 0,
+    traced: false, curve: false, furniture: false, units: [0.422, 0.863]
+  }
+};
 
 const ASCENDERS = new Set('lhkbdtf');
 const DESCENDERS = new Set('gypjq');
@@ -59,6 +85,7 @@ const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 /** One word: the motion a hand makes writing it, with no letters in it. */
 function wordMark(x, y, word, size, R, hand) {
   const strokes = [];
+  const pen = hand.pen;
   let cur = [];
   let cx = x;
 
@@ -83,7 +110,7 @@ function wordMark(x, y, word, size, R, hand) {
     hand.dx = hand.dx * 0.88 + (R() - 0.5) * size * 0.018 * wander;
     hand.dy = hand.dy * 0.86 + (R() - 0.5) * size * 0.05 * wander;
     const lineY = py + hand.slope * (px - hand.startX);
-    const yy = lineY + hand.dy;
+    const yy = lineY + hand.dy + hand.bounce;
     cur.push([px + hand.dx + (y - yy) * hand.slant, yy]);
   };
 
@@ -94,16 +121,82 @@ function wordMark(x, y, word, size, R, hand) {
     lift();
   };
 
-  for (const char of glyphs) {
+  for (let gi = 0; gi < glyphs.length; gi++) {
+    const char = glyphs[gi];
     const isAscender = ASCENDERS.has(char);
     const isDescender = DESCENDERS.has(char);
     const h = xh * (0.88 + R() * 0.22);
 
+    // Whether the hand makes this letter its own way this time.
+    //
+    // Drawing all six traced forms every time made the writing readable, which
+    // is the one thing it must not be. What kept this hand illegible was never
+    // bad letterforms — it was letters landing on top of one another, and the
+    // e landing on the o most of all. Giving six letters their true shapes
+    // pulled them apart: rendering each letter twenty-six times and comparing
+    // the shapes, confusable pairs fell from 10 of 190 to 5, and sentences came
+    // back off the page. At 0.55 that count is exactly what it was before, and
+    // this sits below it. So the traced form is what the hand reaches for
+    // rather than what it always lands on — which is also the truer account of
+    // the notebook, where no letter is made the same way twice.
+    const traces = pen.traced && R() < pen.steady;
+
+    // Letters bounce individually on the baseline, not only line by line —
+    // a run of them wanders up and down within a word that is itself sitting
+    // straight. It is a slow walk rather than a jitter, so each letter starts
+    // near where the one before it sat.
+    hand.bounce = clamp(
+      hand.bounce * 0.55 + (R() - 0.5) * size * 0.08 * pen.bounce,
+      -size * 0.09,
+      size * 0.09
+    );
+
+    // "the" is one continuous gesture with no letters in it. The t keeps a
+    // modest stem, nothing like a full ascender, its crossbar overshoots on
+    // both sides, and the h behind it is reduced to a single low shoulder —
+    // it loses its ascender entirely. This is the hand already asemic at speed.
+    if (traces && char === 't' && glyphs[gi + 1] === 'h') {
+      const w = size * (0.3 + R() * 0.05) * pen.wide;
+      const stem = xh * (1.46 + R() * 0.24);
+      to(cx + w * 0.26, y - stem);
+      to(cx + w * 0.36, y - h * 0.44);
+      to(cx + w * 0.46, y - h * 0.06);
+      to(cx + w * 0.68, y - h * 0.64);
+      to(cx + w * 0.98, y - h * (0.86 + R() * 0.12));
+      to(cx + w * 1.24, y - h * 0.44);
+      to(cx + w * 1.34, y - h * 0.06);
+      lift();
+      to(cx - w * (0.12 + R() * 0.14), y - stem * 0.56);
+      to(cx + w * (0.74 + R() * 0.18), y - stem * (0.57 + R() * 0.07));
+      lift();
+      cx += w * 1.5;
+      gi++;
+      if (R() < pen.lift + hand.temper * 0.16) lift();
+      cx += size * (0.035 + R() * 0.065) * pen.gap;
+      continue;
+    }
+
     if (isAscender) {
       // ascender — l h k b d t f
-      const w = size * (0.31 + R() * 0.055) * WIDE;
+      const w = size * (0.31 + R() * 0.055) * pen.wide;
       const tall = asc * (0.88 + R() * 0.2);
-      if (char === 'd') {
+      if (traces && char === 'b') {
+        // A numeral 6, and unmistakably one at magnification — in bodies, best,
+        // blue, Good. The stroke starts at the top, sweeps down and to the left,
+        // and closes a bowl at the foot. It is the most recognisable letter in
+        // the hand, and it was being drawn as a stem with a bowl hung off it.
+        const top = asc * (0.84 + R() * 0.18);
+        to(cx + w * 0.62, y - top);
+        to(cx + w * 0.44, y - top * 0.97);
+        to(cx + w * 0.28, y - top * 0.56);
+        to(cx + w * 0.1, y - h * 0.66);
+        to(cx + w * 0.06, y - h * 0.22);
+        to(cx + w * 0.38, y + h * 0.03);
+        to(cx + w * 0.8, y - h * 0.14);
+        to(cx + w * 0.86, y - h * 0.52);
+        to(cx + w * 0.5, y - h * 0.68);
+        to(cx + w * 0.16, y - h * 0.52);
+      } else if (char === 'd') {
         // bowl first, then the tall right-hand stroke
         to(cx, y - h * 0.16);
         to(cx + w * 0.04, y - h * 0.76);
@@ -148,9 +241,56 @@ function wordMark(x, y, word, size, R, hand) {
         lift();
       }
       cx += w * (char === 'l' || char === 't' || char === 'f' ? 1.0 : 1.22);
+    } else if (traces && char === 'g') {
+      // The g closes a round bowl and then drops almost straight, turning left
+      // at the foot into a short flat tail — an L, near enough, where the other
+      // descenders swing. Nothing in the notebook loops below the line.
+      const w = size * (0.33 + R() * 0.06) * pen.wide;
+      const depth = desc * (0.68 + R() * 0.22);
+      to(cx + w * 0.84, y - h * 0.7);
+      to(cx + w * 0.5, y - h * (0.94 + R() * 0.1));
+      to(cx + w * 0.1, y - h * 0.7);
+      to(cx + w * 0.14, y - h * 0.22);
+      to(cx + w * 0.52, y - h * 0.02);
+      to(cx + w * 0.86, y - h * 0.3);
+      to(cx + w * 0.9, y - h * 0.64);
+      to(cx + w * 0.84, y + depth * 0.54);
+      to(cx + w * 0.78, y + depth * 0.94);
+      to(cx + w * 0.42, y + depth * (0.98 + R() * 0.06));
+      to(cx + w * 0.06, y + depth * 0.82);
+      cx += w * 0.98;
+    } else if (traces && char === 'e') {
+      // An angular epsilon, and a small flat one: the crossbar comes first,
+      // the pen loops back over the top and round the foot, and it is left
+      // open on the right. It sits well under the x-height of an o.
+      const w = size * (0.3 + R() * 0.06) * pen.wide;
+      const eh = h * (0.66 + R() * 0.12);
+      to(cx, y - eh * 0.5);
+      to(cx + w * 0.66, y - eh * 0.58);
+      to(cx + w * 0.5, y - eh * 0.94);
+      to(cx + w * 0.14, y - eh * 0.86);
+      to(cx + w * 0.02, y - eh * 0.34);
+      to(cx + w * 0.34, y - eh * 0.02);
+      to(cx + w * 0.78, y - eh * 0.12);
+      to(cx + w * 0.92, y - eh * 0.44);
+      cx += w * 0.96;
+    } else if (traces && char === 'w') {
+      // Two round valleys, not the two arches the hump branch was giving it.
+      // The middle peak stays low — a little over half the x-height — and both
+      // ends rise past it and hook, which is what makes the letter read wide.
+      const w = size * (0.3 + R() * 0.06) * pen.wide;
+      to(cx, y - h * (0.78 + R() * 0.14));
+      to(cx + w * 0.2, y - h * 0.14);
+      to(cx + w * 0.42, y - h * 0.02);
+      to(cx + w * 0.62, y - h * (0.5 + R() * 0.16));
+      to(cx + w * 0.84, y - h * 0.14);
+      to(cx + w * 1.06, y - h * 0.02);
+      to(cx + w * 1.28, y - h * (0.76 + R() * 0.16));
+      to(cx + w * 1.4, y - h * 0.52);
+      cx += w * 1.46;
     } else if (isDescender) {
       // descender — g y p j q
-      const w = size * (0.34 + R() * 0.065) * WIDE;
+      const w = size * (0.34 + R() * 0.065) * pen.wide;
       const depth = desc * (0.82 + R() * 0.3);
       to(cx, y - h * 0.78);
       to(cx + w * 0.32, y - h);
@@ -165,7 +305,7 @@ function wordMark(x, y, word, size, R, hand) {
       // The hand's commonest motion: a loose, slightly open single-storey
       // bowl. The points stay irregular so it suggests a letter without
       // resolving into typography.
-      const w = size * (0.34 + R() * 0.08) * WIDE;
+      const w = size * (0.34 + R() * 0.08) * pen.wide;
       to(cx, y - h * 0.18);
       to(cx - w * 0.03, y - h * 0.58);
       to(cx + w * 0.2, y - h * (0.92 + R() * 0.08));
@@ -181,20 +321,34 @@ function wordMark(x, y, word, size, R, hand) {
       cx += w * (char === 'c' ? 0.88 : 1.02);
     } else if (char === 'i') {
       // Mihir's i is a short, nearly upright stroke with a high separate dot.
-      const w = size * (0.2 + R() * 0.035) * WIDE;
+      const w = size * (0.2 + R() * 0.035) * pen.wide;
       to(cx, y - h * 0.82);
       to(cx + w * 0.2, y);
       to(cx + w, y - h * 0.06);
       dot(cx + w * 0.06, y - h * 1.46);
       cx += w;
     } else if (char === 's') {
-      const w = size * (0.31 + R() * 0.06) * WIDE;
-      to(cx + w * 0.9, y - h * 0.88);
-      to(cx + w * 0.38, y - h);
-      to(cx + w * 0.12, y - h * 0.58);
-      to(cx + w * 0.72, y - h * 0.4);
-      to(cx + w * 0.92, y - h * 0.08);
-      to(cx + w * 0.26, y);
+      const w = size * (0.31 + R() * 0.06) * pen.wide;
+      if (traces) {
+        // A round S — a small counter at the top opening left, a diagonal
+        // across, a larger one at the foot opening right, and a tail that
+        // carries on left along the baseline. It was a six-point zigzag.
+        to(cx + w * 0.9, y - h * 0.76);
+        to(cx + w * 0.56, y - h * (0.94 + R() * 0.08));
+        to(cx + w * 0.18, y - h * 0.74);
+        to(cx + w * 0.46, y - h * 0.5);
+        to(cx + w * 0.8, y - h * 0.34);
+        to(cx + w * 0.88, y - h * 0.1);
+        to(cx + w * 0.46, y + h * 0.02);
+        to(cx + w * 0.12, y - h * 0.12);
+      } else {
+        to(cx + w * 0.9, y - h * 0.88);
+        to(cx + w * 0.38, y - h);
+        to(cx + w * 0.12, y - h * 0.58);
+        to(cx + w * 0.72, y - h * 0.4);
+        to(cx + w * 0.92, y - h * 0.08);
+        to(cx + w * 0.26, y);
+      }
       cx += w * 0.92;
     } else {
       // Broad humps rather than a sawtooth. Character identity sets their
@@ -203,7 +357,7 @@ function wordMark(x, y, word, size, R, hand) {
       if (!HUMPS.has(char) && R() < 0.18) peaks++;
       to(cx, y);
       for (let p = 0; p < peaks; p++) {
-        const w = size * (0.31 + R() * 0.09) * WIDE;
+        const w = size * (0.31 + R() * 0.09) * pen.wide;
         to(cx + w * 0.2, y - h * (0.55 + R() * 0.12));
         to(cx + w * 0.56, y - h * (0.9 + R() * 0.12));
         to(cx + w * 0.82, y - h * (0.74 + R() * 0.1));
@@ -212,8 +366,11 @@ function wordMark(x, y, word, size, R, hand) {
       }
     }
 
-    if (R() < 0.45 + hand.temper * 0.16) lift(); // loose print-cursive, not a continuous hand
-    cx += size * (0.035 + R() * 0.065) * LETTER_GAP;
+    // The notebook hand keeps the pen down and runs a word together — "the"
+    // arrives as one gesture. Lifting on nearly half the letters, which is what
+    // this did, is a hand printing rather than writing.
+    if (R() < pen.lift + hand.temper * 0.16) lift();
+    cx += size * (0.035 + R() * 0.065) * pen.gap;
   }
 
   if (R() < 0.32) to(cx + size * (0.14 + R() * 0.24), y - xh * (0.12 + R() * 0.32));
@@ -227,15 +384,115 @@ function wordMark(x, y, word, size, R, hand) {
  *
  * The coefficients are measured against the generator, not derived from it: an
  * advance is the sum of six different glyph widths and a random gap, and
- * fitting the two numbers over the whole corpus is shorter and truer than
- * adding that up. **Re-measure whenever WIDE or LETTER_GAP moves.** They moved,
- * this did not, and `fitSize()` went on choosing a size for the old narrow hand
- * — every signature on the index was drawn a third too large and clipped.
+ * fitting the two numbers over the corpus is shorter and truer than adding that
+ * up. They live on the hand because they belong to it — **re-measure whenever a
+ * glyph's advance moves.** The width constants moved once and this did not, and
+ * `fitSize()` went on choosing a size for the old narrow hand: every signature
+ * on the index was drawn a third too large and clipped. Nothing failed. It was
+ * only visible in a browser.
  */
-function lineUnits(line) {
+function lineUnits(line, pen) {
   const words = line.split(/\s+/).filter(Boolean);
   const chars = line.replace(/\s/g, '').length;
-  return 0.63 * chars + 0.87 * words.length;
+  return pen.units[0] * chars + pen.units[1] * words.length;
+}
+
+/**
+ * The page furniture — what a notebook has that a clean column does not.
+ *
+ * The notebook is full of second thoughts, and none of them were modelled: a
+ * word struck out as a tight scribbled blob rather than ruled through, a caret
+ * where something was left out and the word itself squeezed in above the line,
+ * a number ringed in the margin, and an arrow at the foot of a page carrying
+ * the sentence over. Without any of it the hand writes as though it never
+ * changed its mind, which is the one thing the photographs say it always does.
+ *
+ * These build their points directly rather than through the wandering `to()`.
+ * A scribble has no letterform to lean, and running it through the slant only
+ * shears a shape whose whole character is that it was made too fast to aim.
+ *
+ * All of it is held back from a single-line mark. A row signature is
+ * twenty-six pixels tall and a strike-out on it is a smudge, not a correction.
+ */
+function strikeOut(x, y, span, size, R) {
+  // Two strokes, which is what the page shows: a tight scribble worked back
+  // and forth over the word, and one longer flatter line across the top of it
+  // that overruns the word to the left.
+  const lead = size * (0.1 + R() * 0.16);
+  const run = Math.max(size * 0.3, span) + lead * 2;
+  // Tight and deep. A wide shallow zigzag is a rule with a wobble in it; what
+  // the page has is a blob, its loops nearly as tall as the letters under it.
+  const swings = Math.max(6, Math.round(run / (size * 0.12)));
+  const amp = size * (0.17 + R() * 0.08);
+  const mid = y - size * 0.26;
+  const scribble = [];
+  for (let i = 0; i <= swings; i++) {
+    const t = i / swings;
+    scribble.push([
+      x - lead + run * t,
+      mid + (i % 2 ? amp : -amp) * (0.65 + R() * 0.7)
+    ]);
+  }
+  const overrun = size * (0.2 + R() * 0.3);
+  return [
+    scribble,
+    [
+      [x - lead - overrun, mid - amp * (0.5 + R() * 0.5)],
+      [x + run * 0.5, mid - amp * (0.9 + R() * 0.4)],
+      [x - lead + run, mid - amp * (0.4 + R() * 0.6)]
+    ]
+  ];
+}
+
+/** A caret: it sits on the line and points at the gap the word should fill. */
+function caret(x, y, size, R) {
+  const w = size * (0.13 + R() * 0.07);
+  return [
+    [x, y + size * 0.05],
+    [x + w * 0.48, y - size * (0.2 + R() * 0.1)],
+    [x + w, y + size * 0.04]
+  ];
+}
+
+/** A number ringed in the margin — a tick, and a loop wound round it. */
+function ringedNumber(x, y, size, R) {
+  const r = size * (0.3 + R() * 0.08);
+  const ring = [];
+  const start = R() * Math.PI * 2;
+  // A hand does not close a ring cleanly, so it runs past where it started.
+  for (let i = 0; i <= 11; i++) {
+    const a = start + (i / 11) * Math.PI * 2.16;
+    ring.push([
+      x + Math.cos(a) * r * (0.94 + R() * 0.14),
+      y + Math.sin(a) * r * (0.82 + R() * 0.16)
+    ]);
+  }
+  return [
+    ring,
+    [
+      [x - r * 0.1, y - r * 0.42],
+      [x + r * 0.06, y - r * 0.1],
+      [x - r * 0.02, y + r * 0.36]
+    ]
+  ];
+}
+
+/** The arrow at the foot of a page that carries the sentence over. */
+function continuationArrow(x, y, size, R) {
+  const len = size * (1.4 + R() * 0.9);
+  const rise = size * (0.1 + R() * 0.14);
+  return [
+    [
+      [x, y],
+      [x + len * 0.45, y - rise * (0.4 + R() * 0.5)],
+      [x + len, y - rise]
+    ],
+    [
+      [x + len - size * (0.24 + R() * 0.1), y - rise - size * 0.16],
+      [x + len, y - rise],
+      [x + len - size * (0.22 + R() * 0.12), y - rise + size * 0.2]
+    ]
+  ];
 }
 
 /**
@@ -243,7 +500,7 @@ function lineUnits(line) {
  * Begin at its longest line, then continue through the poem until there is
  * enough material to cross the row at a height-safe letter size.
  */
-function signatureLine(lines, width, height) {
+function signatureLine(lines, width, height, pen) {
   const clean = lines
     .map(raw => raw.replace(/\*/g, '').trim())
     .filter(Boolean);
@@ -258,7 +515,7 @@ function signatureLine(lines, width, height) {
   const targetUnits = width * 0.92 / heightCap;
   let joined = clean[longest];
 
-  for (let step = 1; step < clean.length && lineUnits(joined) < targetUnits; step++) {
+  for (let step = 1; step < clean.length && lineUnits(joined, pen) < targetUnits; step++) {
     joined += ' ' + clean[(longest + step) % clean.length];
   }
 
@@ -273,7 +530,7 @@ function signatureLine(lines, width, height) {
  * the generator, a line runs about 0.44 units per character plus 0.87 per
  * word gap, per unit of size.
  */
-function fitSize(lines, width, height, maxLines) {
+function fitSize(lines, width, height, maxLines, pen) {
   let widest = 0;
   let count = 0;
 
@@ -281,7 +538,7 @@ function fitSize(lines, width, height, maxLines) {
     const line = raw.replace(/\*/g, '').trim();
     if (!line) continue;
     count++;
-    widest = Math.max(widest, lineUnits(line));
+    widest = Math.max(widest, lineUnits(line, pen));
   }
 
   if (!widest) return 5;
@@ -290,8 +547,14 @@ function fitSize(lines, width, height, maxLines) {
   if (maxLines === 1) {
     // Ascender + descender + slope room. Width chooses the size; height is
     // only the guardrail, which keeps the signature broad rather than tiny.
+    //
+    // A single line keeps more of the margin than a column does. It has no
+    // wrap to save it, the width model is good to about five percent either
+    // way, and a hand that wanders can put its last flourish past where the
+    // advance said it would stop. At 0.96 three signatures ended within half
+    // a pixel of the right edge of a 257px row.
     const heightCap = height / 2.9;
-    return clamp(Math.min(16, byWidth, heightCap), 2.4, 16);
+    return clamp(Math.min(16, (width * 0.92) / widest, heightCap), 2.4, 16);
   }
 
   const rows = maxLines ? Math.min(count, maxLines) : count;
@@ -358,17 +621,21 @@ function settle(strokes, height) {
 export function ghost(text, opts) {
   const { x = 0, width, height, maxLines = 0 } = opts;
   const temper = clamp(opts.temper || 0, -1, 1);
+  const pen = HANDS[opts.hand || HAND] || HANDS.notebook;
   const R = opts.rng;
   const out = [];
+  // A column has room for a second thought. A row signature does not: it is
+  // twenty-six pixels tall, and a strike-out on it is a smudge.
+  const furnished = pen.furniture && maxLines !== 1;
   const sourceLines = String(text || '').split('\n');
   const lines = maxLines === 1
-    ? [signatureLine(sourceLines, width, height)]
+    ? [signatureLine(sourceLines, width, height, pen)]
     : sourceLines;
 
   // The hand is scaled to the space it is given, so a poem's longest line
   // very nearly fills the column and the whole poem fits the height. Fixing
   // the size instead leaves the marks stranded in a corner of the canvas.
-  const size = opts.size || fitSize(lines, width, height, maxLines);
+  const size = opts.size || fitSize(lines, width, height, maxLines, pen);
   const leading = size * 2.95;
 
   let by = size * 1.5;
@@ -404,9 +671,11 @@ export function ghost(text, opts) {
       startX,
       baseline: by + baselineDrift,
       slope: (R() - 0.5) * Math.max(0.0012, 0.0034 + temper * 0.003),
-      slant: SLANT * (1 + temper * 0.55) + (R() - 0.5) * Math.max(0.02, 0.05 + temper * 0.05),
+      slant: pen.slant * (1 + temper * 0.55) + (R() - 0.5) * Math.max(0.02, 0.05 + temper * 0.05),
       dx: 0,
       dy: 0,
+      bounce: 0,
+      pen,
       temper
     };
   };
@@ -482,8 +751,42 @@ export function ghost(text, opts) {
           previous = previous * 0.22 + target * 0.78;
           return previous;
         });
-        out.push({ pts, ink, alpha, lw, gap: opening ? gap : 'letter' });
+        out.push({ pts, ink, alpha, lw, curve: pen.curve, gap: opening ? gap : 'letter' });
         opening = false;
+      }
+
+      if (furnished) {
+        const scrap = (strokes, weight) => {
+          for (const pts of strokes) {
+            out.push({
+              pts, ink, alpha: 0.66 + R() * 0.34,
+              lw: baseLw * weight, curve: pen.curve, gap: 'letter'
+            });
+          }
+        };
+
+        // A word thought better of, scribbled out where it stands.
+        if (R() < 0.022) scrap(strikeOut(cx, hand.baseline, m.end - cx, size, R), 1.05);
+
+        // A word left out. The caret goes in where it belongs and the word
+        // itself is squeezed in above the line, small, running toward the
+        // right margin — the notebook never rewrites the line to make room.
+        if (R() < 0.02) {
+          scrap([caret(m.end + size * 0.24, hand.baseline, size, R)], 0.9);
+          const small = size * 0.62;
+          const insert = wordMark(
+            Math.min(m.end + size * 0.5, x + width - small * 2.2),
+            hand.baseline - size * 1.15,
+            words[(wi + 3) % words.length],
+            small, R, hand
+          );
+          for (const pts of insert.strokes) {
+            out.push({
+              pts, ink, alpha: 0.6 + R() * 0.3,
+              lw: Math.max(0.5, baseLw * 0.72), curve: pen.curve, gap: 'letter'
+            });
+          }
+        }
       }
 
       gap = 'word';
@@ -491,8 +794,32 @@ export function ghost(text, opts) {
       wi++;
     }
 
+    // A number ringed out in the left margin, against a line now and then.
+    if (furnished && R() < 0.035) {
+      // Far enough in that the ring is whole: it can run to 0.41 of the size
+      // from its own centre, and at 0.34 it was being cut by the left edge.
+      const ring = ringedNumber(x + size * 0.55, hand.baseline - size * 0.3, size, R);
+      for (const pts of ring) {
+        out.push({
+          pts, ink: 'mark', alpha: 0.55 + R() * 0.3,
+          lw: Math.max(0.5, size * 0.06), curve: pen.curve, gap: 'letter'
+        });
+      }
+    }
+
     by += leading * (0.965 + R() * 0.07);
     used++;
+  }
+
+  // And an arrow at the foot, carrying the sentence onto a page that is not here.
+  if (furnished && used > 2 && R() < 0.3) {
+    const arrow = continuationArrow(x + width * (0.52 + R() * 0.24), by - leading * 0.2, size, R);
+    for (const pts of arrow) {
+      out.push({
+        pts, ink: 'mark', alpha: 0.5 + R() * 0.3,
+        lw: Math.max(0.5, size * 0.062), curve: pen.curve, gap: 'letter'
+      });
+    }
   }
 
   return maxLines === 1 ? settle(out, height) : out;
@@ -539,6 +866,25 @@ function drawStroke(ctx, s, pal, upto) {
 
   ctx.strokeStyle = inkOf(pal, s);
   const mid = (a, b) => [(a[0] + b[0]) * 0.5, (a[1] + b[1]) * 0.5];
+
+  if (s.curve === false) {
+    // The plain hand joined its points with straight lines, and that is most
+    // of what made it read as drawn rather than written. It is kept so there
+    // is something to compare the notebook hand against.
+    for (let j = 1; j <= last; j++) {
+      const a = p[j - 1];
+      const b = p[j];
+      const to = upto && j === last && upto.fraction < 1
+        ? [a[0] + (b[0] - a[0]) * upto.fraction, a[1] + (b[1] - a[1]) * upto.fraction]
+        : b;
+      ctx.beginPath();
+      ctx.moveTo(a[0], a[1]);
+      ctx.lineTo(to[0], to[1]);
+      ctx.lineWidth = Array.isArray(s.lw) ? (s.lw[j - 1] + s.lw[j]) * 0.5 : s.lw;
+      ctx.stroke();
+    }
+    return;
+  }
 
   for (let j = 1; j <= last; j++) {
     // the pen enters where the segment behind was halfway through and leaves

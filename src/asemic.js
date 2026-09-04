@@ -58,7 +58,7 @@ const HANDS = {
     // what else ends up on the page
     accent: 0.17, strike: 0.022, caret: 0.02, note: 0.035, arrow: 0.3,
     // switches, and the width model
-    traced: true, curve: true, furniture: true, units: [0.555, 0.901]
+    traced: true, curve: true, furniture: true, units: [0.549, 0.923]
   },
   plain: {
     slant: 0.055, wide: 1, gap: 1, lift: 0.45, bounce: 0,
@@ -335,8 +335,19 @@ function wordMark(x, y, word, size, R, hand) {
         to0(cx + w * 0.2, h * 1.24);
         to0(cx + w * 0.58, h * 0.62);
         to0(cx + w * 0.22, -desc * 0.16);
+      } else if (char === '-') {
+        // A hyphen, which is a short mark and a different thing entirely from
+        // the dash below it. Treating the two alike drew a 73-wide rule inside
+        // every hyphenated word — `half-light` came out 327 wide where `sun` is
+        // 79 — and the book is full of them: Half-light, half-death,
+        // high-pitched, honey-colored, future-shaped. The long dash on the page
+        // is an em-dash used as a strike-out, in `answer —— none came`, and it
+        // is not what joins two words into one.
+        to0(cx + w * 0.06, h * (0.44 + R() * 0.06));
+        to0(cx + w * (0.86 + R() * 0.16), h * (0.45 + R() * 0.06));
+        cx += w * 0.2;
       } else {
-        // the long dash, which on the page runs on well past an em
+        // the en- and em-dash, which on the page run on well past an em
         const run = w * (3.4 + R() * 2.6);
         to0(cx + w * 0.1, h * (0.44 + R() * 0.08));
         to0(cx + run, h * (0.46 + R() * 0.08));

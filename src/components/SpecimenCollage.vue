@@ -100,6 +100,7 @@ import { computed, ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import AsemicMarks from './AsemicMarks.vue';
 import { specimenWordsFor } from '../specimen-vocabulary.js';
 import { studyFor } from '../collage-studies.js';
+import poems from '../poems.json';
 import { rngFor } from '../asemic.js';
 import { deckle, marginMark, crop, cropFamily, seamPair } from '../marginalia.js';
 import { temperFor } from '../slow-hand.js';
@@ -206,6 +207,37 @@ const temper = computed(() => temperFor(props.poem.path));
  * The large hand's sheet is left untorn on one side, so that line runs off
  * the paper and is cut by the frame rather than stopping at an edge.
  */
+/**
+ * Which ink the photograph is tinted with.
+ *
+ * Green five times in eight, rust twice, navy once — the frequency the marks
+ * already keep. The house rule fixes the *order* of that frequency, navy rarer
+ * than rust rarer than green, and drawing each plate's tint independently does
+ * not guarantee it: over these 21 plates an independent draw came out green 14,
+ * rust 3, navy 4, which inverts the last two. Twenty-one is simply too small a
+ * sample for a ratio to show up in.
+ *
+ * So the tints are dealt rather than drawn. The whole set is put in a seeded
+ * order and cut at the ratio, which makes the counts exact while leaving which
+ * poem gets which as arbitrary as before. It is fixed per poem forever, like
+ * everything else about a plate.
+ */
+const TINT_BY_POEM = (() => {
+  const order = poems
+    .map(poem => ({ path: poem.path, k: rngFor(`${poem.path}::tint`)() }))
+    .sort((a, b) => a.k - b.k)
+    .map(o => o.path);
+  const greens = Math.round(order.length * 5 / 8);
+  const rusts = Math.round(order.length * 2 / 8);
+  const out = {};
+  order.forEach((path, i) => {
+    out[path] = i < greens ? 'green' : i < greens + rusts ? 'rust' : 'navy';
+  });
+  return out;
+})();
+
+const tint = computed(() => TINT_BY_POEM[props.poem.path] || 'green');
+
 const plate = computed(() => {
   const R = rngFor(`${props.poem.path}::plate`);
   const spin = (base, range) => `${Math.round((base + (R() - 0.5) * range) * 100) / 100}deg`;
@@ -246,7 +278,8 @@ const plate = computed(() => {
     // small one is allowed to cross zero: it leans left on some poems and
     // right on others rather than always settling the same way over.
     '--spin-large': spin(-6, 8.5),
-    '--spin-trace': spin(1.1, 9.4)
+    '--spin-trace': spin(1.1, 9.4),
+    '--plate-tint': `var(--i-${tint.value})`
   };
 });
 
@@ -460,12 +493,34 @@ function clearPointer(event) {
   transform: translate(var(--shift-x-reverse), var(--shift-y-reverse)) rotate(-0.55deg);
 }
 
-/* No border and no shadow. A fragment lying in the page rather than a card
-   set on top of it, and it stops by fading rather than by ending. */
+/* No border and no shadow. A fragment lying in the page rather than a card set
+   on top of it.
+
+   It used to end by fading through a radial mask, which put a soft circle on
+   every photograph — a vignette, and a vignette reads as a filter rather than as
+   a torn edge. What ends the fragment now is the tear it already had:
+   `clip-path: var(--clip-primary)` and its siblings, generated per poem in
+   marginalia.js. That is a real edge with a shape, and it agrees with the rest
+   of the folio in a way a circle never did. The rule that a fragment must not
+   stop on a hard border still holds — a deckle is not a border. */
 .image-sheet {
   overflow: hidden;
-  -webkit-mask-image: radial-gradient(108% 104% at 48% 46%, #000 26%, rgba(0, 0, 0, 0.54) 62%, transparent 93%);
-  mask-image: radial-gradient(108% 104% at 48% 46%, #000 26%, rgba(0, 0, 0, 0.54) 62%, transparent 93%);
+}
+
+/* A hint of colour in the photograph itself, at the frequency the inks already
+   keep: green five times in eight, rust twice, navy once. Blended as `color`, so
+   only hue and saturation cross over and the plate keeps its own tone exactly —
+   and at this opacity it is meant to be felt rather than seen. Drawn from its
+   own seed rather than the plate's, so adding it does not shift the tear and
+   tilt that the plate's own sequence of draws produces. */
+.image-sheet::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: rgb(var(--plate-tint));
+  mix-blend-mode: color;
+  opacity: 0.1;
 }
 
 .image-sheet img {

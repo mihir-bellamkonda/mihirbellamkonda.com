@@ -48,6 +48,10 @@ illustrates the poem by naming its objects back to it.
 - `night-fountain.webp` — Joseph-Philibert Girault de Prangey, Fountain, Place du Château d’Eau, Paris, 1841–42.
   The Metropolitan Museum of Art, object 726484, public domain (Open Access).
   https://www.metmuseum.org/art/collection/search/726484
+  Re-cut in September 2026: the plate had a soft oval vignette baked into both
+  its alpha and its pixels, so it ended in a circle rather than on its tear.
+  Cropped to the largest rectangle of real picture inside that oval
+  (328,180,648×652 of the old file) and put back through prepare-plate.js.
   Used under *Mother Dreams in Half-light*.
 
 - `cliffs-bay.webp` — John Dillwyn Llewelyn, 3 Cliffs Bay with a Wave, 1853–56.
@@ -146,7 +150,9 @@ illustrates the poem by naming its objects back to it.
 - `lunar-disc.webp` — Lewis Morris Rutherfurd, *Full Moon*, 1871. Met object
   813902, public domain. https://www.metmuseum.org/art/collection/search/813902
   A single half of the stereograph, lifted well off black so the field around
-  the disc reads as haze on paper. Used under *Brahmanda*.
+  the disc reads as haze on paper. Re-cut in September 2026 for the same oval
+  vignette as night-fountain, cropped to 264,268,676×668 of the old file.
+  Used under *Brahmanda*.
 
 ## Drawn fragments
 

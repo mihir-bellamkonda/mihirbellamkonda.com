@@ -24,7 +24,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import sharp from 'sharp';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -115,7 +115,12 @@ export async function preparePlate(source, destination, options = {}) {
   return { width, height, before: { mean, deviation }, scale, lift };
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// `file://${process.argv[1]}` does not survive a path with a space in it:
+// import.meta.url percent-encodes, argv[1] does not, so the comparison fails
+// and this whole block silently never runs. pathToFileURL encodes both the
+// same way. It was a no-op for every plate prepared from a path containing a
+// space, and it exited 0 while doing nothing.
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const [source, name, ...rest] = process.argv.slice(2);
   if (!source || !name) {
     console.error('usage: node scripts/prepare-plate.js <source> <name> [--crop l,t,w,h] [--negate] [--mean N] [--sd N]');

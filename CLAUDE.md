@@ -250,20 +250,6 @@ reintroduce anything like it.
   write-on was cut off a fraction of a second in. Theme changes still repaint
   unconditionally. A hidden tab is drawn finished rather than animated, because its
   frames do not run.
-- **A poem's title is written again, faintly, behind itself.** The one mark on
-  the site set from the *title* rather than from a poem's body, so it says the
-  same thing as the type it sits under. Drawn whole rather than written on — a
-  write-on behind a heading is an event, and this is meant to be found on the
-  second look, at 0.085. Three things it needs. Its size comes from the title's
-  own computed font size, because `fitSize()` caps the hand at 16px — a sensible
-  ceiling for a column and a quarter of what a heading wants — and left to fit
-  itself the ghost is a thin line of small writing lying across a three-line
-  title. The canvas needs a wrapper to measure against and cannot be that
-  wrapper: an absolutely positioned replaced element with `width: auto` takes
-  its own intrinsic size and ignores the inset, so it came out 1200 wide behind
-  a title of 437. And the box is offset in **em** off the title's type, not in
-  percentages of the block, because the block is one line tall on Summer and
-  three on Thuragnosia.
 - On a poem page the **reader holds the pen**: the marks are written in step with how
   far down the verse the page is scrolled, starting part-written so a short poem is
   never a blank column. An audio reading takes the pen back the moment one starts.

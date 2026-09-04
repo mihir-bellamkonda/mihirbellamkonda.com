@@ -46,8 +46,8 @@ const HAND = 'notebook';
 
 const HANDS = {
   notebook: {
-    slant: -0.06, wide: 1.35, gap: 1.8, lift: 0.16, bounce: 1, steady: 0.45,
-    ligature: 0.3, tJoin: 1, traced: true, curve: true, furniture: true, units: [0.586, 0.875]
+    slant: -0.06, wide: 1.35, gap: 1.8, lift: 0.16, bounce: 1, steady: 0.35,
+    ligature: 0.5, tJoin: 1, traced: true, curve: true, furniture: true, units: [0.579, 0.907]
   },
   plain: {
     slant: 0.055, wide: 1, gap: 1, lift: 0.45, bounce: 0, steady: 0,
@@ -89,9 +89,30 @@ function wordMark(x, y, word, size, R, hand) {
   let cur = [];
   let cx = x;
 
-  const xh = size * 0.52;
-  const asc = size * 0.98;
-  const desc = size * 0.78;
+  // A hurried hand is taller and narrower, and runs its letters together.
+  //
+  // Measured off the writing test of 3 September, where the same four lines
+  // were written twice, once at an ordinary pace and once as fast as the poet
+  // could go. The ink stands 4 to 15% taller in every pair, mean 11%, and the
+  // gaps between words close up: seven became five on one line and seven
+  // became four on another.
+  //
+  // Only those two are modelled. The lines also read 4 to 14% narrower *for
+  // their height*, but that is the same finding twice over rather than a second
+  // one — recovering the absolute widths gives 1481 against 1475, 1473 against
+  // 1473, 1490 against 1465, 1477 against 1469, which is constant inside two
+  // percent. The hand grows taller at the width it already had. And that
+  // constant width is partly the notebook's margins rather than the hand, so
+  // narrowing the letters as well would be modelling the page.
+  //
+  // The one thing here that was wrong rather than missing: it lifted the pen
+  // *more* when hurrying, on the reasoning that haste is untidy. Haste joins
+  // letters up rather than chopping them apart, and the gap counts say so.
+  const tall = 1 + hand.temper * 0.11;
+  const wide = pen.wide;
+  const xh = size * 0.52 * tall;
+  const asc = size * 0.98 * tall;
+  const desc = size * 0.78 * tall;
   const glyphs = Array.from(String(word || '').toLowerCase());
   if (!glyphs.length) glyphs.push(' ');
 
@@ -168,7 +189,7 @@ function wordMark(x, y, word, size, R, hand) {
     // setting, deliberately below what the photograph alone would support.
     const joinsOn = gi + 2 < glyphs.length;
     if (pen.traced && char === 't' && glyphs[gi + 1] === 'h' && joinsOn && R() < pen.ligature) {
-      const w = size * (0.3 + R() * 0.05) * pen.wide;
+      const w = size * (0.3 + R() * 0.05) * wide;
       const stem = xh * (1.44 + R() * 0.22);
       to(cx + w * 0.26, y - stem);
       to(cx + w * 0.36, y - h * 0.44);
@@ -183,7 +204,7 @@ function wordMark(x, y, word, size, R, hand) {
       lift();
       cx += w * 1.5;
       gi++;
-      if (R() < pen.lift + hand.temper * 0.16) lift();
+      if (R() < Math.max(0.02, pen.lift - hand.temper * 0.09)) lift();
       cx += size * (0.035 + R() * 0.065) * pen.gap;
       continue;
     }
@@ -197,7 +218,7 @@ function wordMark(x, y, word, size, R, hand) {
     // poet describes the result as a regular t, or at speed something closer
     // to a plus, and `bar` is which of the two this one comes out as.
     if (pen.traced && char === 't') {
-      const w = size * (0.26 + R() * 0.05) * pen.wide;
+      const w = size * (0.26 + R() * 0.05) * wide;
       const stem = xh * (1.46 + R() * 0.26);
       const bar = R() < 0.34 ? 0.56 + R() * 0.09 : 0.74 + R() * 0.1;
       to(cx + w * 0.3, y - stem);
@@ -229,14 +250,14 @@ function wordMark(x, y, word, size, R, hand) {
         lift();
       }
       cx += w * 0.98;
-      if (R() < pen.lift + hand.temper * 0.16) lift();
+      if (R() < Math.max(0.02, pen.lift - hand.temper * 0.09)) lift();
       cx += size * (0.035 + R() * 0.065) * pen.gap;
       continue;
     }
 
     if (isAscender) {
       // ascender — l h k b d t f
-      const w = size * (0.31 + R() * 0.055) * pen.wide;
+      const w = size * (0.31 + R() * 0.055) * wide;
       const tall = asc * (0.88 + R() * 0.2);
       if (traces && char === 'b') {
         // A numeral 6, and unmistakably one at magnification — in bodies, best,
@@ -303,7 +324,7 @@ function wordMark(x, y, word, size, R, hand) {
       // The g closes a round bowl and then drops almost straight, turning left
       // at the foot into a short flat tail — an L, near enough, where the other
       // descenders swing. Nothing in the notebook loops below the line.
-      const w = size * (0.33 + R() * 0.06) * pen.wide;
+      const w = size * (0.33 + R() * 0.06) * wide;
       const depth = desc * (0.68 + R() * 0.22);
       to(cx + w * 0.84, y - h * 0.7);
       to(cx + w * 0.5, y - h * (0.94 + R() * 0.1));
@@ -321,7 +342,7 @@ function wordMark(x, y, word, size, R, hand) {
       // An angular epsilon, and a small flat one: the crossbar comes first,
       // the pen loops back over the top and round the foot, and it is left
       // open on the right. It sits well under the x-height of an o.
-      const w = size * (0.3 + R() * 0.06) * pen.wide;
+      const w = size * (0.3 + R() * 0.06) * wide;
       const eh = h * (0.66 + R() * 0.12);
       to(cx, y - eh * 0.5);
       to(cx + w * 0.66, y - eh * 0.58);
@@ -336,7 +357,7 @@ function wordMark(x, y, word, size, R, hand) {
       // Two round valleys, not the two arches the hump branch was giving it.
       // The middle peak stays low — a little over half the x-height — and both
       // ends rise past it and hook, which is what makes the letter read wide.
-      const w = size * (0.3 + R() * 0.06) * pen.wide;
+      const w = size * (0.3 + R() * 0.06) * wide;
       to(cx, y - h * (0.78 + R() * 0.14));
       to(cx + w * 0.2, y - h * 0.14);
       to(cx + w * 0.42, y - h * 0.02);
@@ -348,7 +369,7 @@ function wordMark(x, y, word, size, R, hand) {
       cx += w * 1.46;
     } else if (isDescender) {
       // descender — g y p j q
-      const w = size * (0.34 + R() * 0.065) * pen.wide;
+      const w = size * (0.34 + R() * 0.065) * wide;
       const depth = desc * (0.82 + R() * 0.3);
       to(cx, y - h * 0.78);
       to(cx + w * 0.32, y - h);
@@ -363,7 +384,7 @@ function wordMark(x, y, word, size, R, hand) {
       // The hand's commonest motion: a loose, slightly open single-storey
       // bowl. The points stay irregular so it suggests a letter without
       // resolving into typography.
-      const w = size * (0.34 + R() * 0.08) * pen.wide;
+      const w = size * (0.34 + R() * 0.08) * wide;
       to(cx, y - h * 0.18);
       to(cx - w * 0.03, y - h * 0.58);
       to(cx + w * 0.2, y - h * (0.92 + R() * 0.08));
@@ -379,14 +400,14 @@ function wordMark(x, y, word, size, R, hand) {
       cx += w * (char === 'c' ? 0.88 : 1.02);
     } else if (char === 'i') {
       // Mihir's i is a short, nearly upright stroke with a high separate dot.
-      const w = size * (0.2 + R() * 0.035) * pen.wide;
+      const w = size * (0.2 + R() * 0.035) * wide;
       to(cx, y - h * 0.82);
       to(cx + w * 0.2, y);
       to(cx + w, y - h * 0.06);
       dot(cx + w * 0.06, y - h * 1.46);
       cx += w;
     } else if (char === 's') {
-      const w = size * (0.31 + R() * 0.06) * pen.wide;
+      const w = size * (0.31 + R() * 0.06) * wide;
       if (traces) {
         // A round S — a small counter at the top opening left, a diagonal
         // across, a larger one at the foot opening right, and a tail that
@@ -415,7 +436,7 @@ function wordMark(x, y, word, size, R, hand) {
       if (!HUMPS.has(char) && R() < 0.18) peaks++;
       to(cx, y);
       for (let p = 0; p < peaks; p++) {
-        const w = size * (0.31 + R() * 0.09) * pen.wide;
+        const w = size * (0.31 + R() * 0.09) * wide;
         to(cx + w * 0.2, y - h * (0.55 + R() * 0.12));
         to(cx + w * 0.56, y - h * (0.9 + R() * 0.12));
         to(cx + w * 0.82, y - h * (0.74 + R() * 0.1));
@@ -427,7 +448,7 @@ function wordMark(x, y, word, size, R, hand) {
     // The notebook hand keeps the pen down and runs a word together — "the"
     // arrives as one gesture. Lifting on nearly half the letters, which is what
     // this did, is a hand printing rather than writing.
-    if (R() < pen.lift + hand.temper * 0.16) lift();
+    if (R() < Math.max(0.02, pen.lift - hand.temper * 0.09)) lift();
     cx += size * (0.035 + R() * 0.065) * pen.gap;
   }
 

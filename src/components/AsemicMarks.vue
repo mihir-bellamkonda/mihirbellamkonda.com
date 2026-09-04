@@ -231,7 +231,7 @@ onUnmounted(() => {
   window.removeEventListener('resize', resized);
 });
 
-watch(() => [props.text, props.seed, props.temper], run);
+watch(() => [props.text, props.seed, props.temper, props.size, props.maxLines], run);
 watch(() => props.progress, (value) => {
   if (!mounted) return;
   if (value === null) return;

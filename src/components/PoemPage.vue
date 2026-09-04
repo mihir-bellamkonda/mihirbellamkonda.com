@@ -14,7 +14,20 @@
     <main class="grid" id="main" tabindex="-1">
       <div class="margin-meta">
         <div class="num">{{ pad(index) }} / {{ pad(total) }}</div>
-        <h1 data-page-heading tabindex="-1">{{ poem.title }}</h1>
+        <div class="title-block">
+          <!-- The title again, in the hand, behind itself. Faint enough that a
+               reader finds it rather than is shown it. -->
+          <span class="title-ghost-box" aria-hidden="true">
+            <AsemicMarks
+              class="title-ghost"
+              :text="poem.title"
+              :seed="`${poem.slug}::title`"
+              :size="titleHandSize"
+              instant
+            />
+          </span>
+          <h1 ref="titleEl" data-page-heading tabindex="-1">{{ poem.title }}</h1>
+        </div>
         <p v-if="poem.subtitle" class="dedication">{{ poem.subtitle }}</p>
 
         <div class="provenance">
@@ -324,6 +337,13 @@ function endSwipe(event) {
 }
 
 onMounted(() => {
+  measureTitle();
+  // The title is set in vw between its two clamps, so its size follows the
+  // window and the hand behind it has to follow the title.
+  if (titleEl.value && typeof ResizeObserver !== 'undefined') {
+    titleResize = new ResizeObserver(measureTitle);
+    titleResize.observe(titleEl.value);
+  }
   paced.value = !prefersReducedMotion();
   measure();
   window.addEventListener('scroll', onScroll, { passive: true });
@@ -331,6 +351,8 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  titleResize?.disconnect();
+  titleResize = null;
   clearTimeout(copyTimer);
   if (measuring) cancelAnimationFrame(measuring);
   window.removeEventListener('scroll', onScroll);
@@ -346,6 +368,32 @@ const year = computed(() => {
 
 // Every poem carries a study now, so the collage is the illegible column.
 const hasSpecimen = computed(() => Boolean(studyFor(props.poem?.path)));
+
+/**
+ * How big the hand behind the title is drawn.
+ *
+ * It has to be set from the title's own type size, because fitSize() cannot
+ * get there: it caps the hand at 16px, which is a sensible ceiling for a
+ * column of marks and about a quarter of what a heading needs. Left to fit
+ * itself the ghost came out a thin line of small writing lying across a
+ * three-line title — a rule through it rather than anything behind it.
+ *
+ * Just over half the type size, so the hand's x-height sits under the
+ * lowercase of the title rather than matching its caps. The wrapping does not
+ * line up with the title's own and is not meant to; the leading of the hand is
+ * near three times its letter size where a display line is set solid, so
+ * asking for line-for-line would mean setting the hand far too small again.
+ */
+const titleEl = ref(null);
+const titleHandSize = ref(0);
+let titleResize = null;
+
+function measureTitle() {
+  const el = titleEl.value;
+  if (!el) return;
+  const px = parseFloat(getComputedStyle(el).fontSize);
+  if (px > 0) titleHandSize.value = Math.round(px * 0.52 * 10) / 10;
+}
 
 
 // Prefer the structured stanzas from the build script; fall back to splitting
@@ -427,7 +475,53 @@ const stanzas = computed(() => {
   font-variant-numeric: tabular-nums;
 }
 
+/* The title, and the same words in the hand underneath it.
+
+   It is set from the title rather than from the poem, so it is the one mark on
+   a poem page that says the same thing as the type it sits behind. Drawn whole
+   rather than written on: a write-on behind a heading is an event, and this is
+   meant to be texture the reader catches on the second look. It is laid over
+   with a bleed on every side so the marks run under the words rather than
+   lining up with them. */
+.title-block {
+  position: relative;
+}
+
+/* The canvas needs a box to measure itself against, and cannot be that box.
+   An absolutely positioned replaced element with auto width takes its own
+   intrinsic size and ignores the inset it was given, so the canvas came out at
+   its attribute size — 1200 by 600 — over a title 437 wide. The span carries
+   the position and the bleed; the canvas fills it.
+
+   Drawn as a single settled line rather than left to flow. Unbounded, the hand
+   starts a line and a half down from the top of its box and a one-line mark
+   therefore sits above the title instead of behind it, which reads as a caption.
+   settle() centres a single-line mark in the box it was given, which is the
+   thing wanted here. */
+.title-ghost-box {
+  position: absolute;
+  z-index: 0;
+  /* Set from the title's own type size rather than as a share of the block,
+     because the block is one line tall on Summer and three on Thuragnosia and
+     a percentage means something different in each. ghost() puts its first
+     baseline one and a half letter-sizes down — 0.78em at the size the hand is
+     set here — which is about where the title's own first baseline falls, so
+     the box starts level with the block and is let out at the foot to leave a
+     second line somewhere to go. */
+  inset: -0.04em -6% -1.5em -3%;
+  opacity: 0.085;
+  pointer-events: none;
+}
+
+.title-ghost {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .margin-meta h1 {
+  position: relative;
+  z-index: 1;
   font-family: var(--f-display);
   font-weight: 300;
   font-size: clamp(2.3rem, 5.6vw, 3.7rem);
@@ -661,7 +755,7 @@ const stanzas = computed(() => {
 }
 
 @media print {
-  .chrome, .tools, .hint, .reading, .study { display: none; }
+  .chrome, .tools, .hint, .reading, .study, .title-ghost { display: none; }
   .poem-plate { min-height: 0; }
   .grid {
     display: grid;

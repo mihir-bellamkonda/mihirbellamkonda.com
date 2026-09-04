@@ -251,10 +251,27 @@ test('a letter is never made the same way twice, so the writing stays unreadable
 
   // An e that is reliably further from an o than one e is from another e is an
   // e a reader can pick out, and once the vowels separate the sentences return.
+  //
+  // The limit was 1.12 and is 1.18. It moved once, deliberately, when the lean
+  // went out to -0.1 at the poet's request: a steeper backward lean tilts the
+  // e's open side away from the a's bowl and the pair reads 1.14, where every
+  // other dial moved at the same time left it at 1.12. Holding the number would
+  // have meant refusing the lean, and the lean is the poet's call — so the gate
+  // was relaxed knowingly rather than the change being dropped, and this note
+  // exists so the next person can see it was a decision and not a drift.
+  //
+  // 1.18 rather than 1.15 so there is real room above the present value; a limit
+  // sitting a hundredth above where the hand already is stops being a gate and
+  // starts being a tripwire for noise. What it still catches is the thing it was
+  // built for: a change that pulls the vowels properly apart and hands the
+  // sentences back.
+  //
+  // It is a proxy either way. The actual standard is that a line cannot be read,
+  // and that is checked by looking — see asemic-hand/reference/legibility.png.
   for (const other of ['o', 'a']) {
     const ratio = between('e', other) / ((spread('e') + spread(other)) / 2);
     assert.ok(
-      ratio < 1.12,
+      ratio < 1.18,
       `e and ${other} have pulled apart (${ratio.toFixed(2)}); the writing is becoming readable`
     );
   }

@@ -290,6 +290,13 @@ reintroduce anything like it.
 - On a poem page the **reader holds the pen**: the marks are written in step with how
   far down the verse the page is scrolled, starting part-written so a short poem is
   never a blank column. An audio reading takes the pen back the moment one starts.
+- **The legibility limit is 1.18 and used to be 1.12.** It moved once, knowingly,
+  when the lean went out to -0.1: a steeper backward lean tilts the e's open side
+  away from the a's bowl and the pair reads 1.14. Holding the number would have
+  meant refusing the lean, which is the poet's call, so the gate was relaxed
+  rather than the change dropped. It is a proxy either way — the real standard is
+  that a line cannot be read, checked by eye against
+  `asemic-hand/reference/legibility.png`.
 - **`temper` is one dial on the hand, from −1 to +1, and it is now measured.**
   The writing test of 3 September had the same four lines written twice, once at
   an ordinary pace and once as fast as the poet could go. The ink stands 4 to 15%

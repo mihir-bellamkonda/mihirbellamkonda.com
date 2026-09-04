@@ -638,7 +638,7 @@ function clearPointer(event) {
   background: color-mix(in srgb, var(--a-bg) 76%, transparent);
   font-family: var(--f-display);
   font-size: clamp(0.86rem, 1.45vw, 1.18rem);
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.08;
   letter-spacing: 0.005em;
   color: var(--a-ink);

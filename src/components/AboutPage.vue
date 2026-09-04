@@ -128,7 +128,7 @@ const word = WORDS[Math.floor(Math.random() * WORDS.length)] || 'analemma';
 
 .opening h1 {
   font-family: var(--f-display);
-  font-weight: 300;
+  font-weight: 400;
   font-size: clamp(2.6rem, 7vw, 4.4rem);
   line-height: 1;
   margin: 0;

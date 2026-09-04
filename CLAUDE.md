@@ -124,8 +124,25 @@ second band `#1D1B18`. Dark mode is a **negative, not a dimming** — the two ba
 trade places. All colour lives in `src/style.css` as tokens; components never
 hard-code a colour.
 
-Faces: **Cormorant Garamond** display, **Spectral** verse, **Sligoil Micro** for the
-small catalogue chrome. The chrome was IBM Plex Mono until September 2026 and was
+Faces: **Sorts Mill Goudy** display, **Spectral** verse, **Sligoil Micro** for the
+small catalogue chrome.
+
+**Sorts Mill Goudy ships one weight and no bold.** Barry Schwartz's revival of Goudy
+Oldstyle has a 400 roman and a 400 italic, and nothing else — there is no 600 and no
+700. Every display rule is therefore set at 400, where it used to be 300 under
+Cormorant, and that change of weight is most of what the swap did to the page. Do not
+set a heavier `font-weight` on a display element: the browser will not find a face and
+will smear the outlines into a synthetic bold instead, which is the same reason
+`.verse strong` is a real 400 against the 300 body rather than a `bold`. If a heavier
+display face is ever wanted, it has to be a different family, not a heavier number.
+
+The display face was Cormorant Garamond until September 2026, drawn at 300 and very
+fine; the poet asked for something thicker. Goudy set most of the twentieth century's
+American poetry and carries its own oddities — the upturned ear on the g, the diamond
+dots, serifs that never sit quite flat. Four files against Cormorant's six, and 83.5kB
+against 184.6kB.
+
+The chrome was IBM Plex Mono until September 2026 and was
 changed because Plex is IBM's corporate face and has become the default voice of
 developer tooling — it read as software rather than as a book. Sligoil's Micro cut is
 drawn specifically for type set very small, which is the whole of what the slot does:

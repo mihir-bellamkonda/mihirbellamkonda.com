@@ -427,7 +427,7 @@ const stanzas = computed(() => {
 
 .margin-meta h1 {
   font-family: var(--f-display);
-  font-weight: 300;
+  font-weight: 400;
   font-size: clamp(2.3rem, 5.6vw, 3.7rem);
   line-height: 1;
   margin: 0;

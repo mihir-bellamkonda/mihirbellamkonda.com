@@ -382,7 +382,7 @@ function firstLine(poem) {
 
 .title {
   font-family: var(--f-display);
-  font-weight: 300;
+  font-weight: 400;
   font-size: clamp(1.24rem, 2vw, 1.68rem);
   line-height: 1.18;
   color: var(--a-ink);

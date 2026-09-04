@@ -2,8 +2,8 @@ Fonts self-hosted in this directory, and their copyright holders.
 All three are licensed under the SIL Open Font License, Version 1.1, the full
 text of which follows.
 
-  Cormorant Garamond  Copyright 2015 The Cormorant Project Authors
-                      (https://github.com/CatharsisFonts/Cormorant)
+  Sorts Mill Goudy    Copyright 2010 Barry Schwartz, after Frederic Goudy
+                      (https://github.com/google/fonts/tree/main/ofl/sortsmillgoudy)
   Spectral            Copyright 2017 The Spectral Project Authors
                       (https://github.com/productiontype/Spectral)
   Sligoil             Copyright 2025 Ariel Martin Perez, with contributions by

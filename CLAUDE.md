@@ -357,6 +357,18 @@ a click, and does not navigate.
   own, so the identifier goes the way of the picture. The keyframe has no `from`
   on purpose: an explicit one would snap every sheet to full opacity before
   starting, where an implicit one starts each layer from wherever it already sat.
+- **A photograph ends on its tear, not in a circle.** The image sheets used to
+  fade out through a radial mask, which put a soft vignette on every plate — and
+  a vignette reads as a filter rather than as a torn edge. The `clip-path` deckle
+  each layer already carries is what ends it now. The rule that a fragment must
+  not stop on a hard border still holds; a deckle is not a border.
+- **Each plate carries a hint of ink in the photograph itself**, at the frequency
+  the marks keep. Blended as `color` at 0.1, so only hue and saturation cross
+  over and the plate keeps its own tone — meant to be felt rather than seen. The
+  tints are **dealt, not drawn**: an independent draw per plate came out green
+  14, rust 3, navy 4 over these 21, which inverts the fixed order, because 21 is
+  too small a sample for a 5:2:1 ratio to show in. The set is put in a seeded
+  order and cut at the ratio instead, giving exactly 13 / 5 / 3.
 - The imagery must **recede**. Large calm tonal areas, few edges, nothing
   captioned or labelled, nothing that reads as a second headline. Fragments end
   by dissolving through a gradient mask, not on a hard border.

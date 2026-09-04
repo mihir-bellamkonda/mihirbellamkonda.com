@@ -18,7 +18,7 @@
 
         <template v-for="(poem, i) in poems" :key="poem.slug">
           <h2 v-if="i === 0" class="section-mark">selected</h2>
-          <h2 v-else-if="i === 5" class="section-mark">archive</h2>
+          <h2 v-else-if="i === 6" class="section-mark">archive</h2>
 
           <!-- Not a single <a> any more: the venue is its own link, and an
                anchor cannot legally contain another. The poem link is

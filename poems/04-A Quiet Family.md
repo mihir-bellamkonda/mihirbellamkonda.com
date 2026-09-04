@@ -1,6 +1,7 @@
 ---
 title: "A Quiet Family"
 date: 2025-07-23
+catalogue: 17
 published_in: "Oxford Poetry"
 external_url: "https://partus.press/products/oxford-poetry-issue-99"
 ---

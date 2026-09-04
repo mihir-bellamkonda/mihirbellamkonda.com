@@ -1,6 +1,7 @@
 ---
 title: "Thuragnosia: Parable of the Man Blind to Doors"
 date: 2024-05-01
+catalogue: 3
 published_in: "Painted Bride Quarterly"
 external_url: "https://pbqmag.org/mihir-bellamkonda-thuragnosia-parable-of-the-man-blind-to-doors/"
 ---

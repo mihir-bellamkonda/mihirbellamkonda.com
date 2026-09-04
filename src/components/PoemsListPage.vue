@@ -3,7 +3,24 @@
     <div class="inner">
       <div class="chrome">
         <a href="/">mihir bellamkonda</a>
-        <span>{{ pad(poems.length) }}</span>
+        <!-- The count used to sit here. A manicule is what a printed book
+             puts in a margin to point at the thing worth noticing, and it
+             points at something. See openHand(). -->
+        <span
+          class="manicule"
+          aria-hidden="true"
+          :style="{ transform: `rotate(${presses * 4}deg)` }"
+          @click="openHand"
+        >
+          <svg viewBox="0 0 24 16" width="15" height="10" focusable="false">
+            <g fill="currentColor">
+              <rect x="0.6" y="4.6" width="2.6" height="8.8" rx="1" />
+              <rect x="3" y="3.4" width="9.2" height="11.2" rx="3.6" />
+              <path d="M10.6 7.1 H20.4 a1.35 1.35 0 0 1 0 2.7 H10.6 z" />
+              <path d="M6.4 3.9 a3 3 0 0 1 4.4 1.1 l-3.6 1.4 z" />
+            </g>
+          </svg>
+        </span>
       </div>
 
       <h1 class="sr-only" data-page-heading tabindex="-1">Poems</h1>
@@ -201,6 +218,25 @@ function follow(event, slug) {
   props.onSelect?.(slug);
 }
 
+/**
+ * Five presses on the manicule open `#hand`.
+ *
+ * It is ornament that answers, not a control: aria-hidden and not focusable,
+ * because a screen reader announcing "button" over a pointing hand would give
+ * away that there is something to find, and nothing here is functionality a
+ * reader needs. The hand turns four degrees on each press, so it is possible
+ * to notice that something is happening before it happens.
+ */
+const presses = ref(0);
+
+function openHand() {
+  presses.value += 1;
+  if (presses.value < 5) return;
+  presses.value = 0;
+  window.history.pushState(null, '', '/#hand');
+  window.dispatchEvent(new PopStateEvent('popstate'));
+}
+
 function pad(n) {
   return (n < 10 ? '0' : '') + n;
 }
@@ -249,6 +285,32 @@ function firstLine(poem) {
   font-size: 0.63rem;
   letter-spacing: 0.18em;
   color: var(--a-faint);
+}
+
+/* The manicule sits where the poem count used to. It is drawn rather than
+   set: no face on this site carries U+261E, and a text manicule would fall
+   through to the system emoji font and arrive in colour. currentColor keeps
+   it on the chrome's own ink in both themes.
+
+   It turns a little on each press. Four degrees is under the threshold at
+   which it reads as an animation and over the one at which a reader wonders
+   whether they imagined it. */
+.manicule {
+  display: inline-flex;
+  align-items: center;
+  color: var(--a-faint);
+  cursor: pointer;
+  transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.3s ease;
+}
+
+.manicule:hover {
+  color: var(--a-ink-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .manicule {
+    transition: color 0.3s ease;
+  }
 }
 
 .chrome a {

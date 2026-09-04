@@ -12,6 +12,7 @@ import { arrowUsed } from './arrow-hint.js';
 import AboutPage from './components/AboutPage.vue';
 import PoemsListPage from './components/PoemsListPage.vue';
 import PoemPage from './components/PoemPage.vue';
+import HiddenHand from './components/HiddenHand.vue';
 
 /**
  * Real paths for poems, with legacy hash routing retained.
@@ -35,6 +36,7 @@ function parseRoute() {
   const hash = decodeURIComponent(window.location.hash.slice(1) || '');
   if (hash === 'about') return { page: 'about' };
   if (hash === 'index' || hash === 'contents' || hash === 'poems') return { page: 'index' };
+  if (hash === 'hand') return { page: 'hand' };
   if (hash.startsWith('poem/')) return { page: 'poem', slug: hash.slice(5) };
 
   const pathMatch = decodeURIComponent(window.location.pathname).match(/^\/poem\/([^/]+)\/?$/);
@@ -46,6 +48,7 @@ function parseRoute() {
 function urlFor(r) {
   if (r.page === 'about') return '/';
   if (r.page === 'index') return '/#index';
+  if (r.page === 'hand') return '/#hand';
   const poem = poemsData.find(p => p.slug === r.slug || p.path === r.path);
   return poem ? poem.url : '/#index';
 }
@@ -128,6 +131,8 @@ const current = computed(() => {
       }
     };
   }
+
+  if (r.page === 'hand') return { view: HiddenHand, props: {} };
 
   return { view: AboutPage, props: {} };
 });

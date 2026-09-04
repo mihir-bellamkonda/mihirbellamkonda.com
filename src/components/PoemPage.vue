@@ -360,7 +360,14 @@ const stanzas = computed(() => {
 </script>
 
 <style scoped>
+/* The swipe between poems is horizontal, and with touch-action left at auto
+   the browser may claim a horizontal drag for its own panning and fire
+   pointercancel part-way through — which nulls the gesture, so the handler
+   was correct and simply never got to finish. pan-y keeps vertical scrolling
+   with the browser and reserves the horizontal axis for the page.
+   SpecimenCollage has carried the same line for the same reason. */
 .poem-plate {
+  touch-action: pan-y;
   position: relative;
   background: var(--a-bg);
   min-height: 100vh;
@@ -504,6 +511,28 @@ const stanzas = computed(() => {
 .copy:focus-visible {
   outline: 1px solid var(--accent);
   outline-offset: 3px;
+}
+
+/* Same 24px target rule as the index, for the poem page's own small controls.
+   See PoemsListPage.vue for why it is a pseudo-element and not padding. */
+@media (pointer: coarse) {
+  .chrome a,
+  .copy,
+  .listen {
+    position: relative;
+  }
+
+  .chrome a::after,
+  .copy::after,
+  .listen::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 24px;
+    transform: translateY(-50%);
+  }
 }
 
 .hint {

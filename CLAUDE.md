@@ -253,10 +253,21 @@ reintroduce anything like it.
 - On a poem page the **reader holds the pen**: the marks are written in step with how
   far down the verse the page is scrolled, starting part-written so a short poem is
   never a blank column. An audio reading takes the pen back the moment one starts.
-- `temper` is one dial on the hand, from −1 to +1. Below zero it is slow and careful:
-  steadier baseline, more upright, keeping the pen down, more ink, and a write-on that
-  takes nearly twice as long. Above zero it hurries. Zero is the ordinary hand and the
-  only value `verify-site.js` knows about, so signatures stay deterministic.
+- **`temper` is one dial on the hand, from −1 to +1, and it is now measured.**
+  The writing test of 3 September had the same four lines written twice, once at
+  an ordinary pace and once as fast as the poet could go. The ink stands 4 to 15%
+  taller in every pair, mean 11%, and the gaps between words close up — seven
+  became five on one line, seven became four on another. Those two are modelled.
+  The lines also read 4 to 14% narrower *for their height*, but that is the same
+  finding restated: the absolute widths are 1481/1475, 1473/1473, 1490/1465,
+  1477/1469, constant inside two percent. The hand grows taller at the width it
+  already had, and that width is partly the notebook's margins, so narrowing the
+  letters as well would be modelling the page. One thing here was wrong rather
+  than missing: it lifted the pen **more** when hurrying, on the reasoning that
+  haste is untidy. Haste joins letters up, and the gap counts say so. Below zero
+  the hand is still slow and careful — steadier, more upright, more ink, and a
+  write-on taking nearly twice as long — and zero is still the only value
+  `verify-site.js` knows about, so signatures stay deterministic.
 - One poem per session, chosen in `src/slow-hand.js` and held in `sessionStorage`, is
   written slowly — its collage *and* its row signature on the index, which is where a
   reader is most likely to catch it. It is never announced, and the choice never

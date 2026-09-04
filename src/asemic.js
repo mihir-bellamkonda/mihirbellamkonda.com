@@ -47,7 +47,7 @@ const HAND = 'notebook';
 const HANDS = {
   notebook: {
     slant: -0.06, wide: 1.35, gap: 1.8, lift: 0.16, bounce: 1, steady: 0.35,
-    ligature: 0.5, tJoin: 1, capHeight: 1.62, traced: true, curve: true, furniture: true, units: [0.578, 0.919]
+    ligature: 0.5, tJoin: 1, capHeight: 1.62, traced: true, curve: true, furniture: true, units: [0.567, 0.905]
   },
   plain: {
     slant: 0.055, wide: 1, gap: 1, lift: 0.45, bounce: 0, steady: 0,
@@ -55,6 +55,7 @@ const HANDS = {
   }
 };
 
+const PUNCTUATION = /[.,:;!?()[\]'\u2019"\u201c\u201d\u2013\u2014-]/;
 const ASCENDERS = new Set('lhkbdtf');
 const DESCENDERS = new Set('gypjq');
 const BOWLS = new Set('aoec');
@@ -138,6 +139,10 @@ function wordMark(x, y, word, size, R, hand) {
     cur.push([px + hand.dx + (y - yy) * hand.slant, yy]);
   };
 
+  // Height above the baseline, rather than a y coordinate: the punctuation
+  // forms are all written as heights and this keeps them readable.
+  const to0 = (px, up) => to(px, y - up);
+
   const dot = (px, py) => {
     lift();
     to(px, py);
@@ -211,6 +216,82 @@ function wordMark(x, y, word, size, R, hand) {
       gi++;
       if (R() < Math.max(0.02, pen.lift - hand.temper * 0.09)) lift();
       cx += size * (0.035 + R() * 0.065) * pen.gap;
+      continue;
+    }
+
+    // Punctuation and figures, which have been drawn as letters until now.
+    //
+    // Anything that was not a to z fell through to the hump branch, so every
+    // comma on this site was a small arch, and a full stop, a question mark and
+    // an em-dash were the same arch as each other — all three came out 22 by 25
+    // and indistinguishable. The page has them plainly: a comma is a tick under
+    // the line, a colon is two marks, a question mark is a hook standing over a
+    // dot, brackets are tall thin curves, and the dash the poet writes is very
+    // long, nearer a strike-out than an em-rule.
+    //
+    // The figures are described rather than traced, like most of the alphabet.
+    // What the sheet supports is that the 1 is a plain stroke with no flag on it
+    // and the 4 is open at the top; the rest are built to sit with those.
+    if (pen.traced && PUNCTUATION.test(char)) {
+      const w = size * 0.2 * wide;
+      const tick = (from, to) => { to0(cx + w * 0.34, from); to0(cx + w * (0.2 + R() * 0.1), to); };
+      const speck = (at) => { lift(); to0(cx + w * 0.32, at); to0(cx + w * (0.4 + R() * 0.06), at - h * 0.03); lift(); };
+
+      if (char === '.') speck(h * 0.05);
+      else if (char === ',') tick(h * 0.12, -desc * 0.2);
+      else if (char === ':') { speck(h * 0.08); speck(h * 0.6); }
+      else if (char === ';') { tick(h * 0.12, -desc * 0.18); speck(h * 0.62); }
+      else if (char === "'" || char === '\u2019') tick(h * 1.12, h * 0.72);
+      else if (char === '"' || char === '\u201c' || char === '\u201d') {
+        tick(h * 1.12, h * 0.72); cx += w * 0.42; tick(h * 1.1, h * 0.7);
+      } else if (char === '!') { to0(cx + w * 0.34, h * 1.05); to0(cx + w * 0.26, h * 0.24); speck(h * 0.05); }
+      else if (char === '?') {
+        to0(cx + w * 0.06, h * (0.86 + R() * 0.1));
+        to0(cx + w * 0.42, h * 1.12);
+        to0(cx + w * 0.72, h * 0.82);
+        to0(cx + w * 0.36, h * 0.4);
+        to0(cx + w * 0.34, h * 0.24);
+        speck(h * 0.05);
+      } else if (char === '(' || char === '[') {
+        to0(cx + w * 0.62, h * 1.24);
+        to0(cx + w * 0.24, h * 0.62);
+        to0(cx + w * 0.6, -desc * 0.16);
+      } else if (char === ')' || char === ']') {
+        to0(cx + w * 0.2, h * 1.24);
+        to0(cx + w * 0.58, h * 0.62);
+        to0(cx + w * 0.22, -desc * 0.16);
+      } else {
+        // the long dash, which on the page runs on well past an em
+        const run = w * (3.4 + R() * 2.6);
+        to0(cx + w * 0.1, h * (0.44 + R() * 0.08));
+        to0(cx + run, h * (0.46 + R() * 0.08));
+        cx += run - w * 0.9;
+      }
+      lift();
+      cx += w * (1.05 + R() * 0.2) + size * (0.035 + R() * 0.065) * pen.gap;
+      continue;
+    }
+
+    // A figure. Constructed like a capital rather than written like a letter,
+    // and standing a little over the x-height, which is where the 1 and the 4
+    // of `14 March` sit against the words either side of them.
+    if (pen.traced && char >= '0' && char <= '9') {
+      const w = size * (0.26 + R() * 0.05) * wide;
+      const top = h * (1.12 + R() * 0.16);
+      if (char === '1') {
+        to(cx + w * (0.34 + R() * 0.08), y - top);
+        to(cx + w * 0.4, y - h * 0.02);
+      } else {
+        to(cx + w * 0.1, y - top * (0.66 + R() * 0.2));
+        to(cx + w * 0.46, y - top);
+        to(cx + w * 0.82, y - top * (0.6 + R() * 0.2));
+        to(cx + w * (0.3 + R() * 0.3), y - h * 0.44);
+        to(cx + w * 0.86, y - h * 0.3);
+        to(cx + w * 0.3, y - h * 0.02);
+        if (R() < 0.34) { lift(); to(cx + w * 0.08, y - h * 0.5); to(cx + w * 0.92, y - h * 0.54); }
+      }
+      lift();
+      cx += w * (1.0 + R() * 0.14) + size * (0.035 + R() * 0.065) * pen.gap;
       continue;
     }
 

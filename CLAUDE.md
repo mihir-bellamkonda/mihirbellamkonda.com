@@ -158,6 +158,15 @@ reintroduce anything like it.
   modest crossed stem and then a single low shoulder, the h losing its ascender
   entirely. The rest of the alphabet is still a description written from memory.
   This file once claimed all of it came from a sample. Only these six do.
+- **Punctuation and figures are their own marks.** Everything that was not a to
+  z fell through to the hump branch, so every comma on the site was a small arch
+  — and a full stop, a question mark and an em-dash were the *same* arch as each
+  other, all three coming out 22 by 25 and indistinguishable. They have their own
+  forms now, from the page: a comma is a tick under the line, a colon two marks,
+  a question mark a hook standing over a dot, a bracket a tall thin curve, and
+  the dash runs very long, nearer a strike-out than an em-rule — 73 wide against
+  a letter's 22. The figures are described rather than traced; what the sheet
+  supports is that the 1 has no flag on it and the 4 is open at the top.
 - **Capitals are drawn.** Until 3 September every word was lowercased before it
   was drawn, so no capital had ever been rendered on this site, while the poet's
   page opens its sentences with T, J, M, N and F. A capital here is a treatment

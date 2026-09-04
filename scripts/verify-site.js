@@ -300,6 +300,16 @@ for (const [asset, file] of plates) {
   const share = opaque / (info.width * info.height);
 
   check(share < 0.95, `${asset}: no feathered edge — it will read as a hard rectangle beside twenty soft ones.`);
+
+  // A vignette is not a feather. The house edge is a rectangle inset 6% and
+  // blurred, so the corner of that inset rectangle stays opaque; an oval
+  // vignette erases it. Two plates shipped with the vignette baked into both
+  // their alpha and their pixels and ended in a circle rather than on their
+  // tear — night-fountain under Mother Dreams, and lunar-disc under Brahmanda.
+  // Nothing caught it, because every other measure here was in range.
+  const cornerAlpha = data[(Math.round(info.height * 0.06) * info.width
+    + Math.round(info.width * 0.06)) * 4 + 3];
+  check(cornerAlpha >= 60, `${asset}: the edge falls off as an oval, not the house rectangle — alpha is ${cornerAlpha} at the inset corner. A photograph ends on its tear, not in a circle.`);
   check(mean > 140 && mean < 232, `${asset}: tone sits at ${mean.toFixed(0)}, outside the folio's range; it has probably not been through the house treatment.`);
   check(deviation > 3, `${asset}: almost no tonal variation (${deviation.toFixed(0)}); the plate is effectively blank.`);
   check(deviation < 45, `${asset}: contrast of ${deviation.toFixed(0)} will shout against the rest.`);

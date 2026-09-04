@@ -436,6 +436,32 @@ function firstLine(poem) {
   outline-offset: 3px;
 }
 
+/* WCAG 2.2 target size (2.5.8) wants 24px, and the catalogue chrome is set at
+   0.62rem, which lands these at seventeen and eighteen. The type is not the
+   problem and does not move: a transparent pseudo-element carries the hit area
+   instead, centred on the link so nothing shifts by a pixel. Coarse pointers
+   only — on a mouse this would swallow the year beside it for text selection,
+   and a mouse was never missing these. */
+@media (pointer: coarse) {
+  .where a.venue,
+  .chrome a,
+  .peek {
+    position: relative;
+  }
+
+  .where a.venue::after,
+  .chrome a::after,
+  .peek::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 24px;
+    transform: translateY(-50%);
+  }
+}
+
 .peek {
   display: none;
   position: relative;

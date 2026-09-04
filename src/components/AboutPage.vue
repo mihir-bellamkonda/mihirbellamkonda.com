@@ -39,19 +39,41 @@
 <script setup>
 import FooterNav from './FooterNav.vue';
 import AsemicMarks from './AsemicMarks.vue';
-import { specimenVocabulary } from '../specimen-vocabulary.js';
+import poems from '../poems.json';
 
 /**
- * A different word every visit.
+ * A different word every visit, drawn from every word in the book.
  *
  * Everywhere else the marks are seeded from the poem, so a poem's signature is
  * the same for every reader forever. That rule is about a poem's own hand and
  * does not reach here: this is the house drawing one word out of the hat on
  * the way in. The choosing is random; the writing is not — the same word comes
  * out in the same hand every time it comes up.
+ *
+ * The hat used to hold the eighty-four words curated in
+ * `specimen-vocabulary.js`, which are picked to sit beside a particular poem
+ * rather than to stand on their own. It holds the whole book now — 1292
+ * distinct words — and it is derived from `poems.json`, which is generated from
+ * the markdown at build time. A poem added tomorrow brings its words with it
+ * and nothing here needs editing.
+ *
+ * Bounded by what the corner will actually hold. This mark is drawn at a fixed
+ * size rather than fitted to its box, so a long word does not shrink to fit —
+ * it runs off the edge, which is the same way the hyphen bug showed itself.
+ * Measured at size 22 against the narrowest the box gets (9rem, 144px): nine
+ * letters is the most that fits, `lawnmower` landing exactly on it, and ten
+ * overflows. Under four letters there is not enough mark to be worth looking at.
  */
-const words = Object.values(specimenVocabulary).flat();
-const word = words[Math.floor(Math.random() * words.length)];
+const WORDS = [...new Set(
+  poems
+    .flatMap(poem => String(poem.content || '').split(/\s+/))
+    .map(word => word
+      .replace(/[*_]/g, '')
+      .replace(/^[^\p{L}\p{N}']+|[^\p{L}\p{N}']+$/gu, ''))
+    .filter(word => word.length >= 4 && word.length <= 9)
+)];
+
+const word = WORDS[Math.floor(Math.random() * WORDS.length)] || 'analemma';
 </script>
 
 <style scoped>

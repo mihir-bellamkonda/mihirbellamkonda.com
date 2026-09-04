@@ -158,6 +158,25 @@ reintroduce anything like it.
   modest crossed stem and then a single low shoulder, the h losing its ascender
   entirely. The rest of the alphabet is still a description written from memory.
   This file once claimed all of it came from a sample. Only these six do.
+- **Capitals are drawn.** Until 3 September every word was lowercased before it
+  was drawn, so no capital had ever been rendered on this site, while the poet's
+  page opens its sentences with T, J, M, N and F. A capital here is a treatment
+  rather than a letter — taller, straighter, and lifted between its parts —
+  because that is what tells a capital from a lowercase at a glance, and nothing
+  in this hand spells anything. `capHeight` is **described, not traced**: on the
+  page the M in *Monday* is plainly shorter than the d beside it and the N in
+  *No* stands about half again the o, and that is the whole of the claim. It
+  ships at 1.62 x-heights and is a dial so it can be moved by looking.
+- **Measuring this hand letter by letter has now failed three times**, and the
+  fourth attempt should not be made without a different method. Guessed column
+  bands catch ascenders and descenders and give capital ratios from 0.72 to 1.38.
+  Column-gap segmentation merges joined letters — sixteen components for
+  twenty-four glyphs, one of them 414px wide with `Mond` fused into it. And
+  steepest-edge detection on the row profile returns x-heights of 67, 142, 68 and
+  18 pixels for four lines of the same hand. What would actually be needed is
+  connected-component analysis that can cut touching glyphs. Until then the
+  x-height, ascender and descender profile stays untrusted and nothing is tuned
+  from it.
 - **The t is not an ascender.** It stands about one and a half x-heights where h,
   l, d, b and k run to nearly three — `soft`, `Most`, `futures` and `Fantasy` all
   show it barely clearing the letters beside it. Drawing it at full ascender

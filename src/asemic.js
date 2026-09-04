@@ -47,11 +47,11 @@ const HAND = 'notebook';
 const HANDS = {
   notebook: {
     slant: -0.06, wide: 1.35, gap: 1.8, lift: 0.16, bounce: 1, steady: 0.35,
-    ligature: 0.5, tJoin: 1, traced: true, curve: true, furniture: true, units: [0.579, 0.907]
+    ligature: 0.5, tJoin: 1, capHeight: 1.62, traced: true, curve: true, furniture: true, units: [0.578, 0.919]
   },
   plain: {
     slant: 0.055, wide: 1, gap: 1, lift: 0.45, bounce: 0, steady: 0,
-    ligature: 0, tJoin: 0, traced: false, curve: false, furniture: false, units: [0.422, 0.863]
+    ligature: 0, tJoin: 0, capHeight: 0, traced: false, curve: false, furniture: false, units: [0.422, 0.863]
   }
 };
 
@@ -113,7 +113,10 @@ function wordMark(x, y, word, size, R, hand) {
   const xh = size * 0.52 * tall;
   const asc = size * 0.98 * tall;
   const desc = size * 0.78 * tall;
-  const glyphs = Array.from(String(word || '').toLowerCase());
+  // The case is kept now. Every word used to be lowercased before it was
+  // drawn, which meant no capital had ever been rendered on this site — and
+  // the poet's page opens its sentences with T, J, M, N and F.
+  const glyphs = Array.from(String(word || ''));
   if (!glyphs.length) glyphs.push(' ');
 
   const lift = () => {
@@ -143,7 +146,9 @@ function wordMark(x, y, word, size, R, hand) {
   };
 
   for (let gi = 0; gi < glyphs.length; gi++) {
-    const char = glyphs[gi];
+    const raw = glyphs[gi];
+    const upper = raw !== raw.toLowerCase() && raw === raw.toUpperCase();
+    const char = raw.toLowerCase();
     const isAscender = ASCENDERS.has(char);
     const isDescender = DESCENDERS.has(char);
     const h = xh * (0.88 + R() * 0.22);
@@ -205,6 +210,50 @@ function wordMark(x, y, word, size, R, hand) {
       cx += w * 1.5;
       gi++;
       if (R() < Math.max(0.02, pen.lift - hand.temper * 0.09)) lift();
+      cx += size * (0.035 + R() * 0.065) * pen.gap;
+      continue;
+    }
+
+    // A capital, which this hand builds rather than writes.
+    //
+    // On the page they are print forms — upright, constructed out of separate
+    // strokes, and stopping well short of the tall ascenders beside them. The
+    // M in `Monday` is plainly shorter than the d that follows it, and the N in
+    // `No` stands about half again the o. That is the whole of what is claimed
+    // here, and it is claimed by eye: three attempts at measuring this hand
+    // letter by letter all failed, and are written up in the commit. `capHeight`
+    // is therefore a described constant like most of the alphabet, not a traced
+    // one like the six, and it is a dial rather than a literal so it can be
+    // moved by looking.
+    //
+    // No letter is spelled. A capital here is a treatment — taller, straighter,
+    // and lifted between its parts — because that is what separates a capital
+    // from a lowercase at a glance, and this hand is asemic by the time anyone
+    // reads it.
+    if (pen.traced && upper) {
+      const capH = xh * (pen.capHeight + R() * 0.18);
+      const w = size * (0.34 + R() * 0.07) * wide;
+      const up = (px, py) => to(cx + px, y - py);
+
+      up(w * (0.04 + R() * 0.05), 0);
+      up(w * (0.1 + R() * 0.06), capH * (0.62 + R() * 0.14));
+      up(w * (0.2 + R() * 0.08), capH * (0.98 + R() * 0.06));
+
+      const arms = R() < 0.44 ? 2 : 1;
+      for (let a = 0; a < arms; a++) {
+        lift();
+        const from = capH * (a === 0 ? 0.94 + R() * 0.08 : 0.42 + R() * 0.2);
+        up(w * (0.16 + R() * 0.08), from);
+        up(w * (0.66 + R() * 0.22), from * (0.72 + R() * 0.26));
+        if (R() < 0.4) up(w * (0.88 + R() * 0.16), from * (0.3 + R() * 0.3));
+      }
+      if (R() < 0.32) {
+        lift();
+        up(w * (0.14 + R() * 0.1), capH * 0.04);
+        up(w * (0.82 + R() * 0.2), capH * (0.02 + R() * 0.08));
+      }
+      lift();
+      cx += w * (1.06 + R() * 0.12);
       cx += size * (0.035 + R() * 0.065) * pen.gap;
       continue;
     }

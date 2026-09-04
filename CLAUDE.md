@@ -158,6 +158,15 @@ reintroduce anything like it.
   modest crossed stem and then a single low shoulder, the h losing its ascender
   entirely. The rest of the alphabet is still a description written from memory.
   This file once claimed all of it came from a sample. Only these six do.
+- **r, v, x and z are traced, and the q's tail is fixed.** All four of the first
+  were falling through to the hump branch and coming out as the same broad arch
+  as an n, so *over*, *vixen* and *zigzagged* were written with no v, no x, no z
+  and no r in them. From the 3 September sheet: the r is barely a letter, a short
+  stem with a small arm; the v is angular where nearly everything else in this
+  hand is round; the x is two crossed strokes; the z has a flat top and a flat
+  foot. The q was drawing the generic descender, which hooks left at the bottom —
+  on the page (*quiet*, *quarry* twice) the tail goes straight down and stops.
+  There is no lowercase j anywhere on the sheet, so it is still described.
 - **Punctuation and figures are their own marks.** Everything that was not a to
   z fell through to the hump branch, so every comma on the site was a small arch
   — and a full stop, a question mark and an em-dash were the *same* arch as each

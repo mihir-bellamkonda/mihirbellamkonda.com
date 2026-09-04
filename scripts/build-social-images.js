@@ -13,7 +13,7 @@ const poems = JSON.parse(fs.readFileSync(path.join(root, 'src', 'poems.json'), '
 const fonts = {
   display: fs.readFileSync(path.join(publicDir, 'fonts', 'cormorant-garamond-300-latin.woff2')).toString('base64'),
   text: fs.readFileSync(path.join(publicDir, 'fonts', 'spectral-300-latin.woff2')).toString('base64'),
-  catalogue: fs.readFileSync(path.join(publicDir, 'fonts', 'ibm-plex-mono-400-latin.woff2')).toString('base64')
+  catalogue: fs.readFileSync(path.join(publicDir, 'fonts', 'sligoil-micro-400-latin.woff2')).toString('base64')
 };
 
 const escapeXml = value => String(value)

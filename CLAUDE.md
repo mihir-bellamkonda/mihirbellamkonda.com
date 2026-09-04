@@ -124,8 +124,14 @@ second band `#1D1B18`. Dark mode is a **negative, not a dimming** — the two ba
 trade places. All colour lives in `src/style.css` as tokens; components never
 hard-code a colour.
 
-Faces: **Cormorant Garamond** display, **Spectral** verse, **IBM Plex Mono** for the
-small catalogue chrome.
+Faces: **Cormorant Garamond** display, **Spectral** verse, **Sligoil Micro** for the
+small catalogue chrome. The chrome was IBM Plex Mono until September 2026 and was
+changed because Plex is IBM's corporate face and has become the default voice of
+developer tooling — it read as software rather than as a book. Sligoil's Micro cut is
+drawn specifically for type set very small, which is the whole of what the slot does:
+nothing in the chrome is larger than 0.64rem. It is by Ariel Martín Pérez at Velvetyne,
+SIL OFL, self-hosted like the rest. Licences for all three families are in
+`public/fonts/OFL.txt`, which the OFL requires to travel with the fonts.
 
 The poem page is two columns — number, title, dedication and provenance in a left
 margin, verse pushed right. Each verse line is its own block with a hanging indent, so

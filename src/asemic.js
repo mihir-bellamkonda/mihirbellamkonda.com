@@ -47,7 +47,7 @@ const HAND = 'notebook';
 const HANDS = {
   notebook: {
     slant: -0.06, wide: 1.35, gap: 1.8, lift: 0.16, bounce: 1, steady: 0.35,
-    ligature: 0.5, tJoin: 1, capHeight: 1.62, traced: true, curve: true, furniture: true, units: [0.567, 0.905]
+    ligature: 0.5, tJoin: 1, capHeight: 1.62, traced: true, curve: true, furniture: true, units: [0.555, 0.901]
   },
   plain: {
     slant: 0.055, wide: 1, gap: 1, lift: 0.45, bounce: 0, steady: 0,
@@ -55,6 +55,7 @@ const HANDS = {
   }
 };
 
+const RARE = new Set('rvxzq');
 const PUNCTUATION = /[.,:;!?()[\]'\u2019"\u201c\u201d\u2013\u2014-]/;
 const ASCENDERS = new Set('lhkbdtf');
 const DESCENDERS = new Set('gypjq');
@@ -215,6 +216,64 @@ function wordMark(x, y, word, size, R, hand) {
       cx += w * 1.5;
       gi++;
       if (R() < Math.max(0.02, pen.lift - hand.temper * 0.09)) lift();
+      cx += size * (0.035 + R() * 0.065) * pen.gap;
+      continue;
+    }
+
+    // r, v, x and z, which were arches until now, and q, whose tail was wrong.
+    //
+    // All four of the first were falling through to the hump branch and being
+    // drawn as the same broad arch as an n — so `over`, `vixen` and `zigzagged`
+    // were written with no v, no x, no z and no r in them, only humps. They come
+    // off the writing test of 3 September, which was asked for precisely because
+    // none of these had ever been seen: the r is barely a letter, a short stem
+    // with a small arm and nothing else; the v is angular where almost
+    // everything else in this hand is round; the x is two crossed strokes; and
+    // the z has a flat top and a flat foot with the diagonal between them.
+    //
+    // The q was drawing the generic descender, which finishes with a hook to the
+    // left. On the page — `quiet`, `quarry` twice — the tail goes straight down
+    // and stops. Its bowl is the ordinary one.
+    if (pen.traced && RARE.has(char)) {
+      const w = size * (0.3 + R() * 0.06) * wide;
+
+      if (char === 'r') {
+        to(cx + w * 0.1, y);
+        to(cx + w * 0.2, y - h * (0.9 + R() * 0.1));
+        to(cx + w * 0.52, y - h * (0.94 + R() * 0.08));
+        to(cx + w * 0.76, y - h * (0.66 + R() * 0.12));
+        cx += w * 0.82;
+      } else if (char === 'v') {
+        to(cx + w * 0.08, y - h * (0.94 + R() * 0.1));
+        to(cx + w * (0.46 + R() * 0.06), y - h * 0.03);
+        to(cx + w * 0.9, y - h * (0.96 + R() * 0.1));
+        cx += w * 0.94;
+      } else if (char === 'x') {
+        to(cx + w * 0.08, y - h * (0.92 + R() * 0.1));
+        to(cx + w * 0.88, y - h * 0.04);
+        lift();
+        to(cx + w * (0.86 + R() * 0.06), y - h * (0.94 + R() * 0.08));
+        to(cx + w * 0.06, y - h * 0.03);
+        cx += w * 0.94;
+      } else if (char === 'z') {
+        to(cx + w * 0.06, y - h * (0.9 + R() * 0.08));
+        to(cx + w * (0.84 + R() * 0.08), y - h * (0.9 + R() * 0.06));
+        to(cx + w * 0.12, y - h * 0.05);
+        to(cx + w * (0.9 + R() * 0.08), y - h * 0.03);
+        cx += w * 0.96;
+      } else {
+        // q: the ordinary bowl, and then straight down
+        const drop = desc * (0.8 + R() * 0.26);
+        to(cx + w * 0.86, y - h * 0.62);
+        to(cx + w * 0.5, y - h * (0.96 + R() * 0.06));
+        to(cx + w * 0.12, y - h * 0.56);
+        to(cx + w * 0.46, y - h * 0.04);
+        to(cx + w * 0.84, y - h * 0.48);
+        to(cx + w * (0.88 + R() * 0.04), y + drop);
+        cx += w * 0.96;
+      }
+
+      lift();
       cx += size * (0.035 + R() * 0.065) * pen.gap;
       continue;
     }

@@ -49,16 +49,16 @@ const HANDS = {
     // the shape of the hand
     slant: -0.06, wide: 1.35, gap: 1.8, lift: 0.16, bounce: 1,
     // which letterforms it reaches for, and how often
-    steady: 0.35, ligature: 0.5, tJoin: 1, plus: 0.34, capHeight: 1.78,
-    crossbar: 0.18, flourish: 0.32,
+    steady: 0.35, ligature: 0.65, tJoin: 1, plus: 0.45, capHeight: 1.78,
+    crossbar: 0.09, flourish: 0.32,
     // what it does at speed
-    rise: 0.11, join: 0.09,
+    rise: 0.33, join: 0.09,
     // where it rests
-    stanzaRest: 0.38, caught: 0.024,
+    stanzaRest: 0.38, caught: 0.096,
     // what else ends up on the page
     accent: 0.17, strike: 0.022, caret: 0.02, note: 0.035, arrow: 0.3,
     // switches, and the width model
-    traced: true, curve: true, furniture: true, units: [0.549, 0.923]
+    traced: true, curve: true, furniture: true, units: [0.544, 0.938]
   },
   plain: {
     slant: 0.055, wide: 1, gap: 1, lift: 0.45, bounce: 0,

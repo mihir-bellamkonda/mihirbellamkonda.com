@@ -46,12 +46,28 @@ const HAND = 'notebook';
 
 const HANDS = {
   notebook: {
-    slant: -0.06, wide: 1.35, gap: 1.8, lift: 0.16, bounce: 1, steady: 0.35,
-    ligature: 0.5, tJoin: 1, capHeight: 1.62, traced: true, curve: true, furniture: true, units: [0.555, 0.901]
+    // the shape of the hand
+    slant: -0.06, wide: 1.35, gap: 1.8, lift: 0.16, bounce: 1,
+    // which letterforms it reaches for, and how often
+    steady: 0.35, ligature: 0.5, tJoin: 1, plus: 0.34, capHeight: 1.78,
+    crossbar: 0.18, flourish: 0.32,
+    // what it does at speed
+    rise: 0.11, join: 0.09,
+    // where it rests
+    stanzaRest: 0.38, caught: 0.024,
+    // what else ends up on the page
+    accent: 0.17, strike: 0.022, caret: 0.02, note: 0.035, arrow: 0.3,
+    // switches, and the width model
+    traced: true, curve: true, furniture: true, units: [0.555, 0.901]
   },
   plain: {
-    slant: 0.055, wide: 1, gap: 1, lift: 0.45, bounce: 0, steady: 0,
-    ligature: 0, tJoin: 0, capHeight: 0, traced: false, curve: false, furniture: false, units: [0.422, 0.863]
+    slant: 0.055, wide: 1, gap: 1, lift: 0.45, bounce: 0,
+    steady: 0, ligature: 0, tJoin: 0, plus: 0, capHeight: 0,
+    crossbar: 0.18, flourish: 0.32,
+    rise: 0, join: 0,
+    stanzaRest: 0, caught: 0,
+    accent: 0.17, strike: 0, caret: 0, note: 0, arrow: 0,
+    traced: false, curve: false, furniture: false, units: [0.422, 0.863]
   }
 };
 
@@ -110,7 +126,7 @@ function wordMark(x, y, word, size, R, hand) {
   // The one thing here that was wrong rather than missing: it lifted the pen
   // *more* when hurrying, on the reasoning that haste is untidy. Haste joins
   // letters up rather than chopping them apart, and the gap counts say so.
-  const tall = 1 + hand.temper * 0.11;
+  const tall = 1 + hand.temper * pen.rise;
   const wide = pen.wide;
   const xh = size * 0.52 * tall;
   const asc = size * 0.98 * tall;
@@ -215,7 +231,7 @@ function wordMark(x, y, word, size, R, hand) {
       lift();
       cx += w * 1.5;
       gi++;
-      if (R() < Math.max(0.02, pen.lift - hand.temper * 0.09)) lift();
+      if (R() < Math.max(0.02, pen.lift - hand.temper * pen.join)) lift();
       cx += size * (0.035 + R() * 0.065) * pen.gap;
       continue;
     }
@@ -409,7 +425,7 @@ function wordMark(x, y, word, size, R, hand) {
     if (pen.traced && char === 't') {
       const w = size * (0.26 + R() * 0.05) * wide;
       const stem = xh * (1.46 + R() * 0.26);
-      const bar = R() < 0.34 ? 0.56 + R() * 0.09 : 0.74 + R() * 0.1;
+      const bar = R() < pen.plus ? 0.56 + R() * 0.09 : 0.74 + R() * 0.1;
       to(cx + w * 0.3, y - stem);
       to(cx + w * 0.34, y - h * 0.5);
       to(cx + w * 0.4, y - h * 0.05);
@@ -439,7 +455,7 @@ function wordMark(x, y, word, size, R, hand) {
         lift();
       }
       cx += w * 0.98;
-      if (R() < Math.max(0.02, pen.lift - hand.temper * 0.09)) lift();
+      if (R() < Math.max(0.02, pen.lift - hand.temper * pen.join)) lift();
       cx += size * (0.035 + R() * 0.065) * pen.gap;
       continue;
     }
@@ -502,7 +518,7 @@ function wordMark(x, y, word, size, R, hand) {
         }
       }
 
-      if ((char === 't' || char === 'f') || R() < 0.18) {
+      if ((char === 't' || char === 'f') || R() < pen.crossbar) {
         lift();
         to(cx - size * 0.055, y - tall * 0.56);
         to(cx + size * 0.5, y - tall * (0.58 + R() * 0.05));
@@ -637,11 +653,11 @@ function wordMark(x, y, word, size, R, hand) {
     // The notebook hand keeps the pen down and runs a word together — "the"
     // arrives as one gesture. Lifting on nearly half the letters, which is what
     // this did, is a hand printing rather than writing.
-    if (R() < Math.max(0.02, pen.lift - hand.temper * 0.09)) lift();
+    if (R() < Math.max(0.02, pen.lift - hand.temper * pen.join)) lift();
     cx += size * (0.035 + R() * 0.065) * pen.gap;
   }
 
-  if (R() < 0.32) to(cx + size * (0.14 + R() * 0.24), y - xh * (0.12 + R() * 0.32));
+  if (R() < pen.flourish) to(cx + size * (0.14 + R() * 0.24), y - xh * (0.12 + R() * 0.32));
   lift();
 
   return { strokes, end: cx };
@@ -918,7 +934,7 @@ export function ghost(text, opts) {
       phraseRemaining--;
       return phraseInk;
     }
-    if (R() < 0.17) {
+    if (R() < pen.accent) {
       phraseInk = ACCENT_INKS[Math.floor(R() * ACCENT_INKS.length)];
       phraseRemaining = R() < 0.28 ? 1 : 0;
       return phraseInk;
@@ -975,7 +991,7 @@ export function ghost(text, opts) {
     // before the next mark. A hand pauses between words and rests hardest
     // on the way back to the left margin; inside a word it barely stops.
     // A little over a third of the stanza breaks are also rested on.
-    let gap = afterStanza && R() < 0.38 ? 'stanza' : 'line';
+    let gap = afterStanza && R() < pen.stanzaRest ? 'stanza' : 'line';
     afterStanza = false;
 
     while (wi < words.length && guard++ < 200) {
@@ -1045,12 +1061,12 @@ export function ghost(text, opts) {
         };
 
         // A word thought better of, scribbled out where it stands.
-        if (R() < 0.022) scrap(strikeOut(cx, hand.baseline, m.end - cx, size, R), 1.05);
+        if (R() < pen.strike) scrap(strikeOut(cx, hand.baseline, m.end - cx, size, R), 1.05);
 
         // A word left out. The caret goes in where it belongs and the word
         // itself is squeezed in above the line, small, running toward the
         // right margin — the notebook never rewrites the line to make room.
-        if (R() < 0.02) {
+        if (R() < pen.caret) {
           scrap([caret(m.end + size * 0.24, hand.baseline, size, R)], 0.9);
           const small = size * 0.62;
           const insert = wordMark(
@@ -1072,13 +1088,13 @@ export function ghost(text, opts) {
       // the sentence up again. Rare enough that a reader meets it perhaps once
       // in a column, which is what makes it read as a thought rather than as
       // a stutter.
-      gap = R() < 0.024 ? 'caught' : 'word';
+      gap = R() < pen.caught ? 'caught' : 'word';
       cx = m.end + size * (0.62 + R() * 0.5);
       wi++;
     }
 
     // A number ringed out in the left margin, against a line now and then.
-    if (furnished && R() < 0.035) {
+    if (furnished && R() < pen.note) {
       // Far enough in that the ring is whole: it can run to 0.41 of the size
       // from its own centre, and at 0.34 it was being cut by the left edge.
       const ring = ringedNumber(x + size * 0.55, hand.baseline - size * 0.3, size, R);
@@ -1095,7 +1111,7 @@ export function ghost(text, opts) {
   }
 
   // And an arrow at the foot, carrying the sentence onto a page that is not here.
-  if (furnished && used > 2 && R() < 0.3) {
+  if (furnished && used > 2 && R() < pen.arrow) {
     const arrow = continuationArrow(x + width * (0.52 + R() * 0.24), by - leading * 0.2, size, R);
     for (const pts of arrow) {
       out.push({

@@ -439,11 +439,22 @@ back to a real border, because paper takes a printed rule better than a drawn on
 
 ## The name page
 
-The opening carries one word of asemic writing in its lower right, drawn at random
-from the eighty-four the poems have already given up in `specimen-vocabulary.js`. It
-is the one mark on the site that is *not* fixed per reader: the choosing is random,
-the writing is not — the same word always comes out in the same hand. The rule about
+The opening carries one word of asemic writing in its lower right. It is the one
+mark on the site that is *not* fixed per reader: the choosing is random, the
+writing is not — the same word always comes out in the same hand. The rule about
 seeding from the slug is about a poem's own signature and does not reach here.
+
+The hat holds **every word in the book**, derived from `poems.json` at build
+time, so a poem added tomorrow brings its words with it and nothing needs
+editing. It used to hold the eighty-four in `specimen-vocabulary.js`, which are
+curated to sit beside a particular poem rather than to stand on their own.
+
+Bounded by what the corner will hold: the mark is drawn at a **fixed size rather
+than fitted**, so a long word does not shrink, it runs off the edge. Measured at
+size 22 against the narrowest the box gets (9rem, 144px), nine letters is the
+most that fits — `lawnmower` lands exactly on it — and ten overflows. Four is
+the floor, below which there is not enough mark to look at. That leaves 1048 of
+the book's 1292 distinct words.
 
 ## The four words
 

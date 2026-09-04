@@ -35,7 +35,7 @@ corsages, disallowed rooftops, analemma eyes,
 I was kisses, sour candy, the good kind
 they don’t have anymore—
 
-Until?
+*Until?*
 
 —you,
 killer.

@@ -498,6 +498,43 @@ most that fits — `lawnmower` lands exactly on it — and ten overflows. Four i
 the floor, below which there is not enough mark to look at. That leaves 1048 of
 the book's 1292 distinct words.
 
+## The hidden page
+
+`#hand`, reached by pressing the manicule at the top right of the index five
+times. Linked from nowhere and in no sitemap; the hash is guessable and
+shareable, which is the right amount of secret.
+
+Three things sit behind it, drawn at **five to one to one**:
+
+- **book** — thirty lines of the book, blank lines kept so the hand takes its
+  stanza rests, filling the page illegibly. The write-on ceiling is lifted
+  here and nowhere else, so it runs the sixty to eighty-five seconds the plan
+  actually costs rather than the nine-second house maximum.
+- **words** — seven words from the book, one to a line, written large. This is
+  the only state where a reader can watch a single letter being made.
+- **angel** — Klee's *Angelus Novus* in the site's ink, dead centre of the
+  screen, with one asemic word under it the size of a label.
+
+The odds are the point rather than a detail of them. At five in seven the page
+is what it has always been, so the other two are things a reader comes upon;
+even odds would make it a menu.
+
+`AngelusNovus.vue` is forty kilobytes of traced contour and is a lazy chunk, so
+only the visits that draw it pay for it. It carries no colour of its own — the
+ink is `currentColor` and the ring punched round each pupil is `var(--a-bg)` —
+so it turns over with the theme. Those rings are not decoration: at that weight
+the ink either side of a pupil closes over it, and an angel that is not staring
+is the wrong drawing. Klee died in 1940, so the work is public domain; it was
+traced from a Wikimedia reproduction, everything running to the edge of the
+plate discarded, because every stain on that plate touches an edge and no part
+of the figure does.
+
+**`maxSize` on a mark lifts the fitter's ceiling of 16.** That 16 is a maximum
+for a mark standing beside something else — a column next to a poem, a
+signature under a title. On a page whose entire content is seven words the
+geometry asks for about 38 and the ceiling was cutting it to 16, so seven large
+words came out the size of a caption. Only the words state passes it.
+
 ## The four words
 
 Every poem has four exact words from its own body — one field word and three

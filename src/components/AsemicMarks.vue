@@ -30,7 +30,11 @@ const props = defineProps({
   // Multiplies the plan's own time. 1 is pen speed. Because it stretches the
   // whole journey, every rest and every corner keeps its exact share of the
   // total — it is the same hand writing more slowly, not a different one.
-  stretch: { type: Number, default: 1 }
+  stretch: { type: Number, default: 1 },
+  // The largest letter the fitter may choose. 16 is the house maximum and
+  // suits a mark that sits beside something; a page that is only writing can
+  // ask for more.
+  maxSize: { type: Number, default: 16 }
 });
 
 const cv = ref(null);
@@ -69,6 +73,7 @@ function build() {
     height: h,
     size: props.size || 0,
     maxLines: props.maxLines,
+    maxSize: props.maxSize,
     temper: props.temper
   });
   plan = writingPlan(strokes);
@@ -261,7 +266,7 @@ onUnmounted(() => {
   window.removeEventListener('resize', resized);
 });
 
-watch(() => [props.text, props.seed, props.temper, props.size, props.maxLines], run);
+watch(() => [props.text, props.seed, props.temper, props.size, props.maxLines, props.maxSize], run);
 watch(() => props.progress, (value) => {
   if (!mounted) return;
   if (value === null) return;

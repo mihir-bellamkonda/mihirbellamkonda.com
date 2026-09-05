@@ -794,6 +794,21 @@ function continuationArrow(x, y, size, R) {
  * A row signature is a compact digest rather than the poem's first scrap.
  * Begin at its longest line, then continue through the poem until there is
  * enough material to cross the row at a height-safe letter size.
+ *
+ * The digest is also *trimmed* to that target, and this is what decides how
+ * big the hand on the index is drawn. It used to only ever grow: it started
+ * at the longest line in the poem and appended more lines until the row was
+ * full, but never cut anything, so a poem carrying one very long line had
+ * its signature sized by that line and written small. Nothing else was
+ * holding it back — the row is 257 by 26, and at 26 the height cap never
+ * came near binding, which is why making the box taller changes nothing at
+ * all. Measured: the same poem at 26px, 40px and 80px of height draws at
+ * exactly the same size, while doubling the *width* nearly doubles it.
+ *
+ * Trimming to the target instead of only growing to it gives the hand about
+ * half again the size on most poems, in the same box, still writing a real
+ * run of the poem's own lines. It stops at a word so the mark keeps whole
+ * words' shapes, which is the whole of what it is imitating.
  */
 function signatureLine(lines, width, height, pen) {
   const clean = lines
@@ -814,7 +829,14 @@ function signatureLine(lines, width, height, pen) {
     joined += ' ' + clean[(longest + step) % clean.length];
   }
 
-  return joined;
+  // Cut back to the target on a word boundary. Never below four words: a
+  // signature has to look like writing, and three shapes is a monogram.
+  const words = joined.split(/\s+/);
+  while (words.length > 4 && lineUnits(words.join(' '), pen) > targetUnits) {
+    words.pop();
+  }
+
+  return words.join(' ');
 }
 
 /**

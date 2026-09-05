@@ -12,7 +12,7 @@
           :style="{ transform: `rotate(${presses * 4}deg)` }"
           @click="openHand"
         >
-          <svg viewBox="0 0 24 16" width="15" height="10" focusable="false">
+          <svg viewBox="0 0 24 16" width="15" height="10" focusable="false" class="hand">
             <g fill="currentColor">
               <rect x="0.6" y="4.6" width="2.6" height="8.8" rx="1" />
               <rect x="3" y="3.4" width="9.2" height="11.2" rx="3.6" />
@@ -295,6 +295,15 @@ function firstLine(poem) {
    It turns a little on each press. Four degrees is under the threshold at
    which it reads as an animation and over the one at which a reader wonders
    whether they imagined it. */
+/* It points back into the page. A manicule sits in a margin and points at
+   what is worth noticing, and everything worth noticing is to its left —
+   this one lives at the right edge of the chrome, so pointing right would
+   send a reader off the paper. Mirrored rather than redrawn so the rotation
+   on the span stays independent of the direction of the hand. */
+.manicule .hand {
+  transform: scaleX(-1);
+}
+
 .manicule {
   display: inline-flex;
   align-items: center;

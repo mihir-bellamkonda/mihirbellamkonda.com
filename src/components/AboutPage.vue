@@ -28,8 +28,22 @@
 
       <!-- One word from the poems, in the hand, in the corner. It is a real
            word out of a real poem and it is unreadable, which is this whole
-           site in miniature. -->
-      <AsemicMarks class="corner-word" :text="word" :seed="`about::${word}`" :size="22" :max-lines="1" />
+           site in miniature.
+
+           One visit in twenty the corner carries the angel instead. It is the
+           same figure as the hidden page's and much smaller, so a reader who
+           has never pressed the manicule sees it once and has nowhere to go
+           with it, and a reader who has recognises it. -->
+      <AngelusNovus v-if="angel" class="corner-angel" />
+
+      <AsemicMarks
+        v-else
+        class="corner-word"
+        :text="word"
+        :seed="`about::${word}`"
+        :size="22"
+        :max-lines="1"
+      />
     </div>
 
     <FooterNav />
@@ -37,6 +51,7 @@
 </template>
 
 <script setup>
+import { defineAsyncComponent } from 'vue';
 import FooterNav from './FooterNav.vue';
 import AsemicMarks from './AsemicMarks.vue';
 import poems from '../poems.json';
@@ -72,6 +87,11 @@ const WORDS = [...new Set(
       .replace(/^[^\p{L}\p{N}']+|[^\p{L}\p{N}']+$/gu, ''))
     .filter(word => word.length >= 4 && word.length <= 9)
 )];
+
+// Forty kilobytes of traced contour is a lazy chunk, so nineteen visits in
+// twenty never fetch it.
+const AngelusNovus = defineAsyncComponent(() => import('./AngelusNovus.vue'));
+const angel = Math.floor(Math.random() * 20) === 0;
 
 const word = WORDS[Math.floor(Math.random() * WORDS.length)] || 'analemma';
 </script>
@@ -177,6 +197,26 @@ const word = WORDS[Math.floor(Math.random() * WORDS.length)] || 'analemma';
 }
 
 /* Low and to the right, where a hand signs off. */
+/* The angel takes the word's corner rather than a corner of its own, so the
+   page has the same shape either way. Taller than it is wide, where the word
+   is the other way round, so it is sized off its height. */
+.corner-angel {
+  position: absolute;
+  right: clamp(1.25rem, 5vw, 4.5rem);
+  bottom: clamp(1.5rem, 5vh, 3.5rem);
+  width: clamp(4rem, 7vw, 5.5rem);
+  height: clamp(8rem, 14vw, 11rem);
+  opacity: 0.62;
+}
+
+@media (max-width: 860px) {
+  .corner-angel {
+    width: 3.2rem;
+    height: 6.5rem;
+    opacity: 0.42;
+  }
+}
+
 .corner-word {
   position: absolute;
   right: clamp(1.25rem, 5vw, 4.5rem);

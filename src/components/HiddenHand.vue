@@ -7,7 +7,12 @@
         <AngelusNovus />
 
         <div class="angel-word">
-          <AsemicMarks :text="word" :seed="'angel-' + word" :max-lines="1" />
+          <AsemicMarks
+            :text="word"
+            :seed="'angel-' + word"
+            :max-lines="1"
+            :max-size="WORD_LABEL_SIZE"
+          />
         </div>
       </div>
 
@@ -37,17 +42,18 @@ import poems from '../poems.json';
  * shareable, which is the right amount of secret for a thing whose only
  * content is a hand moving.
  *
- * Three things can be behind it, at five to one to one:
+ * Three things can be behind it, at five to two to two:
  *
- *   book    thirty lines of the book, filling the page illegibly
+ *   book    fifteen lines of the book, filling the page illegibly
  *   words   seven words from the book, one to a line, written large
  *   angel   Klee's Angelus Novus, drawn in this site's ink
  *
- * The odds are the point rather than a detail of them. At five in seven the
- * page is what it has always been, so the other two are things a reader comes
- * upon rather than things the page shows them — and a reader who presses five
- * times again is not promised anything. Rarity is the only thing making them
- * worth arriving at; even odds would make this a menu.
+ * The odds are the point rather than a detail of them. At five in nine the
+ * page is still most often what it has always been, so the other two are
+ * things a reader comes upon rather than things the page shows them — and a
+ * reader who presses five times again is not promised anything. It was five
+ * in seven and the two rarer states were too rare to find; even odds would
+ * make this a menu.
  *
  * Two of the site's standing rules are deliberately not in force here.
  *
@@ -65,9 +71,10 @@ import poems from '../poems.json';
  * seconds — an eighth of what the writing costs, and over before a reader is
  * sure it began.
  *
- * Neither number was ever measured. The plan already holds the answer: this
- * page's thirty lines cost a little over a minute at pen speed, sixty to
- * eighty-five seconds depending on the screen. So the ceiling is lifted here
+ * Neither number was ever measured. The plan already holds the answer: at
+ * thirty lines this page cost a little over a minute at pen speed, sixty to
+ * eighty-five seconds depending on the screen, and at fifteen it is about
+ * half that. So the ceiling is lifted here
  * and nowhere else, and the writing takes as long as it takes, give or take
  * the STRETCH below.
  *
@@ -76,22 +83,28 @@ import poems from '../poems.json';
  * are what compression flattens first.
  */
 
-// Forty kilobytes of traced contour behind a one-in-seven chance has no
+// Forty kilobytes of traced contour behind a two-in-nine chance has no
 // business in the bundle every reader downloads, so the angel is its own
 // chunk and is fetched only on the visits it comes up.
 const AngelusNovus = defineAsyncComponent(() => import('./AngelusNovus.vue'));
 
-const roll = Math.floor(Math.random() * 7);
-const showing = roll < 5 ? 'book' : (roll === 5 ? 'words' : 'angel');
+const roll = Math.floor(Math.random() * 9);
+const showing = roll < 5 ? 'book' : (roll < 7 ? 'words' : 'angel');
 
 // Lines from across the whole book rather than from one poem, so what fills
-// the page is the book itself rather than any poem in it. Long enough to
-// reach the bottom of a tall screen at a size worth looking at; the fitter
-// takes it from there. Thirty lines of writing, and the stanza breaks
+// the page is the book itself rather than any poem in it. The stanza breaks
 // between them are carried along on top rather than counted against it —
 // budgeting them together bought the breaks by throwing away a quarter of
 // the writing, which is paying for the shape of a page with the page.
-const LINES = 30;
+//
+// Fifteen, where it was thirty. The box is the page and does not change, so
+// the only thing that decides how large the hand writes is how many rows it
+// has to fit: the fitter divides the height by the rows and nothing else
+// binds — the 16 ceiling is nowhere near, at thirty lines it was drawing at
+// about seven. Halving the lines doubles the writing. Nothing else would:
+// lifting the ceiling does nothing when the ceiling is not what is holding
+// it, which is worth writing down because it was the first thing tried.
+const LINES = 15;
 
 /**
  * Seven words, one to a line.
@@ -119,6 +132,17 @@ const WORD_ROWS = 7;
  * screen and stops the words growing absurd on a short one.
  */
 const WORD_SIZE = 44;
+
+/**
+ * The word under the angel.
+ *
+ * It is a label rather than a page of writing, so it is small — but it was
+ * too small to read as writing at all, which made it look like a smudge under
+ * the figure rather than a thing someone had written there. Its box is about
+ * twice what it was, and the ceiling goes up with it: at 16 the box would
+ * have grown and the writing inside it would not.
+ */
+const WORD_LABEL_SIZE = 30;
 
 /**
  * Holds the page at the pace it already had.
@@ -261,7 +285,7 @@ function leave() {
 .angel-stack {
   position: relative;
   height: min(64vh, 620px);
-  aspect-ratio: 217 / 440;
+  aspect-ratio: 213.7 / 438.3;
 }
 
 .angel-word {
@@ -269,8 +293,8 @@ function leave() {
   top: calc(100% + clamp(0.8rem, 2.2vh, 1.6rem));
   left: 50%;
   transform: translateX(-50%);
-  width: min(52%, 132px);
-  height: clamp(16px, 2.2vh, 26px);
+  width: min(88%, 236px);
+  height: clamp(28px, 3.8vh, 46px);
 }
 
 .sr-only {

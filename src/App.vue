@@ -13,6 +13,7 @@ import AboutPage from './components/AboutPage.vue';
 import PoemsListPage from './components/PoemsListPage.vue';
 import PoemPage from './components/PoemPage.vue';
 import HiddenHand from './components/HiddenHand.vue';
+import NotFoundHand from './components/NotFoundHand.vue';
 
 /**
  * Real paths for poems, with legacy hash routing retained.
@@ -33,6 +34,11 @@ import HiddenHand from './components/HiddenHand.vue';
 const route = ref(parseRoute());
 
 function parseRoute() {
+  // GitHub Pages serves the generated 404.html at any unmatched path, and
+  // that file is the only thing that sets this. Checked before anything else
+  // because the URL it renders at is arbitrary and means nothing.
+  if (window.__notHere) return { page: 'nothere' };
+
   const hash = decodeURIComponent(window.location.hash.slice(1) || '');
   if (hash === 'about') return { page: 'about' };
   if (hash === 'index' || hash === 'contents' || hash === 'poems') return { page: 'index' };
@@ -133,6 +139,7 @@ const current = computed(() => {
   }
 
   if (r.page === 'hand') return { view: HiddenHand, props: {} };
+  if (r.page === 'nothere') return { view: NotFoundHand, props: {} };
 
   return { view: AboutPage, props: {} };
 });
@@ -191,7 +198,7 @@ function setTitle() {
     const p = poemsData[poemIndex.value];
     document.title = p ? p.title + ' — ' + name : name;
   } else {
-    document.title = name;
+    document.title = route.value.page === 'nothere' ? 'Not here — ' + name : name;
   }
 }
 

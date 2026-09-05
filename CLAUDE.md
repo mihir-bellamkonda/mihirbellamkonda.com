@@ -504,20 +504,35 @@ the book's 1292 distinct words.
 times. Linked from nowhere and in no sitemap; the hash is guessable and
 shareable, which is the right amount of secret.
 
-Three things sit behind it, drawn at **five to one to one**:
+Three things sit behind it, drawn at **five to two to two**:
 
-- **book** — thirty lines of the book, blank lines kept so the hand takes its
+- **book** — fifteen lines of the book, blank lines kept so the hand takes its
   stanza rests, filling the page illegibly. The write-on ceiling is lifted
-  here and nowhere else, so it runs the sixty to eighty-five seconds the plan
-  actually costs rather than the nine-second house maximum.
+  here and nowhere else, so it runs the time the plan actually costs rather
+  than the nine-second house maximum. It was thirty lines, and halving them is
+  what doubled the size of the writing: the box is the page and does not
+  change, so the only thing deciding how large the hand writes is how many
+  rows it has to fit. Lifting the ceiling does nothing when the ceiling is not
+  what is holding it.
 - **words** — seven words from the book, one to a line, written large. This is
   the only state where a reader can watch a single letter being made.
 - **angel** — Klee's *Angelus Novus* in the site's ink, dead centre of the
   screen, with one asemic word under it the size of a label.
 
-The odds are the point rather than a detail of them. At five in seven the page
-is what it has always been, so the other two are things a reader comes upon;
-even odds would make it a menu.
+The odds are the point rather than a detail of them. At five in nine the page
+is still most often what it has always been, so the other two are things a
+reader comes upon; even odds would make it a menu. It was five to one to one
+and the rarer two were too rare to find.
+
+**One visit in twenty the name page carries the angel too**, small, in the
+corner where the single asemic word usually sits — the same figure, so a
+reader who has found the hidden page recognises it and a reader who has not
+sees it once with nowhere to go.
+
+The pupils carry a trace of the house inks in the house order: green on one
+and navy on the other, twelve percent, mixed against `currentColor` so they
+turn over with the theme. Under twelve the eye is graphite; over it the angel
+has coloured eyes, which is a louder idea.
 
 `AngelusNovus.vue` is forty kilobytes of traced contour and is a lazy chunk, so
 only the visits that draw it pay for it. It carries no colour of its own — the

@@ -1194,7 +1194,7 @@ export function palette() {
     mark: v('--i-mark', '35,33,28'),
     green: v('--i-green', '26,74,52'),
     rust: v('--i-rust', '112,49,36'),
-    navy: v('--i-navy', '48,48,87')
+    navy: v('--i-navy', '45,63,120')
   };
 }
 

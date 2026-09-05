@@ -249,10 +249,21 @@ reintroduce anything like it.
   one thing it must not be — the `e` stopped colliding with the `o`, "the" arrived
   as a shape a reader knows, and whole sentences came back. Rendering each letter
   many times and comparing the shapes, confusable pairs fell from 10 in 190 to 5.
-  At `steady` 0.55 that count is exactly what it was before; it ships at 0.45. A
-  test holds the `e`/`o` collision in place, and it is the gate that matters:
-  isolated words resolving is normal and always has been, a readable sentence is a
-  failure.
+  At `steady` 0.55 that count is exactly what it was before. It shipped at 0.45,
+  then 0.35, and is now **0.315** — the poet asked for ten percent less legible
+  and this is the dial that means. A test holds the `e`/`o` collision in place,
+  and it is the gate that matters: isolated words resolving is normal and always
+  has been, a readable sentence is a failure.
+
+  Be careful what a ten percent cut here claims. It removes a tenth of the
+  traced forms — only letters whose draw lands in the 3.5-point window between
+  the old value and the new one change at all — and the drawing does change,
+  measurably: over a hundred and sixty renderings of one line, 5083 strokes and
+  53121 points became 5093 and 53088. But the gate's own measure of vowel
+  separation does not move at that resolution: e/o sits at 1.055 and e/a at
+  1.145 either side of the change. So it is a ten percent cut to the dial, not a
+  measured ten percent drop in legibility, and the two are not the same claim.
+  The real standard is still the eye.
 - Letters **bounce individually** on the baseline, not only line by line, and the
   notebook hand keeps the pen down — it lifts on 16% of letters where the plain one
   lifts on 45%, because a real word runs together.

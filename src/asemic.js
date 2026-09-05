@@ -49,7 +49,7 @@ const HANDS = {
     // the shape of the hand
     slant: -0.1, wide: 1.35, gap: 1.8, lift: 0.16, bounce: 1,
     // which letterforms it reaches for, and how often
-    steady: 0.35, ligature: 0.65, tJoin: 1, plus: 0.45, capHeight: 1.78,
+    steady: 0.315, ligature: 0.65, tJoin: 1, plus: 0.45, capHeight: 1.78,
     crossbar: 0.09, flourish: 0.32,
     // what it does at speed
     rise: 0.33, join: 0.09,

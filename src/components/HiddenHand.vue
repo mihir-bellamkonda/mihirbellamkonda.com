@@ -6,8 +6,6 @@
       <AsemicMarks
         :text="text"
         :seed="seed"
-        :temper="SLOW"
-        :progress="progress"
         :max-lines="0"
       />
     </div>
@@ -15,10 +13,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
 import AsemicMarks from './AsemicMarks.vue';
 import poems from '../poems.json';
-import { prefersReducedMotion } from '../motion.js';
 
 /**
  * A page with nothing on it, filling with writing nobody can read.
@@ -36,15 +32,13 @@ import { prefersReducedMotion } from '../motion.js';
  * is the house drawing from the hat: the choosing is random per visit, the
  * writing is not, so the same draw always comes out in the same hand.
  *
- * And the write-on everywhere else is capped at thirteen seconds, which is
- * the right length for a signature beside a poem and much too fast here. The
- * point is to fill slowly enough that a reader is not sure it is happening.
- * `progress` is driven by hand over FILL_MS instead.
+ * The pace, on the other hand, is the same as everywhere else. This page ran
+ * for two and a half minutes at a temper of -0.8 — a hand deliberately slower
+ * and inkier than the site's — on the idea that a page reached on purpose can
+ * be sat with. It could, and it was still too patient to watch. It now writes
+ * at the ordinary temper and lets AsemicMarks time its own write-on from the
+ * length of the writing, the way every other mark on the site does.
  */
-
-const SLOW = -0.8;
-const FILL_MS = 150000;
-const STEP_MS = 250;
 
 // Lines from across the whole book rather than from one poem, so what fills
 // the page is the book itself rather than any poem in it. Long enough to
@@ -63,31 +57,6 @@ const start = Math.floor(Math.random() * Math.max(1, all.length - LINES));
 const text = all.slice(start, start + LINES).join('\n');
 const seed = 'hand-' + start;
 
-const progress = ref(0);
-let timer = null;
-let began = 0;
-
-/**
- * Stepped on a timer rather than on requestAnimationFrame.
- *
- * Every change to `progress` repaints the whole field, and the field here is
- * the whole page — at sixty frames a second over two and a half minutes that
- * is nine thousand repaints of a canvas several million pixels wide, to show
- * a hand that moves slower than a second hand. A quarter-second step is four
- * hundred times gentler and indistinguishable at this pace.
- *
- * Progress comes from the wall clock rather than from a tick count, so a tab
- * left in the background — where timers are throttled to about a second —
- * comes back to where the writing would have got to, not to where it stopped.
- */
-function step() {
-  progress.value = Math.min(1, (Date.now() - began) / FILL_MS);
-  if (progress.value >= 1 && timer) {
-    clearInterval(timer);
-    timer = null;
-  }
-}
-
 function leave() {
   // The way out is the way back. A hash route means the browser's own back
   // button already works; this is for a reader who arrived by pressing five
@@ -95,20 +64,6 @@ function leave() {
   window.history.back();
 }
 
-onMounted(() => {
-  // A reader asking for less movement is not asking to watch a page fill for
-  // two and a half minutes. They get the finished page.
-  if (prefersReducedMotion()) {
-    progress.value = 1;
-    return;
-  }
-  began = Date.now();
-  timer = setInterval(step, STEP_MS);
-});
-
-onUnmounted(() => {
-  if (timer) clearInterval(timer);
-});
 </script>
 
 <style scoped>

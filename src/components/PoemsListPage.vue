@@ -12,13 +12,8 @@
           :style="{ transform: `rotate(${presses * 4}deg)` }"
           @click="openHand"
         >
-          <svg viewBox="0 0 24 16" width="15" height="10" focusable="false" class="hand">
-            <g fill="currentColor">
-              <rect x="0.6" y="4.6" width="2.6" height="8.8" rx="1" />
-              <rect x="3" y="3.4" width="9.2" height="11.2" rx="3.6" />
-              <path d="M10.6 7.1 H20.4 a1.35 1.35 0 0 1 0 2.7 H10.6 z" />
-              <path d="M6.4 3.9 a3 3 0 0 1 4.4 1.1 l-3.6 1.4 z" />
-            </g>
+          <svg viewBox="51 -567 1118 573" width="19" height="10" focusable="false">
+            <g transform="scale(1,-1)" fill="currentColor"><path d="M588 -6C698 -6 834 24 921 94H992C1021 129 1036 192 1036 283C1036 352 1017 422 992 457C979 456 957 455 945 455C905 455 890 464 829 506C769 547 736 567 678 567C618 567 561 560 518 542C471 522 437 512 418 508C409 506 396 500 389 494C358 491 325 490 298 486C248 479 193 474 153 469C96 462 51 451 51 406C51 372 73 355 131 355C154 355 200 358 243 358C290 358 335 353 374 353C345 324 337 310 337 278C337 255 345 240 370 229C383 223 393 213 394 201C396 182 384 172 384 154C384 128 396 110 421 102C436 97 443 89 443 65C443 10 509 -6 588 -6ZM1011 43H1086C1151 43 1169 184 1169 276C1169 367 1150 510 1086 510H1011C999 510 991 501 991 486V484C996 490 999 491 1006 491C1062 491 1077 366 1077 276C1077 184 1059 60 1006 60C999 60 995 63 991 70V63C991 52 996 43 1011 43Z"/></g>
           </svg>
         </span>
       </div>
@@ -287,23 +282,25 @@ function firstLine(poem) {
   color: var(--a-faint);
 }
 
-/* The manicule sits where the poem count used to. It is drawn rather than
-   set: no face on this site carries U+261E, and a text manicule would fall
-   through to the system emoji font and arrive in colour. currentColor keeps
-   it on the chrome's own ink in both themes.
+/* The manicule sits where the poem count used to. It is an outline rather
+   than a character: no face on this site carries U+261A, and setting it as
+   text would fall through to the system emoji font and arrive in colour.
+   currentColor keeps it on the chrome's own ink in both themes.
+
+   It is U+261A, BLACK LEFT POINTING INDEX — the filled one. The outlined
+   manicule is the more traditional drawing and the more interesting one, and
+   it thins to nothing at the size this actually renders: ten pixels, matched
+   to the 0.63rem type beside it. At that size a solid shape holds and an
+   outline does not.
+
+   It points left because a manicule points at what is worth noticing, and
+   this one sits at the right edge of the chrome — pointing right would send
+   a reader off the paper. No mirror: the glyph is drawn pointing left, so
+   the rotation on the span is the only transform in play.
 
    It turns a little on each press. Four degrees is under the threshold at
    which it reads as an animation and over the one at which a reader wonders
    whether they imagined it. */
-/* It points back into the page. A manicule sits in a margin and points at
-   what is worth noticing, and everything worth noticing is to its left —
-   this one lives at the right edge of the chrome, so pointing right would
-   send a reader off the paper. Mirrored rather than redrawn so the rotation
-   on the span stays independent of the direction of the hand. */
-.manicule .hand {
-  transform: scaleX(-1);
-}
-
 .manicule {
   display: inline-flex;
   align-items: center;

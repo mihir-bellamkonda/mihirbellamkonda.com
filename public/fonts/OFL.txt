@@ -10,6 +10,14 @@ text of which follows.
                       Dong-Truc Nguyen. Velvetyne Type Foundry
                       (https://velvetyne.fr/fonts/sligoil/)
 
+One glyph outline, rather than a whole font, is also used and carries the
+same licence:
+
+  Noto Sans Symbols 2 Copyright 2022 The Noto Project Authors
+                      (https://github.com/notofonts/symbols)
+                      U+261A, the manicule on the index, is this font's
+                      glyph drawn as an SVG path in PoemsListPage.vue.
+
 -------------------------------------------------------------------------------
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.

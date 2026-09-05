@@ -876,7 +876,7 @@ function signatureLine(lines, width, height, pen) {
  * the generator, a line runs about 0.44 units per character plus 0.87 per
  * word gap, per unit of size.
  */
-function fitSize(lines, width, height, maxLines, pen) {
+function fitSize(lines, width, height, maxLines, pen, maxSize = 16) {
   let widest = 0;
   let count = 0;
 
@@ -900,14 +900,20 @@ function fitSize(lines, width, height, maxLines, pen) {
     // advance said it would stop. At 0.96 three signatures ended within half
     // a pixel of the right edge of a 257px row.
     const heightCap = height / 2.9;
-    return clamp(Math.min(16, (width * 0.92) / widest, heightCap), 2.4, 16);
+    return clamp(Math.min(maxSize, (width * 0.92) / widest, heightCap), 2.4, maxSize);
   }
 
   const rows = maxLines ? Math.min(count, maxLines) : count;
   // 2.95 is the leading multiple; the extra row leaves the ascenders room
   const byHeight = rows > 0 ? height / ((rows + 0.9) * 2.95) : byWidth;
 
-  return Math.max(2.4, Math.min(16, Math.min(byWidth, byHeight)));
+  // 16 is the house maximum, and it is a maximum for a mark that sits beside
+  // something else — a column next to a poem, a signature under a title. It
+  // is not a maximum for a page whose entire content is seven words: there
+  // the geometry says 38 and the ceiling was cutting it to 16, which is why
+  // seven large words came out the size of a caption. `maxSize` lifts it for
+  // that one caller and leaves every other mark exactly where it was.
+  return Math.max(2.4, Math.min(maxSize, Math.min(byWidth, byHeight)));
 }
 
 /**
@@ -981,7 +987,7 @@ export function ghost(text, opts) {
   // The hand is scaled to the space it is given, so a poem's longest line
   // very nearly fills the column and the whole poem fits the height. Fixing
   // the size instead leaves the marks stranded in a corner of the canvas.
-  const size = opts.size || fitSize(lines, width, height, maxLines, pen);
+  const size = opts.size || fitSize(lines, width, height, maxLines, pen, opts.maxSize || 16);
   const leading = size * 2.95;
 
   let by = size * 1.5;

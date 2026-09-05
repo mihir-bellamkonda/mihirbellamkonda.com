@@ -23,7 +23,10 @@ const props = defineProps({
   progress: { type: Number, default: null },
   // 0 is the ordinary hand. Below it, the same hand taking its time; above
   // it, the same hand in a hurry.
-  temper: { type: Number, default: 0 }
+  temper: { type: Number, default: 0 },
+  // The longest the write-on may run, in milliseconds. 0 lifts the ceiling
+  // and lets the mark take the time the plan says it costs.
+  ceiling: { type: Number, default: 9000 }
 });
 
 const cv = ref(null);
@@ -88,10 +91,17 @@ function draw(progress) {
  * which is a pause a reader can actually see. A whole poem's column asks for
  * half a minute, which nobody would watch, so it is compressed. The
  * proportions survive the squeeze; only the absolute pace changes.
+ *
+ * The ceiling is there because almost every mark on the site appears beside
+ * something a reader came for, and none of them were asked for. A caller with
+ * a reader who did ask can pass `ceiling: 0`, and then the plan stands: the
+ * rests between words and off the ends of stanzas keep their real length
+ * instead of being squeezed under the threshold where they can be seen.
  */
 function writingTime(rate = 1) {
-  const seconds = (plan ? plan.total : 0) / rate;
-  const span = Math.max(1000, Math.min(9000, seconds * 1000));
+  const ms = ((plan ? plan.total : 0) / rate) * 1000;
+  if (!props.ceiling) return Math.max(1000, ms);
+  const span = Math.max(1000, Math.min(props.ceiling, ms));
   // A slow hand is allowed past the ceiling, because being slow is the whole
   // of it.
   return Math.min(13000, span / (1 + props.temper * 0.55));
@@ -117,9 +127,25 @@ function writeBetween(from, to, duration) {
     return;
   }
   const span = Math.max(220, duration);
+
+  // Every frame clears the canvas and repaints every stroke, finished ones
+  // included, so a page-sized field costs thousands of strokes a frame. At
+  // sixty frames a second a minute-long write is four thousand of those, to
+  // show a pen that has moved less than its own width between frames. A long
+  // write therefore steps instead: at this pace the two are the same picture.
+  // Nothing under the ceiling can reach this — a capped write tops out at
+  // thirteen seconds — so it is the uncapped page and nothing else.
+  const stepMs = span > 20000 ? 70 : 0;
+
   let t0 = null;
+  let last = null;
   const step = (ts) => {
     if (t0 === null) t0 = ts;
+    if (stepMs && last !== null && ts - last < stepMs && ts - t0 < span) {
+      raf = requestAnimationFrame(step);
+      return;
+    }
+    last = ts;
     const t = Math.min(1, (ts - t0) / span);
     // No easing curve here. The plan is the pacing — it already runs the pen
     // fast through a word, slows it into every corner and rests it between

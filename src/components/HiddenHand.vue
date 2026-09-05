@@ -7,6 +7,7 @@
         :text="text"
         :seed="seed"
         :max-lines="0"
+        :ceiling="0"
       />
     </div>
   </div>
@@ -32,12 +33,21 @@ import poems from '../poems.json';
  * is the house drawing from the hat: the choosing is random per visit, the
  * writing is not, so the same draw always comes out in the same hand.
  *
- * The pace, on the other hand, is the same as everywhere else. This page ran
- * for two and a half minutes at a temper of -0.8 — a hand deliberately slower
- * and inkier than the site's — on the idea that a page reached on purpose can
- * be sat with. It could, and it was still too patient to watch. It now writes
- * at the ordinary temper and lets AsemicMarks time its own write-on from the
- * length of the writing, the way every other mark on the site does.
+ * And the pace is the hand's own rather than the site's. This page ran for
+ * two and a half minutes at a temper of -0.8, on the idea that a page reached
+ * on purpose can be sat with; it could, and it was still slower than a pen
+ * moves, which read as a stunt rather than as writing. Handing the timing
+ * back to AsemicMarks then put it under the ordinary ceiling, which is nine
+ * seconds — an eighth of what the writing costs, and over before a reader is
+ * sure it began.
+ *
+ * Neither number was ever measured. The plan already holds the answer: this
+ * page's thirty lines cost a little over a minute at pen speed, sixty to
+ * eighty-five seconds depending on the screen. So the ceiling is lifted here
+ * and nowhere else, and the writing takes exactly as long as it takes. The
+ * gain is not only the length but the rests inside it — a tenth of a second
+ * between words, near half a second off the end of a stanza — which are what
+ * compression flattens first.
  */
 
 // Lines from across the whole book rather than from one poem, so what fills

@@ -77,9 +77,38 @@ const ASCENDERS = new Set('lhkbdtf');
 const DESCENDERS = new Set('gypjq');
 const BOWLS = new Set('aoec');
 const HUMPS = new Set('nmuw');
-// Green recurs like an annotation; rust interrupts it now and then, and navy
-// is rarer than either. The order of that frequency is fixed.
-const ACCENT_INKS = ['green', 'green', 'green', 'green', 'green', 'rust', 'rust', 'navy'];
+/**
+ * Green recurs like an annotation; rust interrupts it now and then, and navy
+ * is rarer than either. The order of that frequency is fixed. The distances
+ * between them are not, and they used to be: written as a bag of eight to be
+ * drawn from, the ratio could only ever be a ratio of small whole numbers,
+ * and navy was the one that paid for it at a single slot in eight.
+ *
+ * That put roughly one navy stroke on the page for every six green ones —
+ * 2.4% of the marks in a poem's ghost column against green's 13.7% — which
+ * is present but too thin to read as a colour at all. Navy takes its extra
+ * share from green, which had the most to spare; rust is exactly where it
+ * was. It is still the rarest of the three, which is the part that was
+ * deliberate.
+ */
+const ACCENT_INKS = [['green', 55], ['rust', 25], ['navy', 20]];
+const ACCENT_TOTAL = ACCENT_INKS.reduce((sum, pair) => sum + pair[1], 0);
+
+/**
+ * One draw, from one call to the generator.
+ *
+ * Weighted rather than indexed, but still a single R() — the marks are
+ * seeded, and spending a second random number here would have shifted every
+ * letterform on the site sideways to change some of their colours.
+ */
+function accentInk(R) {
+  let n = R() * ACCENT_TOTAL;
+  for (const [ink, weight] of ACCENT_INKS) {
+    n -= weight;
+    if (n < 0) return ink;
+  }
+  return ACCENT_INKS[0][0];
+}
 
 /** Deterministic PRNG seeded from a string. */
 export function rngFor(seed) {
@@ -968,7 +997,7 @@ export function ghost(text, opts) {
       return phraseInk;
     }
     if (R() < pen.accent) {
-      phraseInk = ACCENT_INKS[Math.floor(R() * ACCENT_INKS.length)];
+      phraseInk = accentInk(R);
       phraseRemaining = R() < 0.28 ? 1 : 0;
       return phraseInk;
     }

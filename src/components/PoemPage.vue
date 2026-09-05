@@ -364,10 +364,11 @@ const stanzas = computed(() => {
    the browser may claim a horizontal drag for its own panning and fire
    pointercancel part-way through — which nulls the gesture, so the handler
    was correct and simply never got to finish. pan-y keeps vertical scrolling
-   with the browser and reserves the horizontal axis for the page.
+   with the browser, pinch-zoom preserves magnification, and the handler
+   continues to reserve the horizontal axis for the page.
    SpecimenCollage has carried the same line for the same reason. */
 .poem-plate {
-  touch-action: pan-y;
+  touch-action: pan-y pinch-zoom;
   position: relative;
   background: var(--a-bg);
   min-height: 100vh;
@@ -385,7 +386,7 @@ const stanzas = computed(() => {
   align-items: baseline;
   gap: 1.5rem;
   font-family: var(--f-cat);
-  font-size: 0.63rem;
+  font-size: 0.64rem;
   letter-spacing: 0.18em;
   color: var(--a-faint);
 }
@@ -426,7 +427,7 @@ const stanzas = computed(() => {
 
 .num {
   font-family: var(--f-cat);
-  font-size: 0.63rem;
+  font-size: 0.64rem;
   letter-spacing: 0.2em;
   color: var(--a-faint);
   font-variant-numeric: tabular-nums;
@@ -496,7 +497,7 @@ const stanzas = computed(() => {
   padding: 0;
   cursor: pointer;
   font-family: var(--f-cat);
-  font-size: 0.6rem;
+  font-size: 0.64rem;
   letter-spacing: 0.16em;
   color: var(--a-faint);
   border-bottom: 1px solid transparent;
@@ -562,7 +563,7 @@ const stanzas = computed(() => {
   background: none;
   color: var(--a-ink-2);
   font-family: var(--f-cat);
-  font-size: 0.6rem;
+  font-size: 0.64rem;
   letter-spacing: 0.14em;
   cursor: pointer;
 }

@@ -46,9 +46,9 @@ let raf = null;
 let ro = null;
 let mo = null;
 let mq = null;
-let retryRaf = null;
 let resizeTimer = null;
 let mounted = false;
+let visible = false;
 
 function build() {
   const el = cv.value;
@@ -166,18 +166,21 @@ function writeBetween(from, to, duration) {
   raf = requestAnimationFrame(step);
 }
 
+function stopWriting() {
+  if (raf) {
+    cancelAnimationFrame(raf);
+    raf = null;
+  }
+}
+
 function run() {
   if (!mounted) return;
-  if (!build()) {
-    if (retryRaf) cancelAnimationFrame(retryRaf);
-    retryRaf = requestAnimationFrame(run);
-    return;
-  }
-  if (retryRaf) {
-    cancelAnimationFrame(retryRaf);
-    retryRaf = null;
-  }
-  if (raf) cancelAnimationFrame(raf);
+  // Hidden canvases have no dimensions. ResizeObserver calls resized() when
+  // the artwork becomes visible, so retrying on every animation frame would
+  // only burn work while the index is hidden on a phone.
+  if (!build()) return;
+  visible = true;
+  stopWriting();
 
   if (props.progress !== null) {
     const target = Math.max(0, Math.min(1, props.progress));
@@ -212,6 +215,17 @@ function repaint() {
 function resized() {
   const el = cv.value;
   if (!el) return;
+  if (!el.offsetWidth || !el.offsetHeight) {
+    visible = false;
+    stopWriting();
+    return;
+  }
+  if (!visible) {
+    // This is either the first usable size or a return from display:none.
+    // Go through run() so the first reveal keeps its write-on behavior.
+    run();
+    return;
+  }
   if (built && el.offsetWidth === built.w && el.offsetHeight === built.h) return;
   repaint();
 }
@@ -257,8 +271,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   mounted = false;
-  if (raf) cancelAnimationFrame(raf);
-  if (retryRaf) cancelAnimationFrame(retryRaf);
+  stopWriting();
   if (resizeTimer) clearTimeout(resizeTimer);
   if (ro) ro.disconnect();
   if (mo) mo.disconnect();
@@ -279,7 +292,7 @@ watch(() => props.progress, (value) => {
     writeBetween(drawn, target, Math.min(1600, writingTime() * jump));
     return;
   }
-  if (raf) cancelAnimationFrame(raf);
+  stopWriting();
   draw(target);
 });
 </script>

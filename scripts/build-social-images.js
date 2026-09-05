@@ -1,27 +1,60 @@
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import sharp from 'sharp';
 import { ghost, rngFor } from '../src/asemic.js';
 import { studyFor } from '../src/collage-studies.js';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const publicDir = path.join(root, 'public');
+
+// Sharp uses Pango for text. Embedded SVG fonts are not supported by that
+// renderer, so use its fontfile option with the same files the site serves.
+// Force the fontconfig backend on macOS too, where Core Text otherwise skips
+// the supplied file and silently falls back to a system face. The temporary
+// config gives fontconfig a writable cache in local and CI environments.
+process.env.PANGOCAIRO_BACKEND = 'fontconfig';
+const fontConfigDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mihir-card-fonts-'));
+const fontCacheDir = path.join(fontConfigDir, 'cache');
+fs.mkdirSync(fontCacheDir);
+fs.writeFileSync(path.join(fontConfigDir, 'fonts.conf'), [
+  '<?xml version="1.0"?>',
+  '<!DOCTYPE fontconfig SYSTEM "fonts.dtd">',
+  '<fontconfig>',
+  `  <dir>${root}/scripts/fonts</dir>`,
+  '  <dir>/System/Library/Fonts</dir>',
+  '  <dir>/usr/share/fonts</dir>',
+  `  <cachedir>${fontCacheDir}</cachedir>`,
+  '</fontconfig>'
+].join('\n'));
+process.env.FONTCONFIG_FILE = path.join(fontConfigDir, 'fonts.conf');
+process.env.FONTCONFIG_PATH = fontConfigDir;
+process.env.XDG_CACHE_HOME = fontCacheDir;
+process.on('exit', () => fs.rmSync(fontConfigDir, { recursive: true, force: true }));
+const { default: sharp } = await import('sharp');
+
 const outputDir = path.join(publicDir, 'social', 'poems');
 const poems = JSON.parse(fs.readFileSync(path.join(root, 'src', 'poems.json'), 'utf8'));
 
 const fonts = {
-  display: fs.readFileSync(path.join(publicDir, 'fonts', 'sorts-mill-goudy-400-latin.woff2')).toString('base64'),
-  text: fs.readFileSync(path.join(publicDir, 'fonts', 'spectral-300-latin.woff2')).toString('base64'),
-  catalogue: fs.readFileSync(path.join(publicDir, 'fonts', 'sligoil-micro-400-latin.woff2')).toString('base64')
+  display: {
+    file: path.join(root, 'scripts', 'fonts', 'sorts-mill-goudy-400-latin.ttf'),
+    family: 'Sorts Mill Goudy'
+  },
+  text: {
+    file: path.join(root, 'scripts', 'fonts', 'spectral-300-latin.ttf'),
+    family: 'Spectral Light'
+  },
+  catalogue: {
+    file: path.join(root, 'scripts', 'fonts', 'sligoil-micro-400-latin.ttf'),
+    family: 'Sligoil Micro'
+  }
 };
 
-const escapeXml = value => String(value)
+const escapePango = value => String(value)
   .replace(/&/g, '&amp;')
   .replace(/</g, '&lt;')
-  .replace(/>/g, '&gt;')
-  .replace(/"/g, '&quot;')
-  .replace(/'/g, '&apos;');
+  .replace(/>/g, '&gt;');
 
 function wrapTitle(title) {
   const words = String(title).split(/\s+/).filter(Boolean);
@@ -83,7 +116,31 @@ async function studyImage(poem) {
   return `data:image/jpeg;base64,${image.toString('base64')}`;
 }
 
-async function cardSvg(poem, index) {
+async function textLayer(text, font, size, color, options = {}) {
+  const markup = `<span foreground="${color}">${escapePango(text)}</span>`;
+  const textOptions = {
+    text: markup,
+    font: `${font.family} ${size}`,
+    fontfile: font.file,
+    dpi: 72,
+    rgba: true,
+    wrap: 'none'
+  };
+
+  if (options.width) {
+    textOptions.width = options.width;
+    textOptions.align = options.align || 'left';
+  }
+  if (options.spacing !== undefined) textOptions.spacing = options.spacing;
+
+  return {
+    input: await sharp({ text: textOptions }).png().toBuffer(),
+    left: options.left || 0,
+    top: options.top || 0
+  };
+}
+
+async function cardImage(poem, index) {
   const lines = wrapTitle(poem.title);
   const fontSize = lines.length >= 4 ? 53 : lines.length === 3 ? 61 : lines.length === 2 ? 70 : 80;
   const lineHeight = Math.round(fontSize * 0.96);
@@ -94,18 +151,10 @@ async function cardSvg(poem, index) {
   const venue = poem.published_in || (poem.unpublished ? 'unpublished' : '');
   const metadata = [venue, year].filter(Boolean).join(' · ');
   const number = String(index + 1).padStart(2, '0');
+  const catalogue = String(poem.catalogue || number).padStart(2, '0');
 
-  const title = lines.map((line, lineIndex) =>
-    `<tspan x="78" y="${titleY + lineIndex * lineHeight}">${escapeXml(line)}</tspan>`
-  ).join('');
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
     <defs>
-      <style>
-        @font-face { font-family: CardDisplay; src: url(data:font/woff2;base64,${fonts.display}) format('woff2'); font-weight: 300; }
-        @font-face { font-family: CardText; src: url(data:font/woff2;base64,${fonts.text}) format('woff2'); font-weight: 300; }
-        @font-face { font-family: CardCatalogue; src: url(data:font/woff2;base64,${fonts.catalogue}) format('woff2'); font-weight: 400; }
-      </style>
       <clipPath id="study"><path d="M612 34 L1182 0 L1200 552 L1108 630 L650 604 Z"/></clipPath>
       <linearGradient id="veil" x1="0" x2="1">
         <stop offset="0" stop-color="#f2efe6" stop-opacity="1"/>
@@ -119,12 +168,50 @@ async function cardSvg(poem, index) {
     <path d="M594 0 L621 630" stroke="#d5d0c2" stroke-width="1" opacity="0.82"/>
     <g>${signatureSvg(poem)}</g>
     <path d="M78 79 H119" stroke="#1f4a34" stroke-width="2"/>
-    <text x="78" y="111" font-family="CardCatalogue, monospace" font-size="12" letter-spacing="3.2" fill="#6f6a60">${number} / ${String(poems.length).padStart(2, '0')}</text>
-    <text font-family="CardDisplay, Georgia, serif" font-size="${fontSize}" font-weight="300" fill="#23211c">${title}</text>
-    <text x="78" y="528" font-family="CardText, Georgia, serif" font-size="22" fill="#23211c">Mihir Bellamkonda</text>
-    <text x="78" y="562" font-family="CardCatalogue, monospace" font-size="11" letter-spacing="1.7" fill="#6f6a60">${escapeXml(metadata)}</text>
-    <text x="1124" y="582" text-anchor="end" font-family="CardCatalogue, monospace" font-size="10" letter-spacing="2.2" fill="#1f4a34">MB / ${number}</text>
   </svg>`;
+
+  const overlays = [
+    await textLayer(
+      `${number} / ${String(poems.length).padStart(2, '0')}`,
+      fonts.catalogue,
+      12,
+      '#6f6a60',
+      { left: 78, top: 101 }
+    ),
+    await textLayer(
+      lines.join('\n'),
+      fonts.display,
+      fontSize,
+      '#23211c',
+      { left: 78, top: Math.round(titleY - fontSize * 0.8), spacing: lineHeight - fontSize }
+    ),
+    await textLayer(
+      'Mihir Bellamkonda',
+      fonts.text,
+      22,
+      '#23211c',
+      { left: 78, top: 510 }
+    ),
+    await textLayer(
+      metadata,
+      fonts.catalogue,
+      11,
+      '#6f6a60',
+      { left: 78, top: 553 }
+    ),
+    await textLayer(
+      `MB / ${catalogue}`,
+      fonts.catalogue,
+      10,
+      '#1f4a34',
+      { left: 904, top: 574, width: 220, align: 'right' }
+    )
+  ];
+
+  return sharp(Buffer.from(svg))
+    .composite(overlays)
+    .jpeg({ quality: 88, chromaSubsampling: '4:4:4', progressive: false })
+    .toBuffer();
 }
 
 fs.mkdirSync(outputDir, { recursive: true });
@@ -134,10 +221,8 @@ for (const file of fs.readdirSync(outputDir)) {
 }
 
 for (const [index, poem] of poems.entries()) {
-  const svg = await cardSvg(poem, index);
-  await sharp(Buffer.from(svg))
-    .jpeg({ quality: 88, chromaSubsampling: '4:4:4', progressive: false })
-    .toFile(path.join(outputDir, `${poem.path}.jpg`));
+  const image = await cardImage(poem, index);
+  fs.writeFileSync(path.join(outputDir, `${poem.path}.jpg`), image);
 }
 
 console.log(`Generated ${poems.length} poem share cards → public/social/poems/`);

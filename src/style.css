@@ -135,14 +135,16 @@
   --a-bg:    #F2EFE6;
   --a-ink:   #23211C;
   --a-ink-2: #6A665C;
-  --a-faint: #A5A093;
+  /* Small chrome remains quiet through size and spacing; its ink still needs
+     to be readable against the paper. */
+  --a-faint: #6A665C;
   --a-hair:  #D5D0C2;
 
   /* band B — the hard block beneath it */
   --b-bg:    #1D1B18;
   --b-ink:   #EDE9DE;
   --b-ink-2: #A29C8E;
-  --b-faint: #6E6A60;
+  --b-faint: #A29C8E;
   --b-hair:  #35322C;
 
   --accent:   #1F4A34;
@@ -173,13 +175,13 @@
     --a-bg:    #1B1A16;
     --a-ink:   #E6E2D6;
     --a-ink-2: #A5A093;
-    --a-faint: #726E64;
+    --a-faint: #A5A093;
     --a-hair:  #33302A;
 
     --b-bg:    #E9E5DA;
     --b-ink:   #23211C;
     --b-ink-2: #6A665C;
-    --b-faint: #9C978A;
+    --b-faint: #6A665C;
     --b-hair:  #CFC9BA;
 
     --accent:   #6FA98A;
@@ -196,13 +198,13 @@
   --a-bg:    #1B1A16;
   --a-ink:   #E6E2D6;
   --a-ink-2: #A5A093;
-  --a-faint: #726E64;
+  --a-faint: #A5A093;
   --a-hair:  #33302A;
 
   --b-bg:    #E9E5DA;
   --b-ink:   #23211C;
   --b-ink-2: #6A665C;
-  --b-faint: #9C978A;
+  --b-faint: #6A665C;
   --b-hair:  #CFC9BA;
 
   --accent:   #6FA98A;
@@ -292,7 +294,7 @@ h3 {
   border: 1px solid var(--a-hair);
   border-top: 0;
   font-family: var(--f-cat);
-  font-size: 0.63rem;
+  font-size: 0.64rem;
   letter-spacing: 0.18em;
   transition: transform 0.15s ease;
 }
@@ -325,7 +327,7 @@ h3 {
   justify-content: space-between;
   padding-top: clamp(1.4rem, 4vw, 2.4rem);
   font-family: var(--f-cat);
-  font-size: 0.63rem;
+  font-size: 0.64rem;
   letter-spacing: 0.18em;
 }
 
@@ -355,7 +357,7 @@ h3 {
 .static-provenance {
   margin: 0;
   font-family: var(--f-cat);
-  font-size: 0.63rem;
+  font-size: 0.64rem;
   letter-spacing: 0.16em;
   color: var(--a-faint);
 }
@@ -439,7 +441,7 @@ h3 {
 .static-home-group h3 {
   margin-bottom: 0.8rem;
   font-family: var(--f-cat);
-  font-size: 0.6rem;
+  font-size: 0.62rem;
   font-weight: 400;
   letter-spacing: 0.18em;
   color: var(--a-faint);

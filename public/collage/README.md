@@ -147,6 +147,14 @@ illustrates the poem by naming its objects back to it.
   https://www.metmuseum.org/art/collection/search/264703
   Cropped into the hill face only: no sky, no horizon, no caption.
   Used under *A Quiet Family*.
+- `leaf-drapery.webp` — Charles Hippolyte Aubry, *[Study of Leaves on a
+  Background of Floral Lace]*, 1864. Albumen silver print from glass negative.
+  The Metropolitan Museum of Art, object 285343, public domain (Open Access).
+  https://www.metmuseum.org/art/collection/search/285343
+  Cropped away from its mount and into the leaves themselves, so what is left
+  is the arrangement and the drapery behind it rather than a photograph of a
+  print. Used under *Atlas*.
+
 - `lunar-disc.webp` — Lewis Morris Rutherfurd, *Full Moon*, 1871. Met object
   813902, public domain. https://www.metmuseum.org/art/collection/search/813902
   A single half of the stereograph, lifted well off black so the field around

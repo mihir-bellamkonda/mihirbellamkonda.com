@@ -92,6 +92,10 @@ const studies = {
     kind: 'field', focus: '50% 50%',
     primary: '/collage/oriel-window.webp', secondary: '/collage/pulse-trace.svg'
   },
+  atlas: {
+    kind: 'field', focus: '50% 52%',
+    primary: '/collage/leaf-drapery.webp', secondary: '/collage/strata-contours.svg'
+  },
   'musician-s-daughter': {
     kind: 'form',
     primary: '/collage/le-tambour.webp', secondary: '/collage/orbit-trace.svg'

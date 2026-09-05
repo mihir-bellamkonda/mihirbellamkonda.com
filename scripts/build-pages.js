@@ -108,6 +108,22 @@ function staticPoem(poem, index, total) {
   </noscript>`;
 }
 
+function staticNotHere() {
+  // Inside noscript, like the other two static blocks: with the bundle running
+  // the hand is the page, and this would otherwise sit above it saying the
+  // same thing in words.
+  return `<noscript>
+    <div class="static-home">
+      <p class="static-home-eyebrow">not here</p>
+      <p>That page is not on this site. It may have been withdrawn, or it may
+        never have existed.</p>
+      <p>
+        <a href="/#index">read the index</a> &nbsp; <a href="/">the opening</a>
+      </p>
+    </div>
+  </noscript>`;
+}
+
 function staticHome(poems) {
   const row = (poem, index) => {
     const year = String(poem.date || '').match(/\d{4}/)?.[0] || '';
@@ -118,8 +134,14 @@ function staticHome(poems) {
       <span class="static-home-venue">${escapeHtml([venue, year].filter(Boolean).join(', '))}</span>
     </li>`;
   };
-  const selected = poems.slice(0, 5).map(row).join('');
-  const archive = poems.slice(5).map((poem, index) => row(poem, index + 5)).join('');
+  // The boundary is duplicated from PoemsListPage.vue, which is the reason to
+  // keep it named in one place here rather than written twice as a number.
+  const OPENING = 6;
+  const selected = poems.slice(0, OPENING).map(row).join('');
+  const archive = poems
+    .slice(OPENING)
+    .map((poem, index) => row(poem, index + OPENING))
+    .join('');
 
   return `<noscript>
     <div class="static-home">
@@ -194,6 +216,33 @@ for (const [index, poem] of poems.entries()) {
 
 const home = template.replace('<div id="app"></div>', `${staticHome(poems)}\n  <div id="app"></div>`);
 fs.writeFileSync(path.join(dist, 'index.html'), home);
+
+/**
+ * The 404, which is the hand.
+ *
+ * It used to be a standalone page in public/ with its own copy of the fonts
+ * and no bundle at all, on the reasoning that it renders at URLs that do not
+ * otherwise exist and must not depend on anything relative. Nothing here is
+ * relative — Vite's base is `/` and every asset it emits is absolute — so
+ * the page can boot the app like any other and let the hand write over the
+ * missing page.
+ *
+ * It is generated from the same template as everything else, which is the
+ * point: the asset filenames are hashed and change every build, and a
+ * hand-written 404 could only have gone stale. The static block inside #app
+ * is what a reader gets if the bundle never arrives, and it carries the two
+ * links out on its own.
+ */
+let notHere = template.replace(/<title>[^<]*<\/title>/i, '<title>Not here — Mihir Bellamkonda</title>');
+notHere = setMeta(notHere, 'name="description"', 'That page is not on this site.');
+notHere = setMeta(notHere, 'property="og:title"', 'Not here — Mihir Bellamkonda');
+notHere = setMeta(notHere, 'property="og:description"', 'That page is not on this site.');
+notHere = notHere.replace(/<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i, '<meta name="robots" content="noindex">');
+notHere = notHere.replace(
+  '<div id="app"></div>',
+  `${staticNotHere()}\n  <div id="app"></div>\n  <script>window.__notHere = true;<\/script>`
+);
+fs.writeFileSync(path.join(dist, '404.html'), notHere);
 
 const urls = [
   'https://mihirbellamkonda.com/',

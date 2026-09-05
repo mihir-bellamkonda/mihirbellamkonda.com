@@ -318,3 +318,60 @@ test('a th that ends its word keeps the h standing up', () => {
   const runsOn = ['the', 'other', 'that'].some(w => spread(w) < 0.7);
   assert.ok(runsOn, 'the th ligature never fires, even where the h connects onward');
 });
+
+// The book was verse until Atlas, and a prose paragraph arrives as one source
+// line of five hundred characters where the longest line of verse in the book
+// is eighty-six. `fitSize()` sizes the hand so the longest line very nearly
+// fills the column, which for a paragraph means shrinking the whole page until
+// five hundred characters fit across it: Atlas capped the hand at 3.45 where
+// the median line of the book allows 46, and the plate came out as a thin band
+// of ink stranded near the top of an empty box. Nothing failed. No test caught
+// it, the build was clean, and it was visible only by looking at the plate.
+const PARAGRAPH =
+  "The earth is black and wet that's the first thing in the world then the " +
+  'beetles which do not mind being overlooked then the tough november grasses ' +
+  'who love each nearing winter for the chance to be brown and alone then the ' +
+  'trash screaming color and longing to the gutters plastic wrapper simulacra ' +
+  'of chips candies and eucalyptus soothers not necessarily to scale.';
+
+// The longest line of verse in the corpus, which must keep being one line.
+const LONGEST_VERSE =
+  'and the coyotes are singing to the streetlight like it is the only moon left';
+
+function inkHeight(strokes) {
+  let top = Infinity;
+  let foot = -Infinity;
+  for (const stroke of strokes) {
+    for (const point of stroke.pts) {
+      if (point[1] < top) top = point[1];
+      if (point[1] > foot) foot = point[1];
+    }
+  }
+  return foot - top;
+}
+
+test('a paragraph is broken into lines, not shrunk until it fits on one', () => {
+  const height = 620;
+  const marks = ghost(PARAGRAPH, { rng: rngFor('prose'), x: 0, width: 520, height });
+
+  // Written as a page it fills a third of the plate. Fitted as a single line
+  // it was one row of about eleven pixels, which is the bug this guards.
+  assert.ok(
+    inkHeight(marks) > height * 0.15,
+    `a paragraph came out ${inkHeight(marks).toFixed(0)}px tall in a ${height}px box, which is a band of ink rather than a page`
+  );
+});
+
+test('the longest line of verse in the book is still written as one line', () => {
+  const marks = ghost(LONGEST_VERSE, { rng: rngFor('verse'), x: 0, width: 520, height: 620 });
+
+  // The break is held well clear of verse: the longest line anyone here has
+  // written is eighty-six characters and the threshold is a hundred and
+  // twenty. A single row of this hand stands about twenty-three pixels; two
+  // rows would be nearer sixty. If this fails the threshold has crept down
+  // onto the poems, and it is breaking lines the poet wrote.
+  assert.ok(
+    inkHeight(marks) < 40,
+    `a line of verse came out ${inkHeight(marks).toFixed(0)}px tall, which is more than one row — the paragraph break has reached the poems`
+  );
+});

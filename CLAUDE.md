@@ -292,6 +292,24 @@ reintroduce anything like it.
   signature was drawn a third too large and clipped. It was only visible in a
   browser. A single line also keeps more of its width margin (0.92, not 0.96) than
   a column does, because it has no wrap to save it.
+- **A paragraph is not a line, and `fitSize()` cannot tell.** It reads the
+  longest source line and picks a size that very nearly fills the column with
+  it, which is right for verse and ruinous for prose: every poem here was verse
+  until Atlas, whose stanzas are paragraphs, so its first "line" is five hundred
+  characters where the longest line of verse in the book is eighty-six. The
+  fitter shrank the whole page until that paragraph fit across it — capping the
+  hand at 3.45 where the median line of the book allows 46 — and the plate came
+  out as a band of ink 42 pixels tall in a 620 pixel box, against 245 to 748 for
+  every other poem. Nothing failed: the build was clean, all twenty-one tests
+  passed, and it was visible only by looking at the plate. `ghost()` now breaks a
+  source line over 120 characters into lines of about 80 before the fitter
+  measures anything; wrapping at draw time cannot save it, because by then the
+  size is already chosen and the paragraph has been made small enough not to
+  need wrapping. The threshold is a count of characters rather than a share of
+  the box, because a column beside a poem is 300px wide and every line in it
+  wraps — what is being identified is not a line too wide for its column but a
+  thing too long to be a line at all. Exactly two lines in the corpus are over
+  120 and both are Atlas; a test holds the break clear of the longest verse line.
 - The hand **scales to the space it is given** — `fitSize()` picks a size so the
   longest line nearly fills the width and the poem fits the height. Stroke weight
   tracks that size; a fixed hairline vanishes once the hand scales up.

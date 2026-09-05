@@ -966,6 +966,70 @@ function settle(strokes, height) {
 }
 
 /**
+ * The longest line anyone in this book has written, and the length a broken
+ * paragraph is written at.
+ *
+ * Every poem here was verse until Atlas, which is prose: its stanzas are
+ * paragraphs, and a paragraph arrives as one source line of five hundred
+ * characters where the longest line of verse in the book is eighty-six.
+ * Exactly two lines in the corpus are over a hundred and twenty, and both of
+ * them are Atlas.
+ *
+ * That gap is the whole of the rule below, and it is why the threshold is a
+ * count of characters rather than a share of the box. A share of the box
+ * would call a verse line a paragraph whenever the box was narrow — a column
+ * beside a poem is three hundred pixels wide and every line in it wraps —
+ * and the thing being identified here is not too wide for its column, it is
+ * too long to be a line at all. A hand writes in lines of roughly this
+ * length whatever it is writing on.
+ */
+const LINE_LIMIT = 120;
+const LINE_TARGET = 80;
+
+/**
+ * A paragraph broken into lines, because a paragraph is not a line.
+ *
+ * `fitSize()` reads the width of the longest source line and picks a size
+ * that very nearly fills the column with it, and `ghost()` then wraps
+ * anything that still does not fit. Those two are right for verse and wrong
+ * for prose in the same way: a five-hundred-character paragraph is measured
+ * as a single line to be fitted, so the fitter shrinks the entire page until
+ * that paragraph fits across it. Atlas capped the hand at 3.45 where the next
+ * worst line in the book allows 16.5 and the median allows 46, and the
+ * writing came out as a thin band of ink stranded in the middle of the box —
+ * 42 pixels of a 620 pixel plate, against 245 to 748 for every other poem.
+ *
+ * Wrapping at draw time cannot save it, because by then the size is chosen:
+ * the paragraph has already been made small enough not to need wrapping. The
+ * break has to happen before the fitter measures anything, and then the rows
+ * it becomes are counted against the height like any other lines.
+ *
+ * Only the multi-line path uses this. A signature is one line by definition
+ * and `signatureLine()` already trims a long source line to the width it has.
+ */
+function breakParagraph(line) {
+  if (line.length <= LINE_LIMIT) return [line];
+
+  const words = line.split(/\s+/).filter(Boolean);
+  const rows = [];
+  let row = '';
+
+  for (const word of words) {
+    if (row && row.length + 1 + word.length > LINE_TARGET) {
+      rows.push(row);
+      row = word;
+    } else {
+      row = row ? row + ' ' + word : word;
+    }
+  }
+  if (row) rows.push(row);
+
+  // A single unbroken run of characters has no word boundary to break on.
+  // It is written as it stands and wrapped at draw time, as before.
+  return rows.length ? rows : [line];
+}
+
+/**
  * Render a poem's real lines as unreadable writing inside a box.
  * Blank lines in the source become stanza gaps, so the block keeps the
  * poem's actual shape.
@@ -982,7 +1046,7 @@ export function ghost(text, opts) {
   const sourceLines = String(text || '').split('\n');
   const lines = maxLines === 1
     ? [signatureLine(sourceLines, width, height, pen)]
-    : sourceLines;
+    : sourceLines.flatMap(breakParagraph);
 
   // The hand is scaled to the space it is given, so a poem's longest line
   // very nearly fills the column and the whole poem fits the height. Fixing

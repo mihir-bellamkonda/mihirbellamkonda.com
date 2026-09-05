@@ -430,7 +430,7 @@ function clearPointer(event) {
   background-color: color-mix(in srgb, var(--a-bg) 94%, var(--accent));
   color: var(--a-ink);
   cursor: grab;
-  touch-action: pan-y;
+  touch-action: pan-y pinch-zoom;
 }
 
 .specimen:active {

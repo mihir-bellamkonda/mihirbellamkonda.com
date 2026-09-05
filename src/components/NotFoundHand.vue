@@ -109,7 +109,7 @@ onUnmounted(() => {
   align-items: baseline;
   gap: 1.5rem;
   font-family: var(--f-cat);
-  font-size: 0.63rem;
+  font-size: 0.64rem;
   letter-spacing: 0.18em;
   color: var(--a-faint);
 }
@@ -149,7 +149,7 @@ main:focus {
   flex-wrap: wrap;
   margin: 0;
   font-family: var(--f-cat);
-  font-size: 0.63rem;
+  font-size: 0.64rem;
   letter-spacing: 0.18em;
 }
 

@@ -102,7 +102,7 @@ const word = WORDS[Math.floor(Math.random() * WORDS.length)] || 'analemma';
   gap: 1.5rem;
   padding: clamp(1.4rem, 4vw, 2.4rem) 0 0;
   font-family: var(--f-cat);
-  font-size: 0.63rem;
+  font-size: 0.64rem;
   letter-spacing: 0.18em;
   color: var(--a-faint);
 }
@@ -156,7 +156,7 @@ const word = WORDS[Math.floor(Math.random() * WORDS.length)] || 'analemma';
 .enter {
   margin: 0;
   font-family: var(--f-cat);
-  font-size: 0.63rem;
+  font-size: 0.64rem;
   letter-spacing: 0.18em;
 }
 

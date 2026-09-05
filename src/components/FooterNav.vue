@@ -60,7 +60,7 @@ footer {
   align-items: baseline;
   gap: 1rem;
   font-family: var(--f-cat);
-  font-size: 0.63rem;
+  font-size: 0.64rem;
   letter-spacing: 0.14em;
 }
 

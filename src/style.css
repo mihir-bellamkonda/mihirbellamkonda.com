@@ -148,11 +148,20 @@
   --accent:   #1F4A34;
   --accent-2: #2E6B4B;
 
-  /* asemic inks, as rgb triples for canvas */
+  /* Asemic inks, as rgb triples for canvas.
+
+     Navy was the odd one out. Its share of the accents was raised once and
+     that was the wrong dial: the trouble was never how often it came up but
+     what it looked like when it did. It was the least colourful of the three
+     and the closest in value to the ordinary ink, so it read as dark ink
+     rather than as blue. It now carries what its siblings carry — chroma
+     21.2 and lightness +8.5 above the mark, where green is 16.4 and +8.3 and
+     rust 20.7 and +8.5 — measured as painted, at the alpha the pen leaves
+     rather than at full strength. */
   --i-mark:  35, 33, 28;
   --i-green: 26, 74, 52;
   --i-rust:  112, 49, 36;
-  --i-navy:  48, 48, 87;
+  --i-navy:  45, 63, 120;
 
   --f-display: 'Sorts Mill Goudy', 'Hoefler Text', Garamond, Georgia, serif;
   --f-verse:   'Spectral', 'Iowan Old Style', Georgia, serif;
@@ -179,7 +188,7 @@
     --i-mark:  230, 226, 214;
     --i-green: 122, 176, 142;
     --i-rust:  184, 103, 78;
-    --i-navy:  130, 130, 177;
+    --i-navy:  112, 134, 202;
   }
 }
 
@@ -202,7 +211,7 @@
   --i-mark:  230, 226, 214;
   --i-green: 122, 176, 142;
   --i-rust:  184, 103, 78;
-  --i-navy:  130, 130, 177;
+  --i-navy:  112, 134, 202;
 }
 
 /* ---------------- reset ---------------- */

@@ -567,8 +567,25 @@ function firstLine(poem) {
   grid-area: 1 / 1;
 }
 
+/* Two lines and no more.
+
+   The reserved cell is as tall as the taller of the signature and the excerpt,
+   and that was written for verse, where a long first line wraps to two — ten
+   of the poems do. Atlas is prose: its first line is the whole first
+   paragraph, four hundred and sixty characters, and it opened the row to ten
+   lines and pushed the index apart.
+
+   Clamped rather than cut in the script, because the excerpt is a finished
+   HTML fragment carrying the poet's own emphasis and truncating a string of
+   markup by character count is how you end up with a stray open tag. Two,
+   because that is what the row already reserved for verse; prose is simply a
+   long line and gets treated as one. */
 .firstline {
-  display: block;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
   align-self: center;
   font-family: var(--f-verse);
   font-weight: 300;

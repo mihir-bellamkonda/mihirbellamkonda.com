@@ -26,7 +26,11 @@ const props = defineProps({
   temper: { type: Number, default: 0 },
   // The longest the write-on may run, in milliseconds. 0 lifts the ceiling
   // and lets the mark take the time the plan says it costs.
-  ceiling: { type: Number, default: 9000 }
+  ceiling: { type: Number, default: 9000 },
+  // Multiplies the plan's own time. 1 is pen speed. Because it stretches the
+  // whole journey, every rest and every corner keeps its exact share of the
+  // total — it is the same hand writing more slowly, not a different one.
+  stretch: { type: Number, default: 1 }
 });
 
 const cv = ref(null);
@@ -99,7 +103,7 @@ function draw(progress) {
  * instead of being squeezed under the threshold where they can be seen.
  */
 function writingTime(rate = 1) {
-  const ms = ((plan ? plan.total : 0) / rate) * 1000;
+  const ms = ((plan ? plan.total : 0) / rate) * 1000 * props.stretch;
   if (!props.ceiling) return Math.max(1000, ms);
   const span = Math.max(1000, Math.min(props.ceiling, ms));
   // A slow hand is allowed past the ceiling, because being slow is the whole

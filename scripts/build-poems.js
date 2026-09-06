@@ -20,6 +20,31 @@ const pathSlug = (value) => String(value || '')
   .replace(/[^a-z0-9]+/g, '-')
   .replace(/^-+|-+$/g, '');
 
+/**
+ * The length past which a line is not a line.
+ *
+ * Every poem in this book was verse until Atlas, which is prose: its stanzas
+ * are paragraphs, and a paragraph arrives as one source line of five hundred
+ * characters where the longest line of verse in the corpus is eighty-six.
+ * Exactly one poem is over this and it is the prose one, which is the whole
+ * of the test — there is no front-matter flag to keep in step, so a prose
+ * poem dropped in `poems/` is set as prose without anything else being
+ * edited, which is how every other property of a poem works here.
+ *
+ * It is the same number `asemic.js` breaks a paragraph at, for the same
+ * reason, and the two are deliberately independent: one decides how the poem
+ * is typeset and the other how the hand writes it, and neither should start
+ * quietly depending on the other.
+ */
+const PROSE_LINE = 120;
+
+/** A poem is prose when any of its lines is a paragraph. */
+function isProse(stanzas) {
+  return stanzas.some(stanza =>
+    stanza.some(line => line.replace(/<[^>]*>/g, '').length > PROSE_LINE)
+  );
+}
+
 const poems = poemFiles.map(file => {
   const filePath = path.join(POEMS_DIR, file);
   const fileContent = fs.readFileSync(filePath, 'utf-8');
@@ -48,6 +73,12 @@ const poems = poemFiles.map(file => {
     // naming it here.
     catalogue: String(data.catalogue ?? (path.basename(file, '.md').match(/^\d+/)?.[0] ?? '')).padStart(2, '0'),
     audio: data.audio || '',
+    // Whether this poem's lines are paragraphs rather than verse lines. The
+    // page sets each line as its own block with a hanging indent, so a line
+    // the poet broke reads differently from one the browser wrapped — which
+    // is right for verse and backwards for prose, where every break is the
+    // browser's and the indent marks nothing. See PROSE_LINE.
+    prose: isProse(stanzas),
     content,
     stanzas
   };

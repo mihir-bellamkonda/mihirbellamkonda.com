@@ -238,7 +238,10 @@ for (const poem of poems) {
   check(/<script\b[^>]*type="application\/ld\+json"/i.test(page), `${poem.slug}: structured data is missing.`);
   check(page.includes('https://schema.org'), `${poem.slug}: schema context is missing.`);
   check(page.includes('<noscript>'), `${poem.slug}: no-JavaScript reading copy is missing.`);
-  check(page.includes('class="static-verse"'), `${poem.slug}: static verse is missing.`);
+  // Matched on the class rather than the whole attribute: a prose poem carries
+  // `static-prose` alongside it, and an exact-string check called the verse
+  // missing the moment a second class was added.
+  check(/class="static-verse(?:\s[^"]*)?"/.test(page), `${poem.slug}: static verse is missing.`);
   check(page.includes(`<h1>${poem.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</h1>`), `${poem.slug}: static title does not match.`);
   check(page.includes(`https://mihirbellamkonda.com${poem.url}`), `${poem.slug}: canonical URL is missing.`);
   verifyPoemSocialPreview(poem, page);

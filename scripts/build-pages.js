@@ -102,7 +102,7 @@ function staticPoem(poem, index, total) {
           ${provenance ? `<p class="static-provenance">${provenance}</p>` : ''}
           ${poem.audio ? `<audio class="static-audio" controls preload="metadata" src="${escapeHtml(poem.audio)}">Audio reading of ${escapeHtml(poem.title)}</audio>` : ''}
         </header>
-        <div class="static-verse">${stanzas}</div>
+        <div class="static-verse${poem.prose ? ' static-prose' : ''}">${stanzas}</div>
       </main>
     </article>
   </noscript>`;

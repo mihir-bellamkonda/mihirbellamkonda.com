@@ -156,6 +156,20 @@ a wrapped line reads differently from a break the poet made. This replaced a
 `fitPoemToWidth()` routine that shrank the type until the longest line fit; do not
 reintroduce anything like it.
 
+**Prose begins at the margin.** That hanging indent is there to tell a line the poet
+broke from one the browser wrapped, which is the form itself in verse and meaningless
+in prose, where every break belongs to the browser. Atlas was being set with a 1.4em
+indent on every line after the first, so a paragraph read as a verse line overflowing
+six times. `build-poems.js` marks a poem `prose` when any of its lines runs past 120
+characters — one poem does, and it is the prose one — and `.verse.prose` and
+`.static-prose` drop the indent in the app and in the no-JavaScript copy. This is not
+an exception to rule 1: nothing about how a *line* is set changes, and the poem keeps
+the same size, weight and face as every other. There is no front-matter flag to keep
+in step, so a prose poem dropped in `poems/` is set correctly with nothing else
+edited. The threshold is deliberately a separate constant from the one `asemic.js`
+breaks paragraphs at — one decides typesetting and the other how the hand writes —
+and neither should start depending on the other.
+
 ## The marks
 
 `src/asemic.js` generates writing with the shape of writing and no words in it.

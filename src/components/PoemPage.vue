@@ -117,7 +117,7 @@
 
       <!-- Nothing in here is styled differently from anything else in here.
            Emphasis, where it appears, is the poet's own. -->
-      <div class="verse" ref="verseEl">
+      <div class="verse" :class="{ prose: poem.prose }" ref="verseEl">
         <p class="stanza" v-for="(stanza, s) in stanzas" :key="s">
           <span class="l" v-for="(line, l) in stanza" :key="l" v-html="line"></span>
         </p>
@@ -646,6 +646,22 @@ const stanzas = computed(() => {
   display: block;
   text-indent: -1.4em;
   padding-left: 1.4em;
+}
+
+/* A prose poem has no line breaks of its own, so it must not be set as though
+   it did. The hanging indent above exists to tell a line the poet broke from
+   one the browser wrapped — in verse that distinction is the form, and in
+   prose there is nothing to distinguish, because every break belongs to the
+   browser. Left in place it put a 1.4em indent on every line of Atlas after
+   the first, which reads as a verse line overflowing six times rather than as
+   a paragraph.
+
+   Nothing here touches how a line is set. The poem is the same size, the same
+   weight and the same face as every other poem in the book; what changes is
+   only that its paragraphs begin at the margin. */
+.verse.prose .l {
+  text-indent: 0;
+  padding-left: 0;
 }
 
 .rest {

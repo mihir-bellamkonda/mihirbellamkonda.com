@@ -389,6 +389,12 @@ h3 {
   padding-left: 1.4em;
 }
 
+/* Prose begins at the margin — see .verse.prose in PoemPage.vue. */
+.static-prose .static-line {
+  text-indent: 0;
+  padding-left: 0;
+}
+
 /* A complete, quiet edition of the home and index for readers without
    JavaScript and crawlers that do not execute the application. */
 .static-home {

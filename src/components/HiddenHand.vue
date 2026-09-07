@@ -4,7 +4,9 @@
 
     <div class="field" :class="'is-' + showing">
       <div v-if="showing === 'angel'" class="angel-stack">
-        <AngelusNovus />
+        <div class="angel-figure">
+          <AngelusNovus />
+        </div>
 
         <div class="angel-word">
           <AsemicMarks
@@ -134,15 +136,20 @@ const WORD_ROWS = 7;
 const WORD_SIZE = 44;
 
 /**
- * The word under the angel.
+ * The word beside the angel.
  *
- * It is a label rather than a page of writing, so it is small — but it was
- * too small to read as writing at all, which made it look like a smudge under
- * the figure rather than a thing someone had written there. Its box is about
- * twice what it was, and the ceiling goes up with it: at 16 the box would
- * have grown and the writing inside it would not.
+ * It was a label under the figure and it read as one: a caption, small enough
+ * to be taken for a smudge. It is not a caption. It is the other half of what
+ * is on the page, so it stands next to the figure at the figure's own scale
+ * and the two are looked at together.
+ *
+ * This number is only a ceiling. One line in a box this size works out well
+ * past it by geometry, so what actually decides the size is the box — which
+ * is the right place for the decision, because the box is what changes with
+ * the screen. The ceiling is here to stop a three-letter word from drawing
+ * itself the height of the angel on a wide monitor, and nothing else.
  */
-const WORD_LABEL_SIZE = 30;
+const WORD_LABEL_SIZE = 190;
 
 /**
  * Holds the page at the pace it already had.
@@ -273,28 +280,61 @@ function leave() {
    into a margin — a margin centres what is left over, which is not the same
    thing.
 
-   Its own box carries the drawing's proportions, so the figure is centred and
-   the label hangs off the bottom of it without moving it. Putting the two in
-   a column together would centre the pair and leave the angel sitting high. */
+   The figure and the word are now a pair on one line, centred together, so the
+   field centres the pair and each keeps its own box. */
 .field.is-angel {
   inset: 0;
   display: grid;
   place-items: center;
 }
 
+/* The figure and the word stand side by side and are centred as a pair. The
+   angel keeps the drawing's proportions and gives up width first, so on a
+   narrow screen the word stays legible by making the angel smaller rather
+   than by dropping below it. */
 .angel-stack {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.4rem, 1.6vw, 1.5rem);
+  max-width: 100%;
+}
+
+.angel-figure {
   position: relative;
   height: min(64vh, 620px);
   aspect-ratio: 213.7 / 438.3;
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
+/* A box, not a caption. The word is fitted to this, and this is most of the
+   room there is. */
 .angel-word {
-  position: absolute;
-  top: calc(100% + clamp(0.8rem, 2.2vh, 1.6rem));
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(88%, 236px);
-  height: clamp(28px, 3.8vh, 46px);
+  flex: 1 1 auto;
+  height: min(52vh, 470px);
+  width: min(58vw, 880px);
+  min-width: 0;
+}
+
+/* On a phone the pair still stands side by side — that is the arrangement, not
+   a wide-screen luxury — but the figure's height is what sets its width, so
+   both boxes have to come down together or the two of them are wider than the
+   screen and the angel runs off the left edge. */
+@media (max-width: 720px) {
+  .angel-stack {
+    gap: 0.4rem;
+    padding: 0 0.6rem;
+  }
+
+  .angel-figure {
+    height: min(46vh, 400px);
+  }
+
+  .angel-word {
+    height: min(28vh, 240px);
+    width: 46vw;
+  }
 }
 
 .sr-only {

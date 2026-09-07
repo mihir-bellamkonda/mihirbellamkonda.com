@@ -217,8 +217,16 @@ onUnmounted(() => clearTimeout(timer));
    flow entirely. */
 .title-hand {
   position: absolute;
-  top: -0.12em;
+  /* Centred on the heading, not hung from the top of it. `settle()` centres a
+     finished mark inside whatever box it is given, so a box three and a half
+     times the heading's height that starts at the heading's top puts the
+     writing more than a full heading below where the title is — over the
+     provenance, which is where it was landing. Anchoring the box's middle to
+     the heading's middle puts the mark where the title is and lets the extra
+     depth bleed evenly above and below it. */
+  top: 50%;
   left: -0.04em;
+  transform: translateY(-50%);
   width: 136%;
   opacity: 1;
   transition: opacity 520ms ease;

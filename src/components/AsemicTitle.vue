@@ -8,16 +8,23 @@
   -->
   <div class="asemic-title" :class="{ resolved }">
     <h1 data-page-heading tabindex="-1">{{ title }}</h1>
-    <AsemicMarks
+    <div
       v-if="handWrites"
       class="title-hand"
-      :style="{ height: boxHeight }"
-      :text="handText"
-      :seed="`${seed}::title`"
-      :max-lines="rows"
-      :max-size="maxSize"
-      :ceiling="WRITE"
-    />
+      :style="{ '--row-h': rowHeight, '--row-squeeze': rowSqueeze }"
+    >
+      <AsemicMarks
+        v-for="(line, i) in handLines"
+        :key="i"
+        class="hand-row"
+        :text="line"
+        :seed="`${seed}::title::${i}`"
+        :max-lines="1"
+        :max-size="maxSize"
+        :ceiling="WRITE"
+        :furniture="false"
+      />
+    </div>
   </div>
 </template>
 
@@ -63,9 +70,9 @@ const resolved = ref(false);
 // no canvas is mounted at all, rather than one drawn and instantly hidden.
 const handWrites = ref(false);
 const maxSize = ref(72);
-const rows = ref(1);
-const handText = ref('');
-const boxHeight = ref('210%');
+const handLines = ref([]);
+const rowHeight = ref('200px');
+const rowSqueeze = ref('0px');
 
 /**
  * The title, broken the way the hand needs it rather than the way the type does.
@@ -171,31 +178,39 @@ function begin() {
   }
 
   const lines = breakForHand(props.title);
-  rows.value = lines.length;
-  handText.value = lines.join('\n');
-  /*
-   * One line is sized against `height / 2.9` and needs a deep box to reach a
-   * good size; several lines are sized against `height / ((rows + 0.9) *
-   * 2.95)` and fill what they are given, so they need far less of one.
-   *
-   * These are percentages of the heading, and the heading has already grown
-   * for the lines it wraps to — so the multiple must not grow with the rows
-   * as well. It did once, and a four-line title asked for six and a half
-   * times a box that was already four lines deep: fifteen hundred pixels of
-   * hand down the margin and across the folio. That is why it is a constant.
-   *
-   * Why the two constants are so close despite the branches being so
-   * different: measured against the heading's own line, one line was drawing
-   * at 1.85 times it and two lines at 0.85 — less than half the scale, which
-   * is exactly as thin as it looked. The tighter divisor is the whole of the
-   * difference, and this is the box paying it back, so a row of a two-row
-   * mark is now about the size of a one-row mark. Two rows therefore stand
-   * well outside the heading, above and below. That is intended: the mark is
-   * brief and is meant to sit over the page.
-   */
-  boxHeight.value = lines.length === 1 ? '340%' : '380%';
-
+  handLines.value = lines;
   sizeToHeading();
+
+  /*
+   * Every row is its own single-line mark rather than one mark of several
+   * rows, and the reason is both size and place.
+   *
+   * `fitSize` has two branches. One line is sized by width with height as a
+   * guardrail; several lines are sized by height at `height / ((rows + 0.9) *
+   * 2.95)`, and the leading it then draws with scales with the size it just
+   * chose — so buying a bigger letter by handing it a deeper box buys exactly
+   * as much extra air between the rows, and the two lines of a title drift
+   * half the margin apart. `settle()` does not rescue it either: it centres a
+   * finished single-line mark in its box, and a column is deliberately left
+   * where it was drawn, so the block also sat high in a box this deep.
+   *
+   * Stacked single-line marks take the generous branch for each row, get
+   * centred in their own boxes, and leave the leading here — where it can be
+   * a number of pixels off the heading's own line rather than a by-product of
+   * how tall a box had to be to make the letters big.
+   */
+  const el = document.querySelector('.asemic-title h1');
+  const line = el ? (parseFloat(getComputedStyle(el).lineHeight) || parseFloat(getComputedStyle(el).fontSize)) : 44;
+  // A row's box is deeper than the ink it will hold: `fitSize` treats height
+  // as a guardrail on a single-line mark and lets width choose, so this is the
+  // ceiling being kept out of the way rather than the size itself.
+  const box = line * 4.4;
+  rowHeight.value = `${Math.round(box)}px`;
+  // The box carries air the ink does not use. Pulling most of it back leaves
+  // the rows a hand's leading apart instead of a fitter's, which is what makes
+  // the two halves of a title read as one title rather than as two marks.
+  rowSqueeze.value = `${Math.round(line * 1.1)}px`;
+
   handWrites.value = true;
   timer = setTimeout(() => {
     resolved.value = true;
@@ -233,29 +248,27 @@ onUnmounted(() => clearTimeout(timer));
   opacity: 1;
 }
 
-/* The hand is given more room than the heading occupies, and it needs to be:
-   fitted into the heading's own rect it is bound by that rect's width and
-   draws small. It bleeds down over the provenance and out to the right, both
-   of which are empty or nearly so while it is on screen, and it is gone by
-   the time either matters. `overflow: visible` on the wrapper is what lets it
-   out; nothing is clipped and nothing reflows, because the canvas is out of
-   flow entirely. */
+/* The stack is centred on the heading and its rows are pulled together. It
+   is out of flow, so nothing here reflows and nothing is clipped; it bleeds
+   over the number above and the provenance below, which is intended — the
+   mark is brief and belongs over the page. */
 .title-hand {
   position: absolute;
-  /* Centred on the heading, not hung from the top of it. `settle()` centres a
-     finished mark inside whatever box it is given, so a box three and a half
-     times the heading's height that starts at the heading's top puts the
-     writing more than a full heading below where the title is — over the
-     provenance, which is where it was landing. Anchoring the box's middle to
-     the heading's middle puts the mark where the title is and lets the extra
-     depth bleed evenly above and below it. */
   top: 50%;
   left: -0.04em;
   transform: translateY(-50%);
   width: 136%;
-  opacity: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   pointer-events: none;
   z-index: 1;
+}
+
+.hand-row {
+  width: 100%;
+  height: var(--row-h);
+  margin-block: calc(-1 * var(--row-squeeze));
 }
 
 .asemic-title.resolved .title-hand {

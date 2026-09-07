@@ -34,7 +34,12 @@ const props = defineProps({
   // The largest letter the fitter may choose. 16 is the house maximum and
   // suits a mark that sits beside something; a page that is only writing can
   // ask for more.
-  maxSize: { type: Number, default: 16 }
+  maxSize: { type: Number, default: 16 },
+  // The notebook's second thoughts — a struck-out word, a caret with a word
+  // squeezed above the line, a ringed number, an arrow carrying a sentence
+  // over. On by default wherever the hand writes more than one row. A caller
+  // writing something that nobody was midway through can decline them.
+  furniture: { type: Boolean, default: true }
 });
 
 const cv = ref(null);
@@ -74,7 +79,8 @@ function build() {
     size: props.size || 0,
     maxLines: props.maxLines,
     maxSize: props.maxSize,
-    temper: props.temper
+    temper: props.temper,
+    furniture: props.furniture
   });
   plan = writingPlan(strokes);
 

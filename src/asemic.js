@@ -1042,7 +1042,15 @@ export function ghost(text, opts) {
   const out = [];
   // A column has room for a second thought. A row signature does not: it is
   // twenty-six pixels tall, and a strike-out on it is a smudge.
-  const furnished = pen.furniture && maxLines !== 1;
+  //
+  // Neither does a title, at any number of rows. The furniture is the record
+  // of someone changing their mind mid-sentence — a word struck out, a word
+  // remembered late and squeezed in above the line on a caret — and a title
+  // is not a sentence anybody was midway through. Struck through, a poem
+  // reads as withdrawn; carrying a superscript afterthought, it reads as
+  // still being decided. `maxLines !== 1` cannot express that on its own,
+  // because a two-row title is not a column.
+  const furnished = pen.furniture && maxLines !== 1 && opts.furniture !== false;
   const sourceLines = String(text || '').split('\n');
   const lines = maxLines === 1
     ? [signatureLine(sourceLines, width, height, pen)]

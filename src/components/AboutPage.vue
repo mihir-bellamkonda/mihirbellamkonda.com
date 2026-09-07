@@ -7,7 +7,7 @@
       </div>
 
       <main class="opening" id="main" tabindex="-1">
-        <h1 data-page-heading tabindex="-1">Mihir Bellamkonda</h1>
+        <h1 data-page-heading tabindex="-1"><a class="name-link" href="/#index">Mihir Bellamkonda</a></h1>
 
         <p class="bio">
           Mihir Bellamkonda is a poet based in Brooklyn. They were a finalist for Black Lawrence
@@ -35,16 +35,36 @@
            beside the name. It is the same figure as the hidden page's, so a
            reader who has never pressed the manicule sees it once and has
            nowhere to go with it, and a reader who has recognises it. -->
-      <AngelusNovus v-if="angel" class="corner-angel" />
+      <!-- The marks are the link rather than sitting inside one, so the
+           anchor is the sized, positioned box and each mark fills it: both
+           `AngelusNovus` and `AsemicMarks` are 100% of whatever holds them.
 
-      <AsemicMarks
+           Hidden from assistive technology and out of the tab order on
+           purpose. They are unreadable drawings, they go where "read poems →"
+           already goes, and that link is right above them with a real name —
+           three tab stops to one destination, two of them called nothing, is
+           worse for a screen reader than one. This is a target for a pointer
+           that has wandered onto the only other thing on the page. -->
+      <a
+        v-if="angel"
+        class="corner-mark corner-mark--angel"
+        href="/#index"
+        aria-hidden="true"
+        tabindex="-1"
+      ><AngelusNovus /></a>
+
+      <a
         v-else
-        class="corner-word"
+        class="corner-mark corner-mark--word"
+        href="/#index"
+        aria-hidden="true"
+        tabindex="-1"
+      ><AsemicMarks
         :text="word"
         :seed="`about::${word}`"
         :size="22"
         :max-lines="1"
-      />
+      /></a>
     </div>
 
     <FooterNav />
@@ -156,6 +176,20 @@ const word = WORDS[Math.floor(Math.random() * WORDS.length)] || 'analemma';
   color: var(--a-ink);
 }
 
+/* The name goes where the arrow goes. It keeps the heading's colour and
+   weight — it is the page's title before it is a link — and says so only
+   under the pointer. */
+.name-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color 220ms ease;
+}
+
+.name-link:hover,
+.name-link:focus-visible {
+  color: var(--accent);
+}
+
 .bio {
   margin: 0;
   max-width: 46ch;
@@ -202,27 +236,42 @@ const word = WORDS[Math.floor(Math.random() * WORDS.length)] || 'analemma';
    larger size — it is the other thing on the page, and it is read against the
    name rather than tucked under it.
 
-   The selector is qualified deliberately. `AngelusNovus` sets `width: 100%;
-   height: 100%` on its own root, and a scoped class from here lands at the
-   same specificity, so source order decided it and the child won: every size
-   written here was silently discarded and the figure filled `.inner`, which
-   is why it sat across the middle of the page over the name. Qualifying it
-   settles the question by specificity instead of by which stylesheet the
-   bundler happened to emit second. Do not unqualify it.
-
-   The figure's own `svg` rule is `height: 100%; width: auto`, so height is
-   what sizes it and this width is only the lane it is centred in. */
-.about-page .corner-angel {
+   The box now lives on the anchor, which sidesteps a fight this rule used to
+   lose: `AngelusNovus` sets `width: 100%; height: 100%` on its own root, a
+   scoped class from here landed at the same specificity, and source order
+   quietly discarded every size the page asked for — which is why the figure
+   once filled `.inner` and sat across the name. Sizing the parent instead
+   means the child's 100% is exactly what is wanted. */
+.corner-mark {
   position: absolute;
+  display: block;
+  opacity: 0.62;
+  cursor: pointer;
+  transition: opacity 220ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.corner-mark:hover,
+.corner-mark:focus-visible {
+  opacity: 0.88;
+}
+
+.corner-mark--angel {
   right: clamp(1.25rem, 4vw, 3.5rem);
   top: 50%;
   bottom: auto;
   transform: translateY(-50%);
   width: min(32vw, 440px);
   height: min(88vh, 860px);
-  opacity: 0.62;
   z-index: 0;
-  pointer-events: none;
+}
+
+/* Low and to the right, where a hand signs off. */
+.corner-mark--word {
+  right: clamp(1.25rem, 5vw, 4.5rem);
+  bottom: clamp(1.5rem, 5vh, 3.5rem);
+  width: clamp(9rem, 16vw, 12rem);
+  height: 3rem;
 }
 
 /* A third of a phone is not a lane. There is no column to stand beside at
@@ -230,7 +279,7 @@ const word = WORDS[Math.floor(Math.random() * WORDS.length)] || 'analemma';
    watermark under running text is a worse idea than either arrangement — so
    it drops to the empty page below the last line and keeps out of the way. */
 @media (max-width: 860px) {
-  .about-page .corner-angel {
+  .corner-mark--angel {
     right: 0.75rem;
     top: auto;
     bottom: clamp(1rem, 4vh, 3rem);
@@ -239,21 +288,12 @@ const word = WORDS[Math.floor(Math.random() * WORDS.length)] || 'analemma';
     height: min(25vh, 215px);
     opacity: 0.4;
   }
-}
 
-.corner-word {
-  position: absolute;
-  right: clamp(1.25rem, 5vw, 4.5rem);
-  bottom: clamp(1.5rem, 5vh, 3.5rem);
-  width: clamp(9rem, 16vw, 12rem);
-  height: 3rem;
-  opacity: 0.62;
-}
-
-@media (max-width: 860px) {
-  .corner-word {
+  .corner-mark--word {
     width: 7rem;
     opacity: 0.42;
   }
 }
+
+
 </style>

@@ -1,6 +1,6 @@
 # Prototype collage sources
 
-Twenty-one poems, twenty-one photographs, six drawn marks.
+Twenty-nine poems, twenty-nine photographs, six drawn marks.
 
 Every photograph is public domain and comes from an institution's open access
 programme. None is redistributed here as it was found: each is cropped away
@@ -162,10 +162,64 @@ illustrates the poem by naming its objects back to it.
   vignette as night-fountain, cropped to 264,268,676×668 of the old file.
   Used under *Brahmanda*.
 
+### Added September 2026, for the seven poems that closed the book
+
+All seven are Metropolitan Museum of Art Open Access (CC0 / public domain), and
+all seven were cropped away from their mount before the house treatment, so no
+caption, label, album page or plate number survives into the folio.
+
+- `empty-horizon.webp` — Roger Fenton, *[Landscape with Clouds]*, probably 1856.
+  The Metropolitan Museum of Art, object 282040, public domain (Open Access).
+  https://www.metmuseum.org/art/collection/search/282040
+  Cropped just inside the print's own edge. Kept for its low, vacant horizon
+  rather than for the tree in it. Used under *Gaps*.
+
+- `garden-stairs.webp` — Giacomo Caneva, *[Stairs]*, 1850s.
+  The Metropolitan Museum of Art, object 286269, public domain (Open Access).
+  https://www.metmuseum.org/art/collection/search/286269
+  Cropped off its grey mount. A flight of steps repeating up the frame, which
+  is the tone the poem repeats in. Used under *Talking to Waiter*.
+
+- `snow-slope.webp` — Timothy H. O'Sullivan, *Snow Peaks, Bull Run Mining
+  District, Nevada*, 1871. The Metropolitan Museum of Art, object 264701,
+  public domain (Open Access).
+  https://www.metmuseum.org/art/collection/search/264701
+  Lifted out of the album page it is mounted on, away from the printed caption
+  and the embossed seal above it: the striated slope and nothing else. Chosen
+  against the poem's volcano rather than for it. Used under *My Mentorship
+  Problem*.
+
+- `dark-cloudbreak.webp` — Gustave Le Gray, *Étude de nuages*, 1856–57.
+  The Metropolitan Museum of Art, object 301885, public domain (Open Access).
+  https://www.metmuseum.org/art/collection/search/301885
+  Cropped inside the mount. The darkest plate in the folio, which is the poem's
+  last line and not its first. Used under *Song*.
+
+- `timber-stair.webp` — Henri-Jean-Louis Le Secq, *Wooden Staircase at
+  Chartres*, 1852. The Metropolitan Museum of Art, object 283108, public domain
+  (Open Access). https://www.metmuseum.org/art/collection/search/283108
+  Cropped above the mount's label. A made thing, jointed and worn, standing in
+  for the trade without naming any cloth back to the poem.
+  Used under *The Tailors*.
+
+- `melting-square.webp` — Louis-Pierre-Théophile Dubois de Nehaut, *View of the
+  Square in Melting Snow*, 1854–56. The Metropolitan Museum of Art, object
+  283129, public domain (Open Access).
+  https://www.metmuseum.org/art/collection/search/283129
+  The source is a circular vignette, which the house edge cannot sit on top of,
+  so the crop is a rectangle taken well inside the circle — a square emptied of
+  everyone, which is the poem. Used under *Home Alone*.
+
+- `plaster-doorway.webp` — Unknown, *[Doorway Into Crumbling Brick Building]*,
+  1850s. The Metropolitan Museum of Art, object 270332, public domain (Open
+  Access). https://www.metmuseum.org/art/collection/search/270332
+  Cropped just inside the print. Plain rotting wall, no ornament.
+  Used under *Humility*.
+
 ## Drawn fragments
 
 Made for this site, deterministic, no rights encumbrance. Six marks shared
-across twenty-one poems on purpose: a found engraving at this scale always brings
+across twenty-nine poems on purpose: a found engraving at this scale always brings
 labels and micro-detail with it, and the whole point of this layer is that
 there is almost nothing in it.
 

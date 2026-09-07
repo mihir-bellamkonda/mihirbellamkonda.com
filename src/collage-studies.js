@@ -99,6 +99,34 @@ const studies = {
   'musician-s-daughter': {
     kind: 'form',
     primary: '/collage/le-tambour.webp', secondary: '/collage/orbit-trace.svg'
+  },
+  gaps: {
+    kind: 'field', focus: '50% 58%',
+    primary: '/collage/empty-horizon.webp', secondary: '/collage/hatch-field.svg'
+  },
+  'talking-to-waiter': {
+    kind: 'field', focus: '50% 52%',
+    primary: '/collage/garden-stairs.webp', secondary: '/collage/plumb-lines.svg'
+  },
+  'my-mentorship-problem': {
+    kind: 'field', focus: '50% 50%',
+    primary: '/collage/snow-slope.webp', secondary: '/collage/strata-contours.svg'
+  },
+  song: {
+    kind: 'field', focus: '50% 44%',
+    primary: '/collage/dark-cloudbreak.webp', secondary: '/collage/ripple-rings.svg'
+  },
+  'the-tailors': {
+    kind: 'form',
+    primary: '/collage/timber-stair.webp', secondary: '/collage/plumb-lines.svg'
+  },
+  'home-alone': {
+    kind: 'field', focus: '50% 54%',
+    primary: '/collage/melting-square.webp', secondary: '/collage/pulse-trace.svg'
+  },
+  humility: {
+    kind: 'field', focus: '50% 48%',
+    primary: '/collage/plaster-doorway.webp', secondary: '/collage/hatch-field.svg'
   }
 };
 

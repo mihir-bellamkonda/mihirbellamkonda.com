@@ -14,7 +14,7 @@
     <main class="grid" id="main" tabindex="-1">
       <div class="margin-meta">
         <div class="num">{{ pad(index) }} / {{ pad(total) }}</div>
-        <h1 data-page-heading tabindex="-1">{{ poem.title }}</h1>
+        <AsemicTitle :title="poem.title" :seed="poem.slug" />
         <p v-if="poem.subtitle" class="dedication">{{ poem.subtitle }}</p>
 
         <div class="provenance">
@@ -133,6 +133,7 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import FooterNav from './FooterNav.vue';
 import AsemicMarks from './AsemicMarks.vue';
+import AsemicTitle from './AsemicTitle.vue';
 import SpecimenCollage from './SpecimenCollage.vue';
 import SpecimenVocabulary from './SpecimenVocabulary.vue';
 import { studyFor } from '../collage-studies.js';
@@ -433,15 +434,8 @@ const stanzas = computed(() => {
   font-variant-numeric: tabular-nums;
 }
 
-.margin-meta h1 {
-  font-family: var(--f-display);
-  font-weight: 400;
-  font-size: clamp(2.3rem, 5.6vw, 3.7rem);
-  line-height: 1;
-  margin: 0;
-  text-wrap: balance;
-  color: var(--a-ink);
-}
+/* The heading's own rules moved into AsemicTitle.vue with the heading; a
+   scoped rule here no longer reaches it. */
 
 .dedication {
   font-family: var(--f-display);
@@ -716,7 +710,6 @@ const stanzas = computed(() => {
     padding: 0;
   }
   .margin-meta { gap: 0.16in; }
-  .margin-meta h1 { font-size: 28pt; }
   .dedication { font-size: 10pt; }
   .verse { max-width: none; font-size: 10.5pt; line-height: 1.48; }
   .stanza { margin-bottom: 1em; break-inside: avoid; }

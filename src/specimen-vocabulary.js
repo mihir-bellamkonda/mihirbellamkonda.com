@@ -35,7 +35,14 @@ export const specimenVocabulary = {
   epiphany: ['afterimages', 'mirror', 'stars', 'kitchen'],
   'love-outside-poems': ['wax', 'fox', 'plates', 'lobe'],
   atlas: ['horizon', 'beetles', 'starlings', 'molars'],
-  'musician-s-daughter': ['tuba', 'brass', 'glee', 'grace']
+  'musician-s-daughter': ['tuba', 'brass', 'glee', 'grace'],
+  gaps: ['question', 'bicycle', 'breeze', 'birds'],
+  'talking-to-waiter': ['please', 'water', 'fries', 'perfect'],
+  'my-mentorship-problem': ['cannibalism', 'volcanoes', 'textbook', 'sunlight'],
+  song: ['pleasure', 'jewel-red', 'kisses', 'distance'],
+  'the-tailors': ['durability', 'hickory', 'buttonhole', 'scars'],
+  'home-alone': ['petting', 'couch', 'kitchen', 'drying'],
+  humility: ['fictions', 'cabbage', 'vinegar', 'salt']
 };
 
 export function normalizeWords(value) {

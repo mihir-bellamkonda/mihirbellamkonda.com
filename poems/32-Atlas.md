@@ -1,6 +1,7 @@
 ---
 title: "Atlas"
 date: 2024-10-03
+catalogue: 24
 published_in: "matchbook"
 ---
 

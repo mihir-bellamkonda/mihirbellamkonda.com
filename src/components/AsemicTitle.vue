@@ -44,6 +44,20 @@ const WRITE = 1400;
 const DWELL = 1100;
 const HOLD = WRITE + DWELL;
 
+/**
+ * And then it cuts.
+ *
+ * There was a cross-dissolve here and it was the wrong idea twice over: for
+ * half a second the page carried a half-present hand over a half-present
+ * serif, which is a third thing that is neither and reads as a smudge; and it
+ * made a transition out of what is not one. The hand does not turn into the
+ * type. It is the word, written, and then the word, set. One frame.
+ *
+ * The canvas is torn down a beat after the cut rather than on it, so the
+ * unmount is never the thing a reader sees happen.
+ */
+const TEARDOWN = 60;
+
 const resolved = ref(false);
 // A reader who has asked for less movement gets the title and nothing else:
 // no canvas is mounted at all, rather than one drawn and instantly hidden.
@@ -166,15 +180,27 @@ function begin() {
    *
    * These are percentages of the heading, and the heading has already grown
    * for the lines it wraps to — so the multiple must not grow with the rows
-   * as well. It did, and a four-line title asked for six and a half times a
-   * box that was already four lines deep: fifteen hundred pixels of hand down
-   * the margin and across the folio.
+   * as well. It did once, and a four-line title asked for six and a half
+   * times a box that was already four lines deep: fifteen hundred pixels of
+   * hand down the margin and across the folio. That is why it is a constant.
+   *
+   * Why the two constants are so close despite the branches being so
+   * different: measured against the heading's own line, one line was drawing
+   * at 1.85 times it and two lines at 0.85 — less than half the scale, which
+   * is exactly as thin as it looked. The tighter divisor is the whole of the
+   * difference, and this is the box paying it back, so a row of a two-row
+   * mark is now about the size of a one-row mark. Two rows therefore stand
+   * well outside the heading, above and below. That is intended: the mark is
+   * brief and is meant to sit over the page.
    */
-  boxHeight.value = lines.length === 1 ? '340%' : '175%';
+  boxHeight.value = lines.length === 1 ? '340%' : '380%';
 
   sizeToHeading();
   handWrites.value = true;
-  timer = setTimeout(() => { resolved.value = true; }, HOLD);
+  timer = setTimeout(() => {
+    resolved.value = true;
+    timer = setTimeout(() => { handWrites.value = false; }, TEARDOWN);
+  }, HOLD);
 }
 
 onMounted(begin);
@@ -201,7 +227,6 @@ onUnmounted(() => clearTimeout(timer));
   text-wrap: balance;
   color: var(--a-ink);
   opacity: 0;
-  transition: opacity 520ms ease;
 }
 
 .asemic-title.resolved :deep(h1) {
@@ -229,7 +254,6 @@ onUnmounted(() => clearTimeout(timer));
   transform: translateY(-50%);
   width: 136%;
   opacity: 1;
-  transition: opacity 520ms ease;
   pointer-events: none;
   z-index: 1;
 }
@@ -238,9 +262,21 @@ onUnmounted(() => clearTimeout(timer));
   opacity: 0;
 }
 
+/* The bleed to the right is room borrowed from the verse column, and on a
+   phone there is no verse column beside the heading to borrow from — the
+   margin is the whole width, so 136% of it is 36% of a horizontal scrollbar
+   on every poem. The mark keeps its depth, which is what sizes it, and gives
+   up the width it has nowhere to put. */
+@media (max-width: 720px) {
+  .title-hand {
+    width: 100%;
+    left: 0;
+  }
+}
+
 /* Paper never waits for a hand. */
 @media print {
-  .asemic-title :deep(h1) { opacity: 1; transition: none; font-size: 28pt; }
+  .asemic-title :deep(h1) { opacity: 1; font-size: 28pt; }
   .title-hand { display: none; }
 }
 </style>

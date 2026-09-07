@@ -46,7 +46,11 @@ npm run preview   # serve the production build
 ## Deployment
 
 - Repo `mihir-bellamkonda/mihirbellamkonda.com`, default branch **`trunk`**, not `main`
-- `.github/workflows/deploy.yml` runs `npm ci && npm run build`, uploads `dist/`
+- `.github/workflows/deploy.yml` runs `npm ci && npm run verify`, uploads `dist/`.
+  **`verify`, not `build`** — every check in `scripts/verify-site.js` is a deploy
+  gate, so a clean build still fails CI if a poem is missing its specimen
+  vocabulary or its collage study. Run `npm run verify` before pushing, not
+  `npm run build`.
 - Pages source is **GitHub Actions**; custom domain set, Enforce HTTPS on
 - `public/CNAME` must stay in `public/` — Vite copies `public/` into `dist/`, and
   `dist/` is the artifact. A root-level CNAME never reaches the published site.

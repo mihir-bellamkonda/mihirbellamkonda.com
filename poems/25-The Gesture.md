@@ -1,6 +1,7 @@
 ---
 title: "The Gesture"
 date: 2024-10-15
+catalogue: 1
 published_in: "Bluestem Magazine"
 external_url: "https://bluestemmagazine.com/sps24/mihir-bellamkonda"
 ---

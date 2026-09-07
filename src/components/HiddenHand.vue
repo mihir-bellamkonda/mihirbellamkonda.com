@@ -288,16 +288,26 @@ function leave() {
   place-items: center;
 }
 
-/* The figure and the word stand side by side and are centred as a pair. The
-   angel keeps the drawing's proportions and gives up width first, so on a
+/* The figure stands in the right third of the screen and the word runs away
+   to its left, which is the direction the writing was going anyway. The pair
+   is packed to the right rather than centred: `row-reverse` puts the angel
+   first against the right edge and lets the word take whatever room is left,
+   so the figure holds its place as the screen widens instead of drifting
+   inward with the pair's centre.
+
+   The angel keeps the drawing's proportions and gives up width first, so on a
    narrow screen the word stays legible by making the angel smaller rather
    than by dropping below it. */
 .angel-stack {
   display: flex;
+  flex-direction: row-reverse;
   align-items: center;
-  justify-content: center;
-  gap: clamp(0.4rem, 1.6vw, 1.5rem);
+  justify-content: flex-start;
+  gap: clamp(0.4rem, 2vw, 2rem);
+  width: 100%;
   max-width: 100%;
+  padding-right: clamp(1rem, 6vw, 5rem);
+  box-sizing: border-box;
 }
 
 .angel-figure {

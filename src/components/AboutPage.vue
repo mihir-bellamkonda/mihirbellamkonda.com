@@ -30,10 +30,11 @@
            word out of a real poem and it is unreadable, which is this whole
            site in miniature.
 
-           One visit in twenty the corner carries the angel instead. It is the
-           same figure as the hidden page's and much smaller, so a reader who
-           has never pressed the manicule sees it once and has nowhere to go
-           with it, and a reader who has recognises it. -->
+           One visit in twenty the angel comes instead, and it does not take
+           the word's corner: it stands the full height of the right third,
+           beside the name. It is the same figure as the hidden page's, so a
+           reader who has never pressed the manicule sees it once and has
+           nowhere to go with it, and a reader who has recognises it. -->
       <AngelusNovus v-if="angel" class="corner-angel" />
 
       <AsemicMarks
@@ -196,24 +197,47 @@ const word = WORDS[Math.floor(Math.random() * WORDS.length)] || 'analemma';
   height: clamp(6rem, 22vh, 14rem);
 }
 
-/* Low and to the right, where a hand signs off. */
-/* The angel takes the word's corner rather than a corner of its own, so the
-   page has the same shape either way. Taller than it is wide, where the word
-   is the other way round, so it is sized off its height. */
-.corner-angel {
+/* The angel stands in the right third of the page, full height, while the
+   name and the bio keep the left. It is not the word's corner mark at a
+   larger size — it is the other thing on the page, and it is read against the
+   name rather than tucked under it.
+
+   The selector is qualified deliberately. `AngelusNovus` sets `width: 100%;
+   height: 100%` on its own root, and a scoped class from here lands at the
+   same specificity, so source order decided it and the child won: every size
+   written here was silently discarded and the figure filled `.inner`, which
+   is why it sat across the middle of the page over the name. Qualifying it
+   settles the question by specificity instead of by which stylesheet the
+   bundler happened to emit second. Do not unqualify it.
+
+   The figure's own `svg` rule is `height: 100%; width: auto`, so height is
+   what sizes it and this width is only the lane it is centred in. */
+.about-page .corner-angel {
   position: absolute;
-  right: clamp(1.25rem, 5vw, 4.5rem);
-  bottom: clamp(1.5rem, 5vh, 3.5rem);
-  width: clamp(4rem, 7vw, 5.5rem);
-  height: clamp(8rem, 14vw, 11rem);
+  right: clamp(1.25rem, 4vw, 3.5rem);
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+  width: min(32vw, 440px);
+  height: min(88vh, 860px);
   opacity: 0.62;
+  z-index: 0;
+  pointer-events: none;
 }
 
+/* A third of a phone is not a lane. There is no column to stand beside at
+   this width — centred vertically the figure lies across the bio, and a
+   watermark under running text is a worse idea than either arrangement — so
+   it drops to the empty page below the last line and keeps out of the way. */
 @media (max-width: 860px) {
-  .corner-angel {
-    width: 3.2rem;
-    height: 6.5rem;
-    opacity: 0.42;
+  .about-page .corner-angel {
+    right: 0.75rem;
+    top: auto;
+    bottom: clamp(1rem, 4vh, 3rem);
+    transform: none;
+    width: min(32vw, 140px);
+    height: min(25vh, 215px);
+    opacity: 0.4;
   }
 }
 

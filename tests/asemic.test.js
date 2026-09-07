@@ -375,3 +375,47 @@ test('the longest line of verse in the book is still written as one line', () =>
     `a line of verse came out ${inkHeight(marks).toFixed(0)}px tall, which is more than one row — the paragraph break has reached the poems`
   );
 });
+
+test('capitals cannot be swallowed by lowercase rare-letter and th paths', () => {
+  for (const text of ['R', 'V', 'X', 'Z', 'Q', 'The']) {
+    // A fixed draw exercises the joining path as well as ordinary seeded runs.
+    for (const draw of [() => () => 0.2, () => rngFor('capital-routing')]) {
+      const marks = word => ghost(word, {
+        rng: draw(), width: 1000, height: 250, size: 60, maxLines: 1
+      });
+      assert.notDeepEqual(marks(text), marks(text.toLowerCase()),
+        `${text} was drawn through its lowercase path`);
+    }
+  }
+});
+
+test('the seven frequent capitals have distinct gestures at the same seed', () => {
+  const letters = [...'TIMAHDO'];
+  for (const seed of ['ordinary', 'second-pass', 'title']) {
+    const marks = letters.map(letter => ghost(letter, {
+      rng: rngFor(seed), width: 500, height: 250, size: 60, maxLines: 1
+    }));
+    for (let i = 0; i < marks.length; i++) for (let j = 0; j < i; j++) {
+      assert.notDeepEqual(marks[i], marks[j], `${letters[i]} and ${letters[j]} share one generic capital`);
+    }
+  }
+});
+
+test('wide title rows keep every word and fit their complete ink into the box', () => {
+  const rows = ['My Mentorship', 'Mother Dreams', 'Love Outside', 'New Orleans', 'Home Alone', 'Summer'];
+  for (const text of rows) for (const width of [160, 240, 320, 560]) {
+    const height = 190, x = 12;
+    const strokes = ghost(text, {
+      rng: rngFor(text + '::title'), x, width, height, maxLines: 1, maxSize: 100, furniture: false
+    });
+    assert.equal(strokes.filter(s => s.gap !== 'letter').length, text.split(' ').length,
+      `${text} lost a word at ${width}px`);
+    for (const stroke of strokes) {
+      const r = Math.max(...stroke.lw) / 2;
+      for (const [px, py] of stroke.pts) {
+        assert.ok(px - r >= x && px + r <= x + width && py - r >= 0 && py + r <= height,
+          `${text} clipped its ink at ${width}px`);
+      }
+    }
+  }
+});

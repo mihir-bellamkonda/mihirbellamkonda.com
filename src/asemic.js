@@ -10,8 +10,9 @@
  * The letterforms are loose print-cursive: open bowls and broad humps, short
  * upright ascenders, long hooked descenders, high dots, frequent pen lifts,
  * crossbars that overshoot, and a fine line with responsive pressure. They are
- * a description of Mihir's hand rather than a tracing of it — nothing here is
- * derived from a sample, whatever earlier versions of this comment claimed.
+ * a mixture of notebook-derived gestures and described forms. Ten lowercase
+ * forms and 21 capitals have photographic references; the remaining forms
+ * stay described. This is a variable mark generator, not a handwriting font.
  */
 
 /**
@@ -25,8 +26,7 @@
  * hand it stood in for. The hand is also wide: trimmed to the ink and matched
  * for height, the notebook's words run 10-38% broader than the generator's.
  * Width alone bottoms that error at about 14% and no further, and `traced`
- * covers the rest — the six letterforms taken off the page rather than
- * described from memory.
+ * covers the sampled lowercase forms and capitals described below.
  *
  * `plain` is the hand the site had before any of that. Faithful and beautiful
  * are different axes, and until now the only way back was git.
@@ -58,7 +58,7 @@ const HANDS = {
     // what else ends up on the page
     accent: 0.17, strike: 0.022, caret: 0.02, note: 0.035, arrow: 0.3,
     // switches, and the width model
-    traced: true, curve: true, furniture: true, units: [0.544, 0.939]
+    traced: true, curve: true, furniture: true, units: [0.554, 0.942]
   },
   plain: {
     slant: 0.055, wide: 1, gap: 1, lift: 0.45, bounce: 0,
@@ -72,6 +72,7 @@ const HANDS = {
 };
 
 const RARE = new Set('rvxzq');
+const NOTEBOOK_CAPITALS = new Set('ABCDEFGHILMNOPQRSTUWY');
 const PUNCTUATION = /[.,:;!?()[\]'\u2019"\u201c\u201d\u2013\u2014-]/;
 const ASCENDERS = new Set('lhkbdtf');
 const DESCENDERS = new Set('gypjq');
@@ -244,7 +245,7 @@ function wordMark(x, y, word, size, R, hand) {
     // seven samples their eye is better evidence than the count. It is a taste
     // setting, deliberately below what the photograph alone would support.
     const joinsOn = gi + 2 < glyphs.length;
-    if (pen.traced && char === 't' && glyphs[gi + 1] === 'h' && joinsOn && R() < pen.ligature) {
+    if (pen.traced && !upper && char === 't' && glyphs[gi + 1] === 'h' && joinsOn && R() < pen.ligature) {
       const w = size * (0.3 + R() * 0.05) * wide;
       const stem = xh * (1.44 + R() * 0.22);
       to(cx + w * 0.26, y - stem);
@@ -279,7 +280,7 @@ function wordMark(x, y, word, size, R, hand) {
     // The q was drawing the generic descender, which finishes with a hook to the
     // left. On the page — `quiet`, `quarry` twice — the tail goes straight down
     // and stops. Its bowl is the ordinary one.
-    if (pen.traced && RARE.has(char)) {
+    if (pen.traced && !upper && RARE.has(char)) {
       const w = size * (0.3 + R() * 0.06) * wide;
 
       if (char === 'r') {
@@ -410,22 +411,108 @@ function wordMark(x, y, word, size, R, hand) {
       continue;
     }
 
-    // A capital, which this hand builds rather than writes.
-    //
-    // On the page they are print forms — upright, constructed out of separate
-    // strokes, and stopping well short of the tall ascenders beside them. The
-    // M in `Monday` is plainly shorter than the d that follows it, and the N in
-    // `No` stands about half again the o. That is the whole of what is claimed
-    // here, and it is claimed by eye: three attempts at measuring this hand
-    // letter by letter all failed, and are written up in the commit. `capHeight`
-    // is therefore a described constant like most of the alphabet, not a traced
-    // one like the six, and it is a dial rather than a literal so it can be
-    // moved by looking.
-    //
-    // No letter is spelled. A capital here is a treatment — taller, straighter,
-    // and lifted between its parts — because that is what separates a capital
-    // from a lowercase at a glance, and this hand is asemic by the time anyone
-    // reads it.
+    // Capitals from the 7 September notebook. The seven frequent forms have
+    // repeated neighbours on the dot grid; the others below have title samples.
+    // Every sampled capital keeps its own gesture. The existing steady draw
+    // decides whether subsidiary strokes finish: the I's foot, A's bar and
+    // H's bridge can fall short. Lowercase collisions still carry the word's
+    // ambiguity. Unsampled capitals take the generic construction below.
+    if (pen.traced && upper && NOTEBOOK_CAPITALS.has(raw)) {
+      const capH = xh * (pen.capHeight + R() * 0.18);
+      const breadth = 'MW'.includes(raw) ? 1.35 : 'DOCGQ'.includes(raw) ? 1.10 : 1;
+      const w = size * (0.50 + R() * 0.08) * wide * breadth;
+      const up = (a, b) => to(cx + w * a, y - capH * b);
+      const path = points => { for (const [a, b] of points) up(a, b); };
+      let advance = 1.12;
+      lift();
+
+      if (raw === 'T') {
+        // Ta/Th/To: the stem sits left of centre; the long top reaches right.
+        // In The it shelters a low h shoulder, not a second tall ascender.
+        path([[0.34, 0.98], [0.36, 0.50], [0.40, 0.08], [0.51, 0.02]]);
+        lift();
+        path([[-0.08, 0.87], [0.49, 1.00], [1.11, 1.04]]);
+        advance = 0.78;
+        if (glyphs[gi + 1] === 'h' && joinsOn) {
+          lift();
+          path([[0.80, 0.48], [0.77, 0.14], [0.94, 0.13],
+            [1.15, 0.39], [1.31, 0.12], [1.56, 0.09]]);
+          advance = 1.62;
+          gi++;
+        }
+      } else if (raw === 'I') {
+        // I Widened / In: a straight stem with definite, unequal end bars.
+        path([[0.06, 0.91], [0.76, 1.03]]); lift();
+        path([[0.42, 0.96], [0.38, 0.52], [0.40, 0.04]]); lift();
+        path([[0.06, 0.01], [traces ? 0.79 : 0.43, 0.09]]);
+        advance = 0.90;
+      } else if (raw === 'M' || raw === 'W') {
+        // Ma/My and Waiter: rounded valleys, low middle, rising right end.
+        // The second M pass sometimes barely descends after its middle peak.
+        const middle = 0.65 + R() * 0.17;
+        path([[0.05, 0.98], [0.02, 0.42], [0.12, 0.05], [0.33, 0.16],
+          [0.55, middle], [0.67, 0.29], [0.90, 0.12], [1.16, 0.28],
+          [1.24, raw === 'M' ? 0.24 : 0.90]]);
+        advance = 1.32;
+      } else if (raw === 'A') {
+        // Aa/At/Ar: narrow apex, sometimes a loop in the left leg, low bar.
+        path([[0.08, 0.03], [0.04, 0.41], [0.27, 1.03],
+          [0.32, 1.05], [0.61, 0.38], [0.82, 0.02]]);
+        lift(); path([[-0.03, 0.26], [traces ? 0.46 : 0.27, 0.29], [traces ? 0.96 : 0.57, 0.32]]);
+        advance = 1.00;
+      } else if (raw === 'H') {
+        // Ha/He: hooked left entry/foot, shorter right stem, low connecting bar.
+        path([[0.16, 1.03], [0.08, 0.64], [0.13, 0.05], [0.29, 0.01]]);
+        lift(); path([[0.86, 0.95], [0.73, 0.66], [0.79, 0.03]]);
+        lift(); path([[0.11, 0.40], [0.45, 0.32], [traces ? 0.88 : 0.62, 0.40]]);
+        advance = 1.02;
+      } else if (raw === 'D') {
+        // Da/Do and Dallas: a short upright inside an almost circular bowl.
+        path([[0.14, 0.96], [0.11, 0.43], [0.19, 0.02]]); lift();
+        path([[0.04, 0.96], [0.38, 1.01], [0.82, 0.80], [0.95, 0.43],
+          [0.77, 0.13], [0.28, 0.01]]);
+      } else if ('OCGQ'.includes(raw)) {
+        // Old / Circling / Goethe / Quiet: open circles, with their own exits.
+        path([[0.83, 0.80], [0.58, 1.02], [0.20, 0.92], [0.04, 0.55],
+          [0.16, 0.13], [0.50, 0.01], [0.87, 0.24]]);
+        if (raw !== 'C') path([[0.97, 0.61], [0.77, traces ? 0.92 : 0.76]]);
+        if (raw === 'G') { lift(); path([[0.53, 0.46], [1.00, 0.43], [0.91, 0.10]]); }
+        if (raw === 'Q') { lift(); path([[0.56, 0.36], [0.87, 0.03], [1.12, -0.14]]); }
+      } else if (raw === 'P' || raw === 'R' || raw === 'B') {
+        // Problem/Poems, Reflexionen, Brahmanda: loop separate from the stem.
+        path([[0.13, 0.01], [0.17, 0.62], [0.20, 0.98]]); lift();
+        path([[0.08, 0.93], [0.45, 1.05], [0.88, 0.86], [0.83, 0.59], [0.21, 0.48]]);
+        if (raw === 'R') path([[0.49, 0.40], [0.98, 0.04]]);
+        if (raw === 'B') path([[0.66, 0.52], [0.94, 0.28], [0.71, 0.02], [0.17, 0.06]]);
+      } else if (raw === 'S') {
+        // Song/Summer: small upper turn and a broad open lower counter.
+        path([[0.88, 0.91], [0.51, 1.04], [0.14, 0.89], [0.17, 0.62],
+          [0.63, 0.48], [0.91, 0.25], [0.65, 0.04], [0.12, 0.06]]);
+      } else if (raw === 'E' || raw === 'F' || raw === 'L') {
+        // Epiphany/Family/Love: separate flat arms on an uneven left stem.
+        path([[0.27, 1.00], [0.10, 0.47], [0.14, 0.02]]);
+        if (raw !== 'F') up(0.93, 0.05);
+        if (raw !== 'L') { lift(); path([[0.18, 0.92], [0.91, 1.02]]); lift(); path([[0.16, 0.52], [0.73, 0.58]]); }
+      } else if (raw === 'N') {
+        // New: narrow left upright, deep diagonal, right stem rising out of it.
+        path([[0.10, 0.04], [0.11, 1.01], [0.22, 0.99],
+          [0.77, 0.03], [0.92, 0.03], [0.87, 1.02]]);
+      } else if (raw === 'U') {
+        // Up: round bottom, a shorter right upright and a small exit.
+        path([[0.08, 1.00], [0.04, 0.33], [0.25, 0.01], [0.64, 0.10],
+          [0.86, 0.92], [0.85, 0.14], [1.02, 0.04]]);
+      } else if (raw === 'Y') {
+        // Yellow: two high arms meeting a curved descending stem.
+        path([[0.06, 0.96], [0.29, 0.49], [0.62, 0.48], [0.91, 0.96]]);
+        lift(); path([[0.83, 0.87], [0.62, 0.15], [0.38, -0.13], [0.12, -0.06]]);
+      }
+      lift();
+      cx += w * advance + size * (0.035 + R() * 0.065) * pen.gap;
+      continue;
+    }
+
+    // The generic construction remains for unsampled capitals (J/K/V/X/Z)
+    // without letting them slip into a lowercase branch.
     if (pen.traced && upper) {
       const capH = xh * (pen.capHeight + R() * 0.18);
       const w = size * (0.34 + R() * 0.07) * wide;
@@ -927,41 +1014,44 @@ function fitSize(lines, width, height, maxLines, pen, maxSize = 16) {
  *
  * Rather than leave more headroom and hope, this measures what was actually
  * drawn and settles it: centred in the box, and scaled down only if the hand
- * genuinely wrote taller than the room it had. Only whole marks are settled.
+ * wrote taller or wider than the room it had, with one uniform scale and
+ * the nib included in the bounds. Only whole marks are settled.
  * A poem's column is meant to run past the bottom of its plate, and moving it
  * would be moving the composition.
  */
-function settle(strokes, height) {
-  let top = Infinity;
-  let bottom = -Infinity;
+function settle(strokes, height, width, x = 0) {
+  let top = Infinity, bottom = -Infinity, left = Infinity, right = -Infinity;
+  for (const stroke of strokes) {
+    // The painter's quadratics stay within their control-point hull. Include
+    // half the widest nib as well, so an intact path cannot lose its ink edge.
+    const radius = (Array.isArray(stroke.lw) ? Math.max(...stroke.lw) : stroke.lw || 0) / 2;
+    for (const [px, py] of stroke.pts) {
+      top = Math.min(top, py - radius); bottom = Math.max(bottom, py + radius);
+      left = Math.min(left, px - radius); right = Math.max(right, px + radius);
+    }
+  }
+  if (!Number.isFinite(top)) return strokes;
+
+  const padY = Math.max(0.5, height * 0.04);
+  const padX = Math.min(2, width * 0.01);
+  const roomY = Math.max(1, height - padY * 2);
+  const roomX = Math.max(1, width - padX * 2);
+  const scale = Math.min(1, roomY / Math.max(1, bottom - top), roomX / Math.max(1, right - left));
+  const shiftY = padY + (roomY - (bottom - top) * scale) / 2 - top * scale;
+  // Preserve the opening inset when it fits; correct only an overflowing edge.
+  const inset = clamp((left - x) * scale, padX, width - padX - (right - left) * scale);
+  const shiftX = x + inset - left * scale;
 
   for (const stroke of strokes) {
     for (const point of stroke.pts) {
-      if (point[1] < top) top = point[1];
-      if (point[1] > bottom) bottom = point[1];
+      point[0] = point[0] * scale + shiftX;
+      point[1] = point[1] * scale + shiftY;
+    }
+    if (scale !== 1) {
+      stroke.lw = Array.isArray(stroke.lw)
+        ? stroke.lw.map(weight => weight * scale) : stroke.lw * scale;
     }
   }
-
-  if (!Number.isFinite(top) || !Number.isFinite(bottom)) return strokes;
-
-  const pad = Math.max(0.5, height * 0.04);
-  const room = Math.max(1, height - pad * 2);
-  const span = bottom - top;
-  const scale = span > room ? room / span : 1;
-  const shift = pad + (room - span * scale) / 2 - top * scale;
-
-  if (scale === 1 && Math.abs(shift) < 0.01) return strokes;
-
-  for (const stroke of strokes) {
-    for (const point of stroke.pts) {
-      point[0] *= scale;
-      point[1] = point[1] * scale + shift;
-    }
-    if (scale !== 1 && Array.isArray(stroke.lw)) {
-      stroke.lw = stroke.lw.map(width => width * scale);
-    }
-  }
-
   return strokes;
 }
 
@@ -1137,10 +1227,12 @@ export function ghost(text, opts) {
     while (wi < words.length && guard++ < 200) {
       const m = wordMark(cx, hand.baseline, words[wi], size, R, hand);
 
+      // A single row is drawn in full and fitted to its actual ink bounds at
+      // the end. Wrapping it used to silently discard its last word.
       // A word that will not fit even on a line of its own is written anyway.
       // Wrapping it again only moves it to another line it cannot fit either,
       // and the guard below then gives up with nothing drawn at all.
-      if (m.end > x + width && cx > hand.startX + 0.01) {
+      if (maxLines !== 1 && m.end > x + width && cx > hand.startX + 0.01) {
         // the line wraps, and the continuation is indented
         by += leading * (0.965 + R() * 0.07);
         used++;
@@ -1261,7 +1353,7 @@ export function ghost(text, opts) {
     }
   }
 
-  return maxLines === 1 ? settle(out, height) : out;
+  return maxLines === 1 ? settle(out, height, width, x) : out;
 }
 
 /** Reads the ink triples from CSS so marks follow the active theme. */

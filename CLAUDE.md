@@ -191,14 +191,15 @@ and neither should start depending on the other.
   judgement to make by looking rather than by reading a diff. Everything the
   photographs changed lives in one profile per hand, `HANDS`, so the two can be
   compared honestly — including `units`, below.
-- Six letterforms are **traced from the photographs** rather than described:
+- Ten lowercase forms are **traced from the photographs** rather than described.
+  The first six are:
   `b` is a numeral 6 (the stem sweeps down and left and closes a bowl at the foot),
   `e` is a small flat angular epsilon whose crossbar comes first, `g` drops almost
   straight and turns left into a flat tail, `w` is two round valleys with a low
   middle and both ends rising, `s` is a round S, and **`th` can be one gesture** — a
   modest crossed stem and then a single low shoulder, the h losing its ascender
-  entirely. The rest of the alphabet is still a description written from memory.
-  This file once claimed all of it came from a sample. Only these six do.
+  entirely. The four additions are listed below. Twenty-one capitals were
+  added from the 7 September samples; the remaining forms stay described.
 - **r, v, x and z are traced, and the q's tail is fixed.** All four of the first
   were falling through to the hump branch and coming out as the same broad arch
   as an n, so *over*, *vixen* and *zigzagged* were written with no v, no x, no z
@@ -217,15 +218,21 @@ and neither should start depending on the other.
   the dash runs very long, nearer a strike-out than an em-rule — 73 wide against
   a letter's 22. The figures are described rather than traced; what the sheet
   supports is that the 1 has no flag on it and the 4 is open at the top.
-- **Capitals are drawn.** Until 3 September every word was lowercased before it
-  was drawn, so no capital had ever been rendered on this site, while the poet's
-  page opens its sentences with T, J, M, N and F. A capital here is a treatment
-  rather than a letter — taller, straighter, and lifted between its parts —
-  because that is what tells a capital from a lowercase at a glance, and nothing
-  in this hand spells anything. `capHeight` is **described, not traced**: on the
-  page the M in *Monday* is plainly shorter than the d beside it and the N in
-  *No* stands about half again the o, and that is the whole of the claim. It
-  ships at 1.62 x-heights and is a dial so it can be moved by looking.
+- **Twenty-one capitals have notebook-derived gestures:** `A B C D E F G H I
+  L M N O P Q R S T U W Y`. The 7 September title pages and neighbour pairs
+  supply the references. T has its long right-reaching bar and a low h in
+  `The`; M has rounded valleys and a low exit, while W rises at the right;
+  D and O are broad bowls; A has a low bar; I has two unequal end bars.
+  Every sampled capital uses its own gesture. `steady` shortens secondary
+  strokes rather than replacing the whole capital with the generic shape.
+  Lowercase `steady: 0.315` and the existing legibility gate are unchanged.
+  J/K/V/X/Z retain the generic capital fallback. Capital Th and R/V/X/Z/Q
+  cannot enter lowercase shortcuts. See `docs/notebook-capitals.md`.
+- **Capital height remains a taste setting at 1.78 plus seeded variation.**
+  A local dot-grid rectification of the 7 September practice pairs used 133
+  inlier dots, with a 1.23px RMS residual at a 2000px image width. That corrects
+  perspective in the sampled region, but it does not make the exercises and
+  flowing titles share one x-height. No new global ratio is claimed.
 - **Measuring this hand letter by letter has now failed three times**, and the
   fourth attempt should not be made without a different method. Guessed column
   bands catch ascenders and descenders and give capital ratios from 0.72 to 1.38.
@@ -310,6 +317,13 @@ and neither should start depending on the other.
   signature was drawn a third too large and clipped. It was only visible in a
   browser. A single line also keeps more of its width margin (0.92, not 0.96) than
   a column does, because it has no wrap to save it.
+- **A single row is completed before it is fitted.** The width model is an
+  estimate, now re-fitted to `[0.554, 0.942]` over 545 source lines. Wider
+  capitals exposed a silent final-word loss: wrapping `My Mentorship` with
+  `maxLines: 1` stopped after `My`. Single rows now draw their selected text
+  in full, then settle against measured horizontal and vertical ink bounds,
+  including nib width, with one uniform scale. Signature excerpt selection
+  and title splitting are unchanged; columns keep their wrapping behavior.
 - **A paragraph is not a line, and `fitSize()` cannot tell.** It reads the
   longest source line and picks a size that very nearly fills the column with
   it, which is right for verse and ruinous for prose: every poem here was verse

@@ -8,6 +8,7 @@
 <script setup>
 import { ref, computed, watchEffect, onMounted, onUnmounted, nextTick } from 'vue';
 import poemsData from './poems.json';
+import { parseRoute as parseAddress } from './routes.js';
 import { arrowUsed } from './arrow-hint.js';
 import AboutPage from './components/AboutPage.vue';
 import PoemsListPage from './components/PoemsListPage.vue';
@@ -34,21 +35,11 @@ import NotFoundHand from './components/NotFoundHand.vue';
 const route = ref(parseRoute());
 
 function parseRoute() {
-  // GitHub Pages serves the generated 404.html at any unmatched path, and
-  // that file is the only thing that sets this. Checked before anything else
-  // because the URL it renders at is arbitrary and means nothing.
-  if (window.__notHere) return { page: 'nothere' };
-
-  const hash = decodeURIComponent(window.location.hash.slice(1) || '');
-  if (hash === 'about') return { page: 'about' };
-  if (hash === 'index' || hash === 'contents' || hash === 'poems') return { page: 'index' };
-  if (hash === 'hand') return { page: 'hand' };
-  if (hash.startsWith('poem/')) return { page: 'poem', slug: hash.slice(5) };
-
-  const pathMatch = decodeURIComponent(window.location.pathname).match(/^\/poem\/([^/]+)\/?$/);
-  if (pathMatch) return { page: 'poem', path: pathMatch[1] };
-
-  return { page: 'about' };
+  return parseAddress({
+    pathname: window.location.pathname,
+    hash: window.location.hash,
+    notHere: window.__notHere
+  });
 }
 
 function urlFor(r) {

@@ -1390,12 +1390,23 @@ function inkOf(pal, s) {
  * regression test holds by construction rather than by luck.
  */
 function drawStroke(ctx, s, pal, upto) {
+  ctx.strokeStyle = inkOf(pal, s);
+  tracePath(ctx, s, upto, 1);
+}
+
+/**
+ * The path of one mark, laid down at `nib` times its plotted width.
+ *
+ * Both painters run through here, so the ballpoint and the old translucent
+ * stroke are the same journey at different weights, and the geometry has one
+ * home rather than two that can drift apart.
+ */
+function tracePath(ctx, s, upto, nib) {
   const p = s.pts;
   if (!p || p.length < 2) return;
   const last = upto ? Math.min(upto.segment, p.length - 1) : p.length - 1;
   if (last < 1) return;
 
-  ctx.strokeStyle = inkOf(pal, s);
   const mid = (a, b) => [(a[0] + b[0]) * 0.5, (a[1] + b[1]) * 0.5];
 
   if (s.curve === false) {
@@ -1411,7 +1422,7 @@ function drawStroke(ctx, s, pal, upto) {
       ctx.beginPath();
       ctx.moveTo(a[0], a[1]);
       ctx.lineTo(to[0], to[1]);
-      ctx.lineWidth = Array.isArray(s.lw) ? (s.lw[j - 1] + s.lw[j]) * 0.5 : s.lw;
+      ctx.lineWidth = (Array.isArray(s.lw) ? (s.lw[j - 1] + s.lw[j]) * 0.5 : s.lw) * nib;
       ctx.stroke();
     }
     return;
@@ -1429,16 +1440,251 @@ function drawStroke(ctx, s, pal, upto) {
     ctx.beginPath();
     ctx.moveTo(from[0], from[1]);
     ctx.quadraticCurveTo(p[j - 1][0], p[j - 1][1], to[0], to[1]);
-    ctx.lineWidth = Array.isArray(s.lw) ? (s.lw[j - 1] + s.lw[j]) * 0.5 : s.lw;
+    ctx.lineWidth = (Array.isArray(s.lw) ? (s.lw[j - 1] + s.lw[j]) * 0.5 : s.lw) * nib;
     ctx.stroke();
   }
+}
+
+/**
+ * The pen: a fine ballpoint line with a little fountain-pen pooling at the turns.
+ *
+ * The old painter stroked every segment separately at a translucent alpha, so
+ * each shoulder was painted twice and the marks wore a dark bead at every join.
+ * That is the one thing a written line never does. The ink is now laid down
+ * opaquely on a mask and the mask is composited once, so a mark can cross itself
+ * as often as it likes and still read as a single pass of a pen.
+ *
+ * Over that: a nib finer than the plotted width, a faint groove lifted back out
+ * along the run with the occasional skip, paper grain taken out in page
+ * coordinates rather than along the stroke, and a soft blurred pass at low
+ * weight for the wet edge. Ink gathers only where the hand genuinely changes
+ * direction. The ballpoint is what you read; the fountain pen is only the
+ * weather around it.
+ */
+const NIB = 0.6;             // the ballpoint runs finer than the plotted width
+const HAIRLINE = 1;          // but never thinner than a pixel, or the hand greys out
+const INK_GAIN = 0.92;       // the mask lays the weight down once, not twice at the joins
+const BLOOM_SHARE = 0.16;    // share of that weight given to the soft edge
+const BLOOM_BLUR = 0.55;     // px; softer than this and the line stops being fine
+const POOL_GAIN = 0.13;      // ink gathered per unit of turn
+const POOL_CAP = 0.065;      // and never more than this, or it overpowers the line
+const GRAIN = 0.05;          // grain dots per square px of page
+const GROOVE = 0.25;         // how much of the groove is lifted out
+const STEP = 1.4;            // px between the samples the groove and pools read
+
+/**
+ * How fine this mark's nib runs.
+ *
+ * A broad mark is thinned to the ballpoint's width. A mark already at or under
+ * a pixel is left alone: there is no finer line to be had, and thinning it only
+ * spreads it across the antialiasing and drains it.
+ */
+function nibFor(s) {
+  const plotted = Array.isArray(s.lw) ? Math.max(...s.lw) : s.lw;
+  if (!plotted) return 1;
+  return Math.max(NIB, Math.min(1, HAIRLINE / plotted));
+}
+
+/** Coarse samples along a mark, for the effects that read its direction. */
+function samplePath(s, upto, step) {
+  const p = s.pts;
+  if (!p || p.length < 2) return [];
+  const last = upto ? Math.min(upto.segment, p.length - 1) : p.length - 1;
+  if (last < 1) return [];
+
+  const mid = (a, b) => [(a[0] + b[0]) * 0.5, (a[1] + b[1]) * 0.5];
+  const widthAt = j => (Array.isArray(s.lw) ? s.lw[j] : s.lw) || 0;
+  const out = [];
+
+  for (let j = 1; j <= last; j++) {
+    const partial = upto && j === last && upto.fraction < 1;
+    const a = p[j - 1];
+    const b = p[j];
+    const stop = partial
+      ? [a[0] + (b[0] - a[0]) * upto.fraction, a[1] + (b[1] - a[1]) * upto.fraction]
+      : b;
+    const w0 = widthAt(j - 1);
+    const w1 = widthAt(j);
+
+    if (s.curve === false) {
+      const steps = Math.max(2, Math.ceil(Math.hypot(stop[0] - a[0], stop[1] - a[1]) / step));
+      for (let k = 0; k <= steps; k++) {
+        const t = k / steps;
+        out.push({ x: a[0] + (stop[0] - a[0]) * t, y: a[1] + (stop[1] - a[1]) * t, width: w0 + (w1 - w0) * t });
+      }
+      continue;
+    }
+
+    // the same quadratic the painter traces: in at the midpoint behind, out at
+    // the midpoint ahead, with the plotted point as the control
+    const from = j === 1 ? p[0] : mid(p[j - 2], p[j - 1]);
+    const to = partial ? stop : (j === p.length - 1 ? p[j] : mid(p[j - 1], p[j]));
+    const c = p[j - 1];
+    const steps = Math.max(3, Math.ceil(
+      (Math.hypot(c[0] - from[0], c[1] - from[1]) + Math.hypot(to[0] - c[0], to[1] - c[1])) / step
+    ));
+    for (let k = 0; k <= steps; k++) {
+      const t = k / steps, u = 1 - t;
+      out.push({
+        x: u * u * from[0] + 2 * u * t * c[0] + t * t * to[0],
+        y: u * u * from[1] + 2 * u * t * c[1] + t * t * to[1],
+        width: w0 + (w1 - w0) * t
+      });
+    }
+  }
+  return out;
+}
+
+/**
+ * A scratch surface the size of the canvas being painted.
+ *
+ * Kept and reused, because the write-on repaints every frame. Where there is no
+ * surface to be had — the node tests, which have no canvas at all — the caller
+ * falls back to the old painter, which needs nothing but a path.
+ */
+let scratch = null;
+function scratchFor(width, height) {
+  if (scratch && scratch.width === width && scratch.height === height) return scratch;
+  if (typeof OffscreenCanvas === 'function') {
+    scratch = new OffscreenCanvas(width, height);
+    return scratch;
+  }
+  if (typeof document !== 'undefined' && typeof document.createElement === 'function') {
+    scratch = document.createElement('canvas');
+    scratch.width = width;
+    scratch.height = height;
+    return scratch;
+  }
+  return null;
+}
+
+/**
+ * Paint a set of marks, each optionally stopped part of the way along it.
+ *
+ * Marks are gathered by ink and by weight before anything is drawn, so the mask
+ * is built and composited a handful of times rather than once per mark. Two
+ * marks of the same weight may overlap on the mask without darkening, which is
+ * the whole point of it.
+ */
+function paintMarks(ctx, marks, pal) {
+  if (!marks.length) return;
+
+  const canvas = ctx.canvas;
+  const layer = canvas && canvas.width && canvas.height
+    ? scratchFor(canvas.width, canvas.height)
+    : null;
+
+  if (!layer || typeof ctx.getTransform !== 'function') {
+    // No surface to lay ink on: the old translucent stroke, beads and all.
+    for (const mark of marks) drawStroke(ctx, mark.s, pal, mark.upto);
+    return;
+  }
+
+  const dpr = ctx.getTransform().a || 1;
+  const w = canvas.width / dpr;
+  const h = canvas.height / dpr;
+  const lc = layer.getContext('2d');
+
+  const weights = new Map();
+  for (const mark of marks) {
+    const step = Math.round((mark.s.alpha == null ? 1 : mark.s.alpha) * 20);
+    const key = (mark.s.ink || 'mark') + '|' + step;
+    let group = weights.get(key);
+    if (!group) {
+      group = { ink: pal[mark.s.ink] || pal.mark, alpha: step / 20, marks: [] };
+      weights.set(key, group);
+    }
+    group.marks.push(mark);
+  }
+
+  for (const group of weights.values()) {
+    lc.setTransform(1, 0, 0, 1, 0, 0);
+    lc.clearRect(0, 0, layer.width, layer.height);
+    lc.setTransform(dpr, 0, 0, dpr, 0, 0);
+    lc.globalCompositeOperation = 'source-over';
+    lc.globalAlpha = 1;
+    lc.lineCap = 'round';
+    lc.lineJoin = 'round';
+    lc.strokeStyle = 'rgb(' + group.ink + ')';
+
+    for (const mark of group.marks) tracePath(lc, mark.s, mark.upto, nibFor(mark.s));
+
+    // The groove a ballpoint leaves, and the skips where it fails to take.
+    lc.globalCompositeOperation = 'destination-out';
+    lc.lineWidth = 0.8;
+    for (const mark of group.marks) {
+      // Only a mark broad enough to hold a groove is given one; on a hairline
+      // it would read as the line simply fading, which is not the same thing.
+      const plotted = Array.isArray(mark.s.lw) ? Math.max(...mark.s.lw) : mark.s.lw;
+      lc.globalAlpha = GROOVE * clamp((plotted - 0.9) / 1.1, 0, 1);
+      if (!lc.globalAlpha) continue;
+      const pts = samplePath(mark.s, mark.upto, STEP);
+      lc.beginPath();
+      for (let i = 0; i < pts.length; i++) {
+        if (i % 48 >= 32) continue;
+        if (i % 48 === 0) lc.moveTo(pts[i].x + pts[i].width * 0.07, pts[i].y);
+        else lc.lineTo(pts[i].x + pts[i].width * 0.07, pts[i].y);
+      }
+      lc.stroke();
+    }
+    lc.globalCompositeOperation = 'source-over';
+
+    const weight = Math.min(1, 0.85 * group.alpha * INK_GAIN);
+    ctx.save();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.globalAlpha = weight * BLOOM_SHARE;
+    ctx.filter = 'blur(' + BLOOM_BLUR + 'px)';
+    ctx.drawImage(layer, 0, 0, w, h);
+    ctx.filter = 'none';
+    ctx.globalAlpha = weight;
+    ctx.drawImage(layer, 0, 0, w, h);
+
+    // Ink gathers where the hand actually turns — not at every sampled point,
+    // which is what makes a bead rather than a pool.
+    ctx.lineCap = 'round';
+    for (const mark of group.marks) {
+      const pts = samplePath(mark.s, mark.upto, STEP);
+      for (let i = 4; i < pts.length - 4; i += 5) {
+        const a = pts[i - 4], b = pts[i], c = pts[i + 4];
+        const ax = b.x - a.x, ay = b.y - a.y, bx = c.x - b.x, by = c.y - b.y;
+        const turn = 1 - (ax * bx + ay * by) /
+          Math.max(0.001, Math.hypot(ax, ay) * Math.hypot(bx, by));
+        ctx.globalAlpha = clamp(turn * POOL_GAIN, 0, POOL_CAP) * weight;
+        ctx.lineWidth = b.width * NIB * 0.55;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.quadraticCurveTo(b.x, b.y, c.x, c.y);
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  // Paper grain, fixed in page coordinates rather than carried along the
+  // stroke, so it reads as the sheet and not as a texture painted on the ink.
+  const rand = rngFor('paper-grain');
+  ctx.save();
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.fillStyle = '#000';
+  const dots = Math.round(w * h * GRAIN);
+  for (let i = 0; i < dots; i++) {
+    const x = rand() * w;
+    const y = rand() * h;
+    const size = 0.15 + rand() * 0.45;
+    ctx.globalAlpha = 0.1 + rand() * 0.31;
+    ctx.beginPath();
+    ctx.ellipse(x, y, size, size * 0.65, -0.65, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
 }
 
 export function paint(ctx, strokes) {
   const pal = palette();
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  for (const s of strokes) drawStroke(ctx, s, pal, null);
+  paintMarks(ctx, strokes.map(s => ({ s, upto: null })), pal);
 }
 
 /**
@@ -1529,6 +1775,7 @@ export function paintProgress(ctx, strokes, plan, t) {
   ctx.lineJoin = 'round';
 
   const travelled = Math.max(0, Math.min(1, t)) * plan.total;
+  const marks = [];
 
   for (let i = 0; i < strokes.length; i++) {
     const span = plan.spans[i];
@@ -1536,7 +1783,7 @@ export function paintProgress(ctx, strokes, plan, t) {
     if (span.start >= travelled) break;
 
     if (span.start + span.length <= travelled) {
-      drawStroke(ctx, strokes[i], pal, null);
+      marks.push({ s: strokes[i], upto: null });
       continue;
     }
 
@@ -1546,10 +1793,12 @@ export function paintProgress(ctx, strokes, plan, t) {
     while (segment < span.marks.length - 1 && span.marks[segment] < into) segment++;
     const before = segment === 0 ? 0 : span.marks[segment - 1];
     const width = span.marks[segment] - before;
-    drawStroke(ctx, strokes[i], pal, {
-      segment: segment + 1,
-      fraction: width > 0 ? (into - before) / width : 1
+    marks.push({
+      s: strokes[i],
+      upto: { segment: segment + 1, fraction: width > 0 ? (into - before) / width : 1 }
     });
     break;
   }
+
+  paintMarks(ctx, marks, pal);
 }

@@ -63,8 +63,8 @@ npm run preview   # serve the production build
   Deployment gates on both, checks the exact live release afterward, and runs
   publisher checks. The separate live workflow repeats checks weekly. Details
   and failure handling: `docs/release-checks.md`.
-- Titles automatically write once per tab session. “replay title” beside the
-  share control repeats the reveal; reduced motion always shows the type.
+- Titles automatically write once per tab session, with no replay control.
+  Reduced motion always shows the type.
 
 ## Structure
 

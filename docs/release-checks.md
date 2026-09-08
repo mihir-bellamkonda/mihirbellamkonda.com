@@ -1,9 +1,9 @@
-# Release checks and title replay
+# Release checks and title writing
 
 Each title writes itself automatically once per tab session. Reloading or
-returning to a poem shows its typeset title immediately. “replay title”, beside
-“share poem”, repeats the same handwriting on request. It is unavailable while
-writing and omitted for reduced-motion readers. Words write in reading order,
+returning to a poem shows its typeset title immediately. There is no replay
+control on poem pages. Reduced-motion readers get the typeset title immediately.
+Words write in reading order,
 finishing one row before starting the next. The whole title writes in 1.1 seconds
 and rests for 650ms before becoming type (previously 2.5 seconds total).
 Switching reduced motion on
@@ -19,7 +19,7 @@ Install Chromium once with `npx playwright install chromium`.
 
 Browser checks cover every poem at desktop and 320px phone widths, opening/index
 navigation, malformed and missing URLs, missing assets and runtime exceptions,
-keyboard navigation, browser back, first/repeat title visits, explicit replay,
+keyboard navigation, browser back, first/repeat title visits, sequential writing,
 reduced-motion changes, and blocked session storage. Poem text and line counts
 come from the generated corpus, so new poems join the suite automatically.
 

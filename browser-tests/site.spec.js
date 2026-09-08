@@ -77,7 +77,7 @@ test('keyboard navigation and browser back preserve the reading path', async ({ 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(first.title);
 });
 
-test('titles play once per session, survive reload, and can be replayed', async ({ page }) => {
+test('titles play once per session without a replay control', async ({ page }) => {
   await page.goto(poemURL(first));
   await expect(page.locator('.title-hand canvas').first()).toBeVisible();
   await expect(page.locator('.asemic-title')).toHaveClass(/resolved/);
@@ -86,12 +86,7 @@ test('titles play once per session, survive reload, and can be replayed', async 
   await page.reload();
   await expect(page.locator('.asemic-title.resolved h1')).toHaveText(first.title);
   await expect(page.locator('.title-hand')).toHaveCount(0);
-  const replay = page.getByRole('button', { name: 'replay title', exact: true });
-  await replay.click();
-  await expect(replay).toBeDisabled();
-  await expect(page.locator('.title-hand canvas').first()).toBeVisible();
-  await expect(replay).toBeEnabled();
-  await expect(page.locator('.title-hand')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'replay title', exact: true })).toHaveCount(0);
 
   await page.getByRole('heading', { level: 1 }).focus();
   await page.keyboard.press('ArrowRight');
@@ -103,14 +98,16 @@ test('titles play once per session, survive reload, and can be replayed', async 
   await expect(page.locator('.title-hand')).toHaveCount(0);
 });
 
-test('reduced motion suppresses replay and settles writing immediately', async ({ page }) => {
+test('reduced motion skips or settles title writing immediately', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto(poemURL(first));
   await expect(page.locator('.asemic-title.resolved h1')).toHaveText(first.title);
   await expect(page.locator('.title-hand')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'replay title', exact: true })).toHaveCount(0);
   await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await page.getByRole('button', { name: 'replay title', exact: true }).click();
+  await page.getByRole('heading', { level: 1 }).focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(page).toHaveURL(poemURL(second));
   await expect(page.locator('.title-hand canvas').first()).toBeVisible();
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect(page.locator('.title-hand')).toHaveCount(0);

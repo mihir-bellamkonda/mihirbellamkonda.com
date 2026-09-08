@@ -40,7 +40,7 @@ jobs:
       - name: Install browser for release checks
         run: npx playwright install --with-deps chromium
 
-      - name: Check desktop, phone, navigation, and title replay
+      - name: Check desktop, phone, navigation, and title writing
         run: npm run test:browser
 
       - name: Stamp verified release

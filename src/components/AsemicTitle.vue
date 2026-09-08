@@ -184,13 +184,13 @@ function sizeToHeading() {
   maxSize.value = Math.round(px * 1.9);
 }
 
-function begin(replay = false) {
+function begin() {
   clearTimeout(timer);
   cancelAnimationFrame(frame);
   const alreadySeen = titleVisits.has(props.seed);
   // Count the encounter even if the reader leaves before the writing finishes.
   titleVisits.mark(props.seed);
-  if (reducedMotion.value || (alreadySeen && !replay)) {
+  if (reducedMotion.value || alreadySeen) {
     settle();
     return;
   }
@@ -253,12 +253,6 @@ function begin(replay = false) {
     frame = requestAnimationFrame(advance);
   });
 }
-
-defineExpose({
-  replay: () => begin(true),
-  canReplay: computed(() => !reducedMotion.value),
-  isWriting: computed(() => !resolved.value)
-});
 
 onMounted(() => {
   mounted = true;

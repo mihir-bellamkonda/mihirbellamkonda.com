@@ -1401,7 +1401,7 @@ function drawStroke(ctx, s, pal, upto) {
  * stroke are the same journey at different weights, and the geometry has one
  * home rather than two that can drift apart.
  */
-function tracePath(ctx, s, upto, nib) {
+function tracePath(ctx, s, upto, nib, floor = 0) {
   const p = s.pts;
   if (!p || p.length < 2) return;
   const last = upto ? Math.min(upto.segment, p.length - 1) : p.length - 1;
@@ -1422,7 +1422,7 @@ function tracePath(ctx, s, upto, nib) {
       ctx.beginPath();
       ctx.moveTo(a[0], a[1]);
       ctx.lineTo(to[0], to[1]);
-      ctx.lineWidth = (Array.isArray(s.lw) ? (s.lw[j - 1] + s.lw[j]) * 0.5 : s.lw) * nib;
+      ctx.lineWidth = Math.max((Array.isArray(s.lw) ? (s.lw[j - 1] + s.lw[j]) * 0.5 : s.lw) * nib, floor);
       ctx.stroke();
     }
     return;
@@ -1440,7 +1440,7 @@ function tracePath(ctx, s, upto, nib) {
     ctx.beginPath();
     ctx.moveTo(from[0], from[1]);
     ctx.quadraticCurveTo(p[j - 1][0], p[j - 1][1], to[0], to[1]);
-    ctx.lineWidth = (Array.isArray(s.lw) ? (s.lw[j - 1] + s.lw[j]) * 0.5 : s.lw) * nib;
+    ctx.lineWidth = Math.max((Array.isArray(s.lw) ? (s.lw[j - 1] + s.lw[j]) * 0.5 : s.lw) * nib, floor);
     ctx.stroke();
   }
 }
@@ -1463,8 +1463,11 @@ function tracePath(ctx, s, upto, nib) {
  */
 const NIB = 0.6;             // the ballpoint runs finer than the plotted width
 const HAIRLINE = 1;          // but never thinner than a pixel, or the hand greys out
+const BALL = 0.9;            // and a ball cannot draw under its own width at all
 const INK_GAIN = 0.92;       // the mask lays the weight down once, not twice at the joins
 const BLOOM_SHARE = 0.16;    // share of that weight given to the soft edge
+const BLOOM_THIN = 0.07;     // a mark too thin to hold an edge keeps its weight in the line
+const BROAD = 1.2;           // px of plotted width at which a mark can carry a wet edge
 const BLOOM_BLUR = 0.55;     // px; softer than this and the line stops being fine
 const POOL_GAIN = 0.13;      // ink gathered per unit of turn
 const POOL_CAP = 0.065;      // and never more than this, or it overpowers the line
@@ -1588,10 +1591,12 @@ function paintMarks(ctx, marks, pal) {
   const weights = new Map();
   for (const mark of marks) {
     const step = Math.round((mark.s.alpha == null ? 1 : mark.s.alpha) * 20);
-    const key = (mark.s.ink || 'mark') + '|' + step;
+    const plotted = Array.isArray(mark.s.lw) ? Math.max(...mark.s.lw) : mark.s.lw;
+    const broad = plotted >= BROAD;
+    const key = (mark.s.ink || 'mark') + '|' + step + '|' + (broad ? 'b' : 't');
     let group = weights.get(key);
     if (!group) {
-      group = { ink: pal[mark.s.ink] || pal.mark, alpha: step / 20, marks: [] };
+      group = { ink: pal[mark.s.ink] || pal.mark, alpha: step / 20, broad, marks: [] };
       weights.set(key, group);
     }
     group.marks.push(mark);
@@ -1607,7 +1612,7 @@ function paintMarks(ctx, marks, pal) {
     lc.lineJoin = 'round';
     lc.strokeStyle = 'rgb(' + group.ink + ')';
 
-    for (const mark of group.marks) tracePath(lc, mark.s, mark.upto, nibFor(mark.s));
+    for (const mark of group.marks) tracePath(lc, mark.s, mark.upto, nibFor(mark.s), BALL);
 
     // The groove a ballpoint leaves, and the skips where it fails to take.
     lc.globalCompositeOperation = 'destination-out';
@@ -1632,7 +1637,7 @@ function paintMarks(ctx, marks, pal) {
     const weight = Math.min(1, 0.85 * group.alpha * INK_GAIN);
     ctx.save();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.globalAlpha = weight * BLOOM_SHARE;
+    ctx.globalAlpha = weight * (group.broad ? BLOOM_SHARE : BLOOM_THIN);
     ctx.filter = 'blur(' + BLOOM_BLUR + 'px)';
     ctx.drawImage(layer, 0, 0, w, h);
     ctx.filter = 'none';
@@ -1663,6 +1668,14 @@ function paintMarks(ctx, marks, pal) {
   // Paper grain, fixed in page coordinates rather than carried along the
   // stroke, so it reads as the sheet and not as a texture painted on the ink.
   const rand = rngFor('paper-grain');
+  // How much grain the hand can take: a broad mark is textured by it, a fine one
+  // is only eaten away, so the spatter lightens as the marks get finer.
+  let broadest = 0;
+  for (const mark of marks) {
+    const plotted = Array.isArray(mark.s.lw) ? Math.max(...mark.s.lw) : mark.s.lw;
+    if (plotted > broadest) broadest = plotted;
+  }
+  const grainWeight = clamp((broadest - 0.6) / 1.2, 0.25, 1);
   ctx.save();
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.globalCompositeOperation = 'destination-out';
@@ -1672,7 +1685,7 @@ function paintMarks(ctx, marks, pal) {
     const x = rand() * w;
     const y = rand() * h;
     const size = 0.15 + rand() * 0.45;
-    ctx.globalAlpha = 0.1 + rand() * 0.31;
+    ctx.globalAlpha = (0.1 + rand() * 0.31) * grainWeight;
     ctx.beginPath();
     ctx.ellipse(x, y, size, size * 0.65, -0.65, 0, Math.PI * 2);
     ctx.fill();

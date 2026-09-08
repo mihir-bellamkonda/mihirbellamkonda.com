@@ -1463,8 +1463,8 @@ function tracePath(ctx, s, upto, nib, floor = 0) {
  */
 const NIB = 0.6;             // the ballpoint runs finer than the plotted width
 const HAIRLINE = 1;          // but never thinner than a pixel, or the hand greys out
-const BALL = 0.9;            // and a ball cannot draw under its own width at all
-const INK_GAIN = 0.92;       // the mask lays the weight down once, not twice at the joins
+const BALL = 1;              // and a ball cannot draw under its own width at all
+const INK_GAIN = 1.1;        // the mask lays the weight down once, so the line carries it
 const BLOOM_SHARE = 0.16;    // share of that weight given to the soft edge
 const BLOOM_THIN = 0.07;     // a mark too thin to hold an edge keeps its weight in the line
 const BROAD = 1.2;           // px of plotted width at which a mark can carry a wet edge

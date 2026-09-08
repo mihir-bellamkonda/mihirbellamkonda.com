@@ -59,6 +59,12 @@ npm run preview   # serve the production build
 - A failed build does not deploy, so the live site survives a bad push. **But check
   the rendered page in a browser, not just the Actions status** — the multi-line
   emphasis bug passed the build and was only visible on screen.
+- Run `npm run test:browser` after `npm run verify` for desktop/phone checks.
+  Deployment gates on both, checks the exact live release afterward, and runs
+  publisher checks. The separate live workflow repeats checks weekly. Details
+  and failure handling: `docs/release-checks.md`.
+- Titles automatically write once per tab session. “replay title” beside the
+  share control repeats the reveal; reduced motion always shows the type.
 
 ## Structure
 

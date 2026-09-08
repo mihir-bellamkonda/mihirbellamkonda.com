@@ -21,6 +21,9 @@ const props = defineProps({
   // descent through the poem — holds the pen and decides how far through the
   // mark it has travelled.
   progress: { type: Number, default: null },
+  // A shared animation clock (title rows) supplies exact frames. Do not add
+  // a second catch-up animation when that clock advances after a slow frame.
+  syncProgress: { type: Boolean, default: false },
   // 0 is the ordinary hand. Below it, the same hand taking its time; above
   // it, the same hand in a hurry.
   temper: { type: Number, default: 0 },
@@ -190,7 +193,7 @@ function run() {
 
   if (props.progress !== null) {
     const target = Math.max(0, Math.min(1, props.progress));
-    if (prefersReducedMotion()) draw(target);
+    if (props.syncProgress || prefersReducedMotion()) draw(target);
     else writeBetween(0, target, writingTime() * target);
     return;
   }
@@ -292,7 +295,7 @@ watch(() => props.progress, (value) => {
   if (!strokes.length && !build()) return;
   const target = Math.max(0, Math.min(1, value));
   const jump = Math.abs(target - drawn);
-  if (jump > 0.28 && !prefersReducedMotion()) {
+  if (jump > 0.28 && !props.syncProgress && !prefersReducedMotion()) {
     // Catching up with a reader who has jumped is a different gesture from
     // writing, and it should not keep them waiting.
     writeBetween(drawn, target, Math.min(1600, writingTime() * jump));

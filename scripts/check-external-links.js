@@ -20,7 +20,7 @@ async function checkUrl(url) {
     // establish that a host exists. A genuine missing page does not.
     const restricted = [401, 403, 405, 429].includes(response.status);
     if (!response.ok && !restricted) failures.push(`${response.status} ${url}`);
-    else console.log(`${response.status} ${url}`);
+    else console.log(`${response.status} ${url}${restricted ? ' (access restricted; page content not verified)' : ''}`);
   } catch (error) {
     failures.push(`${error.name}: ${url}`);
   } finally {

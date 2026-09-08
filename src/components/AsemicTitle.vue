@@ -15,13 +15,14 @@
     >
       <AsemicMarks
         v-for="(line, i) in handLines"
-        :key="i"
+        :key="`${playthrough}:${i}`"
         class="hand-row"
         :text="line"
         :seed="`${seed}::title::${i}`"
         :max-lines="1"
         :max-size="maxSize"
-        :ceiling="WRITE"
+        :progress="rowProgress[i]"
+        :sync-progress="true"
         :furniture="false"
       />
     </div>
@@ -29,9 +30,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import AsemicMarks from './AsemicMarks.vue';
 import { prefersReducedMotion } from '../motion.js';
+import { titleVisits } from '../title-visits.js';
+import { TITLE_WRITE, TITLE_DWELL, titleRowProgress } from '../title-timing.js';
 
 const props = defineProps({
   title: { type: String, required: true },
@@ -41,15 +44,10 @@ const props = defineProps({
 /**
  * How long the hand keeps the title, in two parts.
  *
- * WRITE is the ceiling handed to `AsemicMarks`, so it is how long the pen
- * takes. DWELL is the part that was missing: the mark used to be swapped out
- * on the same frame the pen finished, so the finished word — the only frame
- * where the thing is whole — was never actually looked at. The hand writes,
- * then the writing stands, then it becomes type.
+ * All rows share one 1.1-second write-on in reading order, followed by a
+ * 650ms pause with the complete mark. The old rows ran independently and
+ * wrote several words at once; the new clock hands the pen from row to row.
  */
-const WRITE = 1400;
-const DWELL = 1100;
-const HOLD = WRITE + DWELL;
 
 /**
  * And then it cuts.
@@ -65,12 +63,16 @@ const HOLD = WRITE + DWELL;
  */
 const TEARDOWN = 60;
 
-const resolved = ref(false);
+const reducedMotion = ref(prefersReducedMotion());
+const resolved = ref(reducedMotion.value || titleVisits.has(props.seed));
+const playthrough = ref(0);
 // A reader who has asked for less movement gets the title and nothing else:
 // no canvas is mounted at all, rather than one drawn and instantly hidden.
 const handWrites = ref(false);
 const maxSize = ref(72);
 const handLines = ref([]);
+const progress = ref(0);
+const rowProgress = computed(() => titleRowProgress(handLines.value, progress.value));
 const rowHeight = ref('200px');
 const rowSqueeze = ref('0px');
 
@@ -147,6 +149,21 @@ function breakForHand(title) {
 }
 
 let timer = null;
+let motionQuery = null;
+let frame = null;
+let mounted = false;
+
+function settle() {
+  clearTimeout(timer);
+  cancelAnimationFrame(frame);
+  handWrites.value = false;
+  resolved.value = true;
+}
+
+function motionChanged(event) {
+  reducedMotion.value = event.matches;
+  if (event.matches) settle();
+}
 
 function sizeToHeading() {
   /*
@@ -167,15 +184,20 @@ function sizeToHeading() {
   maxSize.value = Math.round(px * 1.9);
 }
 
-function begin() {
+function begin(replay = false) {
   clearTimeout(timer);
-  resolved.value = false;
-
-  if (prefersReducedMotion()) {
-    handWrites.value = false;
-    resolved.value = true;
+  cancelAnimationFrame(frame);
+  const alreadySeen = titleVisits.has(props.seed);
+  // Count the encounter even if the reader leaves before the writing finishes.
+  titleVisits.mark(props.seed);
+  if (reducedMotion.value || (alreadySeen && !replay)) {
+    settle();
     return;
   }
+
+  resolved.value = false;
+  progress.value = 0;
+  playthrough.value += 1;
 
   const lines = breakForHand(props.title);
   handLines.value = lines;
@@ -212,17 +234,45 @@ function begin() {
   rowSqueeze.value = `${Math.round(line * 1.1)}px`;
 
   handWrites.value = true;
-  timer = setTimeout(() => {
-    resolved.value = true;
-    timer = setTimeout(() => { handWrites.value = false; }, TEARDOWN);
-  }, HOLD);
+  const currentPlay = playthrough.value;
+  nextTick(() => {
+    if (!mounted || resolved.value || playthrough.value !== currentPlay) return;
+    let started = null;
+    const advance = now => {
+      if (started === null) started = now;
+      progress.value = Math.min(1, (now - started) / TITLE_WRITE);
+      if (progress.value < 1) {
+        frame = requestAnimationFrame(advance);
+      } else {
+        timer = setTimeout(() => {
+          resolved.value = true;
+          timer = setTimeout(() => { handWrites.value = false; }, TEARDOWN);
+        }, TITLE_DWELL);
+      }
+    };
+    frame = requestAnimationFrame(advance);
+  });
 }
 
-onMounted(begin);
-// Moving between poems with the arrow keys reuses this component, and the
-// next title should be written the same way the first one was.
-watch(() => props.seed, begin);
-onUnmounted(() => clearTimeout(timer));
+defineExpose({
+  replay: () => begin(true),
+  canReplay: computed(() => !reducedMotion.value),
+  isWriting: computed(() => !resolved.value)
+});
+
+onMounted(() => {
+  mounted = true;
+  motionQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+  motionQuery?.addEventListener('change', motionChanged);
+  begin();
+});
+watch(() => props.seed, () => begin());
+onUnmounted(() => {
+  mounted = false;
+  clearTimeout(timer);
+  cancelAnimationFrame(frame);
+  motionQuery?.removeEventListener('change', motionChanged);
+});
 </script>
 
 <style scoped>

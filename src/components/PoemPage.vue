@@ -14,7 +14,7 @@
     <main class="grid" id="main" tabindex="-1">
       <div class="margin-meta">
         <div class="num">{{ pad(index) }} / {{ pad(total) }}</div>
-        <AsemicTitle :title="poem.title" :seed="poem.slug" />
+        <AsemicTitle ref="titleHand" :title="poem.title" :seed="poem.slug" />
         <p v-if="poem.subtitle" class="dedication">{{ poem.subtitle }}</p>
 
         <div class="provenance">
@@ -56,6 +56,13 @@
             {{ copied ? 'link copied' : 'share poem' }}
           </button>
           <span class="sr-only" role="status" aria-live="polite">{{ copied ? 'Link copied' : '' }}</span>
+          <button
+            v-if="titleHand?.canReplay"
+            type="button"
+            class="copy"
+            :disabled="titleHand.isWriting"
+            @click="titleHand.replay()"
+          >replay title</button>
         </div>
 
         <div v-if="poem.audio" class="reading">
@@ -155,6 +162,7 @@ function pad(n) {
 }
 
 const copied = ref(false);
+const titleHand = ref(null);
 const showsHint = ref(needsArrowHint());
 let copyTimer = null;
 const audioEl = ref(null);
@@ -481,6 +489,7 @@ const stanzas = computed(() => {
 
 .tools {
   display: flex;
+  flex-wrap: wrap;
   gap: 1.2rem;
   align-items: baseline;
 }
@@ -501,6 +510,12 @@ const stanzas = computed(() => {
 .copy:hover {
   color: var(--a-ink);
   border-bottom-color: var(--a-hair);
+}
+
+.copy:disabled {
+  opacity: 0.55;
+  cursor: default;
+  border-bottom-color: transparent;
 }
 
 .copy:focus-visible {

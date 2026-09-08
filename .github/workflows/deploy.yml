@@ -19,6 +19,7 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository
@@ -36,6 +37,15 @@ jobs:
       - name: Build and verify site
         run: npm run verify
 
+      - name: Install browser for release checks
+        run: npx playwright install --with-deps chromium
+
+      - name: Check desktop, phone, navigation, and title replay
+        run: npm run test:browser
+
+      - name: Stamp verified release
+        run: node scripts/write-release.js
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
@@ -47,3 +57,27 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Confirm the expected release is live
+        run: npm run check:release
+        env:
+          SITE_URL: https://mihirbellamkonda.com
+
+      - name: Check the published site in desktop and phone browsers
+        run: npm run test:browser
+        env:
+          SITE_URL: https://mihirbellamkonda.com
+
+      - name: Check publisher links
+        if: ${{ !cancelled() && steps.deployment.outcome == 'success' }}
+        run: npm run check:links
+
+      - name: Keep browser failure reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-failures
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14

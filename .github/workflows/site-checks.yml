@@ -1,0 +1,45 @@
+name: Check live site
+
+on:
+  schedule:
+    - cron: '23 13 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-site-checks
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SITE_URL: https://mihirbellamkonda.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run poems
+      - run: npx playwright install --with-deps chromium
+      - name: Confirm the expected release is live
+        run: npm run check:release
+      - name: Check live desktop and phone behavior
+        run: npm run test:browser
+      - name: Check publisher links
+        if: ${{ !cancelled() }}
+        run: npm run check:links
+      - name: Keep browser failure reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-browser-failures
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14

@@ -4,7 +4,7 @@ date: 2025-04-01
 unpublished: true
 ---
 
-I wrote a poem about volcanoes. Not bad
+I wrote a poem about volcanoes. *Not bad*
 he said, and lent me a textbook about them
 which he promised would provide accurate details
 for future work in the vein. I wrote a poem

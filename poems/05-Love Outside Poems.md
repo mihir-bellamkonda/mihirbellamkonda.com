@@ -10,7 +10,7 @@ ordering a Hendrick’s and soda. And I realized
 I was too embarrassed to scratch the outside, the lobe,
 I was afraid to really get into it,
 the disgusting yellow wax
-at the center of things.*
+in the middle.*
 
 That was how she introduced herself.
 

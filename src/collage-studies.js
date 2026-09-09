@@ -44,10 +44,6 @@ const studies = {
     kind: 'field', focus: '50% 54%',
     primary: '/collage/winter-stand.webp', secondary: '/collage/pulse-trace.svg'
   },
-  'up-above-my-head-i-hear-music-in-the-air': {
-    kind: 'form',
-    primary: '/collage/leaf-drawing.webp', secondary: '/collage/hatch-field.svg'
-  },
   dallas: {
     kind: 'field', focus: '54% 46%',
     primary: '/collage/burnt-terrain.webp', secondary: '/collage/plumb-lines.svg'

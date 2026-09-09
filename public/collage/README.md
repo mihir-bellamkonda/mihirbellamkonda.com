@@ -1,16 +1,15 @@
 # Prototype collage sources
 
-Twenty-nine poems, twenty-nine photographs, six drawn marks.
+Twenty-eight poems, twenty-eight photographs, six drawn marks.
 
 Every photograph is public domain and comes from an institution's open access
 programme. None is redistributed here as it was found: each is cropped away
 from its mount, its printed caption and its bystanders, converted to grey,
 compressed into a much narrower tonal range, softened, and feathered at the
 edges so the fragment dissolves into the page instead of ending on a straight
-line. Two plates that are photographic negatives — the lightning and the leaf
-photogram — are inverted, because a pale subject on a dark ground multiplies
-the wrong way round against bone paper and the page keeps the black instead of
-the mark.
+line. The lightning is a photographic negative and is inverted, because a pale
+subject on a dark ground multiplies the wrong way round against bone paper and
+the page keeps the black instead of the mark.
 
 The imagery is chosen for tone before subject. Nothing captioned, nothing
 labelled, nothing with several equally strong things in it, and nothing that
@@ -63,11 +62,6 @@ illustrates the poem by naming its objects back to it.
   The Metropolitan Museum of Art, object 270860, public domain (Open Access).
   https://www.metmuseum.org/art/collection/search/270860
   Used under *Mercy*.
-
-- `leaf-drawing.webp` — William Henry Fox Talbot, 1. Foglia di Fico. 2. Foglia di Spino bianco, ossia Crataegus, 1839–40.
-  The Metropolitan Museum of Art, object 289199, public domain (Open Access).
-  https://www.metmuseum.org/art/collection/search/289199
-  Used under *Up Above My Head I Hear Music In The Air*.
 
 - `burnt-terrain.webp` — Eugène Cuvelier, Près de la Caverne, Terrain Brûlé, early 1860s.
   The Metropolitan Museum of Art, object 271965, public domain (Open Access).

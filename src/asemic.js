@@ -1496,6 +1496,58 @@ function tracePath(ctx, s, upto, nib, floor = 0) {
 }
 
 /**
+ * The channel a ball leaves down its own line, and the places it fails to take.
+ *
+ * Two things were wrong with the first of these. It was offset in x alone, so
+ * on an upright stroke it sat beside the line and on a flat one it sat along
+ * the middle of it: measured on a title trace it lifted 9.3% of the ink from
+ * horizontal runs against 3.5% from vertical ones, in a hand that is mostly
+ * curves and therefore mostly somewhere in between. And the offset was 0.07 of
+ * the plotted width, a fraction of a pixel, so it never read as a channel
+ * anywhere, only as the line going thinner in some directions than others.
+ *
+ * The skips ran on `i % 48`, counted from the start of every stroke. That is
+ * not a beat, which was the charitable reading: it means every mark on the site
+ * opened with the same thirty-two grooved samples, and since the median stroke
+ * runs thirty-seven samples, most marks never reached the end of one turn of
+ * the rule at all. The hand had a rule about its first forty-five pixels.
+ *
+ * The channel now follows the normal, on one side of travel the whole way,
+ * because a pen is held one way. Where it takes and where it skips comes from a
+ * stream seeded off the mark's own geometry, so it is identical on every load
+ * for every reader, and no longer identical from one mark to the next.
+ */
+const GROOVE_SIDE = 0.45;   // off centre, as a share of the drawn half-width
+
+function grooveAlong(lc, pts, s) {
+  const R = rngFor('groove:' + s.pts.length + ':' +
+    s.pts[0][0].toFixed(2) + ',' + s.pts[0][1].toFixed(2));
+
+  let i = 0;
+  while (i < pts.length) {
+    const takes = Math.round(12 + R() * 44);
+    const skips = Math.round(4 + R() * 20);
+    const stop = Math.min(pts.length, i + takes);
+
+    if (stop - i > 1) {
+      lc.beginPath();
+      for (let k = i; k < stop; k++) {
+        const a = pts[Math.max(0, k - 1)];
+        const b = pts[Math.min(pts.length - 1, k + 1)];
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const len = Math.hypot(dx, dy) || 1;
+        const off = pts[k].width * NIB * 0.5 * GROOVE_SIDE;
+        const x = pts[k].x - (dy / len) * off;
+        const y = pts[k].y + (dx / len) * off;
+        if (k === i) lc.moveTo(x, y); else lc.lineTo(x, y);
+      }
+      lc.stroke();
+    }
+    i = stop + skips;
+  }
+}
+
+/**
  * Lift the ink off one end of a mark.
  *
  * `taperEnds` thins the geometry, but a line drawn on the mask reaches the same
@@ -1730,13 +1782,7 @@ function paintMarks(ctx, marks, pal) {
       lc.globalAlpha = GROOVE * clamp((plotted - 0.9) / 1.1, 0, 1);
       if (!lc.globalAlpha) continue;
       const pts = samplePath(mark.s, mark.upto, STEP);
-      lc.beginPath();
-      for (let i = 0; i < pts.length; i++) {
-        if (i % 48 >= 32) continue;
-        if (i % 48 === 0) lc.moveTo(pts[i].x + pts[i].width * 0.07, pts[i].y);
-        else lc.lineTo(pts[i].x + pts[i].width * 0.07, pts[i].y);
-      }
-      lc.stroke();
+      grooveAlong(lc, pts, mark.s);
     }
 
     // The pen coming off the paper, and arriving on it. Gated on width the way

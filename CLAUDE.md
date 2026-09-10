@@ -351,6 +351,19 @@ and neither should start depending on the other.
 - The hand **scales to the space it is given** — `fitSize()` picks a size so the
   longest line nearly fills the width and the poem fits the height. Stroke weight
   tracks that size; a fixed hairline vanishes once the hand scales up.
+- **The groove follows the normal, and it is not on a counter.** It used to be
+  offset in x alone, so on an upright stroke it sat beside the line and on a flat
+  one it sat down the middle of it: it lifted 9.3% of the ink from horizontal
+  runs against 3.5% from vertical ones, in a hand that is mostly curves and so
+  mostly neither. And it ran on `i % 48` counted from the start of every stroke,
+  which is not a beat — the median stroke is 37 samples, so most marks never
+  reached the end of one turn of the rule and every mark on the site opened with
+  the same thirty-two grooved samples. It now runs along the normal, on one side
+  of travel the whole way, in runs drawn from a stream seeded off the mark's own
+  geometry, and lifts 11.5% against 9.3% by direction.
+  **To measure any change to it**, difference two renders with `GROOVE` set to
+  zero in one. On a curve the inside of the line is darker than the outside
+  regardless, and that swamps the groove in any direct reading of the ink.
 - **A stroke opens and closes.** `taperEnds()` ramps the plotted width down at
   both ends, in arc length rather than in points, because the generator's points
   are not evenly spaced. That alone changes the shape of an end and not its

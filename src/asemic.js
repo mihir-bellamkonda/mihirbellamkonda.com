@@ -1120,6 +1120,54 @@ function breakParagraph(line) {
 }
 
 /**
+ * The pace of one stroke, segment by segment.
+ *
+ * The hand has always had a speed. `writingPlan` charges every segment a
+ * duration — its length over `PEN_SPEED`, multiplied up by `TURN_COST` where
+ * the pen has to turn — and the whole write-on is paced by it. The width model
+ * never read any of it. It computed its own turn, with its own coefficient, and
+ * used it to say that downstrokes are heavy, which left the hand moving at one
+ * speed and inking as though it were moving at another: measured over a
+ * title-size trace, width correlated -0.19 with speed and 0.58 with how far
+ * down the page the segment happened to point.
+ *
+ * Both now come through here. A corner is slow because the time model says so,
+ * and slow is where a pen leaves ink.
+ */
+function segmentPace(pts) {
+  const out = [];
+  let lastX = null;
+  let lastY = null;
+
+  for (let j = 1; j < pts.length; j++) {
+    const dx = pts[j][0] - pts[j - 1][0];
+    const dy = pts[j][1] - pts[j - 1][1];
+    const length = Math.hypot(dx, dy);
+
+    let turn = 0;
+    if (lastX !== null && length > 0) {
+      const before = Math.hypot(lastX, lastY);
+      if (before > 0) {
+        // 0 running straight on, 2 doubling back on itself.
+        turn = 1 - clamp((dx * lastX + dy * lastY) / (length * before), -1, 1);
+      }
+    }
+    lastX = dx;
+    lastY = dy;
+
+    out.push({
+      length,
+      turn,
+      dt: (length / PEN_SPEED) * (1 + TURN_COST * turn),
+      // 0 at full speed, approaching 1 as the pen stops to turn
+      slow: 1 - 1 / (1 + TURN_COST * turn),
+      vertical: length > 0 ? dy / length : 0
+    });
+  }
+  return out;
+}
+
+/**
  * A stroke opens, and it closes.
  *
  * The width model reads direction and turn, so it has nothing to say about the
@@ -1136,6 +1184,11 @@ function breakParagraph(line) {
  * The opening is short and firm and the close is longer, because a hand puts a
  * pen down more decisively than it takes it off.
  */
+const SLOW_BASE = 0.76;   // the weight a stroke carries running straight on
+const SLOW_GAIN = 0.62;   // what it gains coming to a stop to turn
+const DOWN_GAIN = 0.30;   // what a pulled stroke gains over a level one
+const UP_LOSS = 0.14;     // and what a pushed one gives up
+
 const LEAD = 0.55;        // the share of its own width a stroke opens at
 const LIFT = 0.28;        // and the share it closes to
 const LEAD_RUN = 0.30;    // how far the opening runs, in units of the letter size
@@ -1300,30 +1353,22 @@ export function ghost(text, opts) {
       const baseLw = Math.max(0.55, size * 0.072) * (0.88 + R() * 0.26) * (1 - temper * 0.2);
       let opening = true;
       for (const pts of m.strokes) {
+        const pace = segmentPace(pts);
         let previous = baseLw * 0.7;
-        let lastDx = 0;
-        let lastDy = 0;
         const lw = pts.map((point, index) => {
           if (index === 0) return previous;
-          const before = pts[index - 1];
-          const dx = point[0] - before[0];
-          const dy = point[1] - before[1];
-          const length = Math.max(0.001, Math.hypot(dx, dy));
-          const vertical = dy / length;
-          // A pen leaves more ink where it slows, and it slows to turn. The
-          // corners of a letter are its heaviest part for the same reason
-          // the downstrokes are.
-          const was = Math.hypot(lastDx, lastDy);
-          const turn = was > 0
-            ? 1 - Math.max(-1, Math.min(1, (dx * lastDx + dy * lastDy) / (length * was)))
-            : 0;
-          lastDx = dx;
-          lastDy = dy;
+          const step = pace[index - 1];
+          // A pen leaves more ink where it slows, and the time model already
+          // knows where that is. What is left for direction to say is the
+          // ordinary difference between a stroke pulled down and one pushed up,
+          // which is pressure rather than pace, so it keeps a smaller share of
+          // the weight than it used to carry alone.
           const target = baseLw * (
-            0.76 +
-            Math.max(0, vertical) * 0.64 -
-            Math.max(0, -vertical) * 0.22
-          ) * (1 + 0.28 * Math.min(turn, 1.2));
+            SLOW_BASE +
+            SLOW_GAIN * step.slow +
+            Math.max(0, step.vertical) * DOWN_GAIN -
+            Math.max(0, -step.vertical) * UP_LOSS
+          );
           previous = previous * 0.22 + target * 0.78;
           return previous;
         });
@@ -1518,18 +1563,45 @@ function tracePath(ctx, s, upto, nib, floor = 0) {
  * for every reader, and no longer identical from one mark to the next.
  */
 const GROOVE_SIDE = 0.45;   // off centre, as a share of the drawn half-width
+const GROOVE_SLOW = 0.55;   // how much less a slow run gives up than a fast one
 
-function grooveAlong(lc, pts, s) {
+function grooveAlong(lc, pts, s, base) {
   const R = rngFor('groove:' + s.pts.length + ':' +
     s.pts[0][0].toFixed(2) + ',' + s.pts[0][1].toFixed(2));
 
+  // How fast the hand is going here, in the terms the time model uses. The
+  // sampled path is all the painter has, so the turn is read back off it rather
+  // than carried along on the stroke.
+  const slowAt = k => {
+    const a = pts[Math.max(0, k - 2)];
+    const b = pts[k];
+    const c = pts[Math.min(pts.length - 1, k + 2)];
+    const ax = b.x - a.x, ay = b.y - a.y;
+    const bx = c.x - b.x, by = c.y - b.y;
+    const la = Math.hypot(ax, ay), lb = Math.hypot(bx, by);
+    if (!la || !lb) return 0;
+    const turn = 1 - clamp((ax * bx + ay * by) / (la * lb), -1, 1);
+    return 1 - 1 / (1 + TURN_COST * turn);
+  };
+
   let i = 0;
   while (i < pts.length) {
-    const takes = Math.round(12 + R() * 44);
-    const skips = Math.round(4 + R() * 20);
+    // Shorter runs than the rule they replace, so the ink varies along a mark
+    // rather than once across it.
+    const takes = Math.round(6 + R() * 14);
+    const skips = Math.round(2 + R() * 8);
     const stop = Math.min(pts.length, i + takes);
 
     if (stop - i > 1) {
+      // A line laid down fast carries less ink and gives up more of it; the
+      // approach into a corner is where the pen is dwelling, and it keeps what
+      // it has. This is the value along the run that a single alpha per mark
+      // could never give, and it costs the mask nothing, because the runs do
+      // not overlap and so are never lifted twice.
+      let dwell = 0;
+      for (let k = i; k < stop; k++) dwell += slowAt(k);
+      lc.globalAlpha = base * (1 - GROOVE_SLOW * (dwell / (stop - i)));
+
       lc.beginPath();
       for (let k = i; k < stop; k++) {
         const a = pts[Math.max(0, k - 1)];
@@ -1779,10 +1851,10 @@ function paintMarks(ctx, marks, pal) {
       // Only a mark broad enough to hold a groove is given one; on a hairline
       // it would read as the line simply fading, which is not the same thing.
       const plotted = Array.isArray(mark.s.lw) ? Math.max(...mark.s.lw) : mark.s.lw;
-      lc.globalAlpha = GROOVE * clamp((plotted - 0.9) / 1.1, 0, 1);
-      if (!lc.globalAlpha) continue;
+      const base = GROOVE * clamp((plotted - 0.9) / 1.1, 0, 1);
+      if (!base) continue;
       const pts = samplePath(mark.s, mark.upto, STEP);
-      grooveAlong(lc, pts, mark.s);
+      grooveAlong(lc, pts, mark.s, base);
     }
 
     // The pen coming off the paper, and arriving on it. Gated on width the way
@@ -1918,27 +1990,11 @@ export function writingPlan(strokes) {
 
     const marks = [];
     let cost = 0;
-    let lastX = null;
-    let lastY = null;
 
-    for (let j = 1; j < p.length; j++) {
-      const dx = p[j][0] - p[j - 1][0];
-      const dy = p[j][1] - p[j - 1][1];
-      const length = Math.hypot(dx, dy);
-
-      let turn = 0;
-      if (lastX !== null && length > 0) {
-        const before = Math.hypot(lastX, lastY);
-        if (before > 0) {
-          // 0 running straight on, 2 doubling back on itself.
-          turn = 1 - Math.max(-1, Math.min(1, (dx * lastX + dy * lastY) / (length * before)));
-        }
-      }
-
-      cost += (length / PEN_SPEED) * (1 + TURN_COST * turn);
+    // the same pace the width model inks to
+    for (const step of segmentPace(p)) {
+      cost += step.dt;
       marks.push(cost);
-      lastX = dx;
-      lastY = dy;
     }
 
     spans.push({ start: total, marks, length: cost });

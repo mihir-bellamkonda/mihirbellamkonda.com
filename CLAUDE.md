@@ -351,19 +351,22 @@ and neither should start depending on the other.
 - The hand **scales to the space it is given** — `fitSize()` picks a size so the
   longest line nearly fills the width and the poem fits the height. Stroke weight
   tracks that size; a fixed hairline vanishes once the hand scales up.
-- **The groove follows the normal, and it is not on a counter.** It used to be
-  offset in x alone, so on an upright stroke it sat beside the line and on a flat
-  one it sat down the middle of it: it lifted 9.3% of the ink from horizontal
-  runs against 3.5% from vertical ones, in a hand that is mostly curves and so
-  mostly neither. And it ran on `i % 48` counted from the start of every stroke,
-  which is not a beat — the median stroke is 37 samples, so most marks never
-  reached the end of one turn of the rule and every mark on the site opened with
-  the same thirty-two grooved samples. It now runs along the normal, on one side
-  of travel the whole way, in runs drawn from a stream seeded off the mark's own
-  geometry, and lifts 11.5% against 9.3% by direction.
-  **To measure any change to it**, difference two renders with `GROOVE` set to
-  zero in one. On a curve the inside of the line is darker than the outside
-  regardless, and that swamps the groove in any direct reading of the ink.
+- **The width the pen inks at and the speed it writes at are one model.**
+  `segmentPace()` charges every segment a duration, its length over `PEN_SPEED`
+  multiplied up by `TURN_COST` where the pen has to turn, and both
+  `writingPlan()` and the width model read it. They used to be separate: the
+  timing had a real account of where the hand slows, and the width model kept
+  its own copy of the turn arithmetic with a different coefficient and otherwise
+  used direction to decide that downstrokes are heavy. Over a title trace, width
+  correlated -0.19 with speed and 0.58 with how far down the page a segment
+  pointed. It is now -0.46 against 0.24. Direction still carries a share,
+  because a pulled stroke really is heavier than a pushed one and that is
+  pressure rather than pace, but it no longer leads.
+  **Two traps in measuring it.** Read the correlation over the whole hand: a
+  floor of ten points per stroke drops the short marks, which are where the
+  sharp turns are, and the same hand then reads -0.11 off a sample with most of
+  the slow taken out of it. And read it away from the ends, or the taper answers
+  for the pace model.
 - **A stroke opens and closes.** `taperEnds()` ramps the plotted width down at
   both ends, in arc length rather than in points, because the generator's points
   are not evenly spaced. That alone changes the shape of an end and not its
@@ -376,6 +379,30 @@ and neither should start depending on the other.
   after: a hairline has no taper to give, and fading one only greys it out, which
   is what the ball floor exists to stop. A mark still being written keeps its full
   ink at the tip, because that end is the pen, and the pen is on the paper.
+- **The groove follows the normal, and it is not on a counter.** It used to be
+  offset in x alone, so on an upright stroke it sat beside the line and on a flat
+  one it sat down the middle of it: it lifted 9.3% of the ink from horizontal
+  runs against 3.5% from vertical ones, in a hand that is mostly curves and so
+  mostly neither. And it ran on `i % 48` counted from the start of every stroke,
+  which is not a beat — the median stroke is 37 samples, so most marks never
+  reached the end of one turn of the rule and every mark on the site opened with
+  the same thirty-two grooved samples. It now runs along the normal, on one side
+  of travel the whole way, in runs drawn from a stream seeded off the mark's own
+  geometry, and lifts 11.5% against 9.3% by direction. Each run's depth tracks
+  the local pace, and that is where value along a line comes from: per-point
+  alpha would break the build-once composite, and that composite is the whole
+  reason the beads went.
+  **To measure any change to it**, difference two renders with `GROOVE` set to
+  zero in one. On a curve the inside of the line is darker than the outside
+  regardless, and that swamps the groove in any direct reading of the ink.
+- **The pen is measured in a browser, not in the tests.** `paintMarks` needs a
+  canvas and node has none, so the node tests exercise the geometry and fall
+  through to the old painter. The harness that produced every number above is
+  `~/Desktop/Junk Drawer/asemic-hand/tools/2026-09-10/` — `pen.mjs` drives
+  chromium over a static server and `probe.js` measures in the page; `model.mjs`
+  reads the width and time models against each other and needs no browser.
+  `perf.mjs` races the current painter against trunk's **in one page**, which is
+  the only way to time them: two launches of the same build disagreed by 40%.
 
 - Canvas, never a handwriting font. Ink colour comes from CSS variables so marks
   follow the theme.

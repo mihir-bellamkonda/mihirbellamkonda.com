@@ -439,3 +439,62 @@ test('a stroke opens and closes lighter than it runs', () => {
   }
   assert.ok(looked > 3, 'no stroke was long enough to have a middle');
 });
+
+test('the hand inks to the pace the time model writes at', () => {
+  // Not "slow segments are the widest": in this hand the downstrokes are also
+  // the straight fast runs and the corners are mostly the flat parts, so at the
+  // extremes pressure and pace pull against each other and roughly cancel. The
+  // claim is the one the two models are supposed to share — that what the pen
+  // is doing now leads where it happens to be pointing.
+  const strokes = ghost(POEM, { rng: rngFor('pace'), x: 0, width: 300, height: 460 });
+  const plan = writingPlan(strokes);
+
+  const width = [];
+  const speed = [];
+  const downness = [];
+
+  for (let i = 0; i < strokes.length; i++) {
+    const s = strokes[i];
+    const span = plan.spans[i];
+    // Every stroke long enough to have a middle, and no longer a floor than
+    // that: the short marks are where the sharp turns are, and dropping them
+    // leaves only the long smooth ones, which barely change speed at all. With
+    // a floor of ten points this reads -0.11 instead of -0.46, off a sample
+    // that has had most of the slow taken out of it.
+    if (!span || !Array.isArray(s.lw) || s.lw.length < 6) continue;
+    // away from the ends, which are ramps whatever the pen was doing there
+    const from = Math.max(1, Math.floor(s.lw.length * 0.25));
+    const to = Math.min(s.pts.length, Math.ceil(s.lw.length * 0.75));
+
+    for (let j = from; j < to; j++) {
+      const dx = s.pts[j][0] - s.pts[j - 1][0];
+      const dy = s.pts[j][1] - s.pts[j - 1][1];
+      const length = Math.hypot(dx, dy);
+      const dt = span.marks[j - 1] - (j > 1 ? span.marks[j - 2] : 0);
+      if (!(length > 0.01) || !(dt > 0)) continue;
+
+      width.push((s.lw[j - 1] + s.lw[j]) * 0.5);
+      speed.push(length / dt);
+      downness.push(dy / length);
+    }
+  }
+
+  assert.ok(width.length > 200, 'too little of the poem to read a correlation off');
+
+  const r = (xs, ys) => {
+    const mx = xs.reduce((a, b) => a + b, 0) / xs.length;
+    const my = ys.reduce((a, b) => a + b, 0) / ys.length;
+    let xy = 0, xx = 0, yy = 0;
+    for (let i = 0; i < xs.length; i++) {
+      const a = xs[i] - mx, b = ys[i] - my;
+      xy += a * b; xx += a * a; yy += b * b;
+    }
+    return xy / Math.sqrt(xx * yy || 1);
+  };
+
+  const pace = r(width, speed);
+  const point = r(width, downness);
+  assert.ok(pace < -0.3, `width barely tracks speed: r = ${pace.toFixed(2)}`);
+  assert.ok(Math.abs(pace) > Math.abs(point),
+    `direction still leads pace: speed ${pace.toFixed(2)} against downness ${point.toFixed(2)}`);
+});

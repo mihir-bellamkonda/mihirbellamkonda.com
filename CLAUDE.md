@@ -351,6 +351,19 @@ and neither should start depending on the other.
 - The hand **scales to the space it is given** — `fitSize()` picks a size so the
   longest line nearly fills the width and the poem fits the height. Stroke weight
   tracks that size; a fixed hairline vanishes once the hand scales up.
+- **A stroke opens and closes.** `taperEnds()` ramps the plotted width down at
+  both ends, in arc length rather than in points, because the generator's points
+  are not evenly spaced. That alone changes the shape of an end and not its
+  density, since a line laid on the mask reaches the same peak wherever it is
+  broader than the ball, so `fadeTip()` takes the ink off as well, through a
+  gradient stroked once along the last run rather than segment by segment. At
+  title size the last sample of a stroke carried 1.00 of its middle's ink before
+  this and carries 0.13 now. Both are gated on width the way the groove is, so
+  **the small hand is untouched** and a poem column measures identical before and
+  after: a hairline has no taper to give, and fading one only greys it out, which
+  is what the ball floor exists to stop. A mark still being written keeps its full
+  ink at the tip, because that end is the pen, and the pen is on the paper.
+
 - Canvas, never a handwriting font. Ink colour comes from CSS variables so marks
   follow the theme.
 - **The write-on is a hand, not a wipe.** `writingPlan()` measures the marks as one

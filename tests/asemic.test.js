@@ -419,3 +419,23 @@ test('wide title rows keep every word and fit their complete ink into the box', 
     }
   }
 });
+
+test('a stroke opens and closes lighter than it runs', () => {
+  const strokes = ghost(POEM, {
+    rng: rngFor('lift'), x: 0, width: 640, height: 200, size: 54, maxLines: 1
+  });
+
+  let looked = 0;
+  for (const s of strokes) {
+    if (!Array.isArray(s.lw) || s.lw.length < 14) continue;
+    const middle = s.lw.slice(Math.floor(s.lw.length * 0.3), Math.ceil(s.lw.length * 0.7));
+    const run = middle.reduce((a, b) => a + b, 0) / middle.length;
+    looked++;
+
+    assert.ok(s.lw[0] < run * 0.9, 'the pen arrives at the weight it will settle at');
+    assert.ok(s.lw[s.lw.length - 1] < run * 0.75, 'the pen leaves the paper at full weight');
+    // and the middle is nobody's ramp
+    assert.ok(Math.max(...middle) > s.lw[s.lw.length - 1] * 1.4, 'the taper ate the line');
+  }
+  assert.ok(looked > 3, 'no stroke was long enough to have a middle');
+});

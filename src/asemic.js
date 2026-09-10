@@ -1120,6 +1120,55 @@ function breakParagraph(line) {
 }
 
 /**
+ * A stroke opens, and it closes.
+ *
+ * The width model reads direction and turn, so it has nothing to say about the
+ * pen arriving on the paper or coming off it: every mark was the same line at
+ * its ends as in its middle, finished with a round cap. Measured on a
+ * title-size trace, the last sample of a stroke carried 1.00 of the ink its
+ * middle carried, and 0.77 of the width.
+ *
+ * The ramps run in arc length, not in points. The generator's points are not
+ * evenly spaced, so an index-counted ramp would taper a long segment and a
+ * short one by the same amount. Neither ramp may eat more than its share of a
+ * short mark, or a tick would be all opening and close and have no line.
+ *
+ * The opening is short and firm and the close is longer, because a hand puts a
+ * pen down more decisively than it takes it off.
+ */
+const LEAD = 0.55;        // the share of its own width a stroke opens at
+const LIFT = 0.28;        // and the share it closes to
+const LEAD_RUN = 0.30;    // how far the opening runs, in units of the letter size
+const LIFT_RUN = 0.60;    // and the close
+
+function taperEnds(pts, lw, size) {
+  if (!Array.isArray(lw) || lw.length < 3) return lw;
+
+  const arc = [0];
+  for (let i = 1; i < pts.length; i++) {
+    arc.push(arc[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+  }
+  const total = arc[arc.length - 1];
+  if (!(total > 0)) return lw;
+
+  const lead = Math.min(total * 0.22, size * LEAD_RUN);
+  const lift = Math.min(total * 0.34, size * LIFT_RUN);
+
+  for (let i = 0; i < lw.length; i++) {
+    let f = 1;
+    if (lead > 0 && arc[i] < lead) {
+      f *= LEAD + (1 - LEAD) * Math.pow(arc[i] / lead, 0.5);
+    }
+    const back = total - arc[i];
+    if (lift > 0 && back < lift) {
+      f *= LIFT + (1 - LIFT) * Math.pow(back / lift, 0.85);
+    }
+    lw[i] *= f;
+  }
+  return lw;
+}
+
+/**
  * Render a poem's real lines as unreadable writing inside a box.
  * Blank lines in the source become stanza gaps, so the block keeps the
  * poem's actual shape.
@@ -1278,6 +1327,7 @@ export function ghost(text, opts) {
           previous = previous * 0.22 + target * 0.78;
           return previous;
         });
+        taperEnds(pts, lw, size);
         out.push({ pts, ink, alpha, lw, curve: pen.curve, gap: opening ? gap : 'letter' });
         opening = false;
       }
@@ -1446,6 +1496,59 @@ function tracePath(ctx, s, upto, nib, floor = 0) {
 }
 
 /**
+ * Lift the ink off one end of a mark.
+ *
+ * `taperEnds` thins the geometry, but a line drawn on the mask reaches the same
+ * peak wherever it is wider than the ball, so thinning alone changes the shape
+ * of an end without changing its density: it still arrives at full strength and
+ * stops. This takes the ink off with it.
+ *
+ * The ramp is a gradient laid along the last run of the path, and the path is
+ * stroked through it once. Fading segment by segment would erase every shoulder
+ * twice, which is the bead the mask was built to remove, turned inside out.
+ */
+function fadeTip(lc, pts, atEnd, run, fade) {
+  const n = pts.length;
+
+  // A short mark has to keep a middle. Without this the two ramps meet and a
+  // tick is written entirely in touch-down and lift, with no line in between.
+  // The shares are the ones `taperEnds` holds the geometry to.
+  let total = 0;
+  for (let k = 1; k < n; k++) {
+    total += Math.hypot(pts[k].x - pts[k - 1].x, pts[k].y - pts[k - 1].y);
+  }
+  if (!(total > 0)) return;
+  run = Math.min(run, total * (atEnd ? 0.34 : 0.22));
+
+  const step = atEnd ? -1 : 1;
+  let i = atEnd ? n - 1 : 0;
+  const tip = pts[i];
+  const path = [tip];
+  let widest = tip.width;
+  let gone = 0;
+
+  while (i + step >= 0 && i + step < n && gone < run) {
+    const next = pts[i + step];
+    gone += Math.hypot(next.x - pts[i].x, next.y - pts[i].y);
+    path.push(next);
+    if (next.width > widest) widest = next.width;
+    i += step;
+  }
+  if (path.length < 2 || gone <= 0) return;
+
+  const back = path[path.length - 1];
+  const ramp = lc.createLinearGradient(tip.x, tip.y, back.x, back.y);
+  ramp.addColorStop(0, 'rgba(0,0,0,' + fade + ')');
+  ramp.addColorStop(1, 'rgba(0,0,0,0)');
+  lc.strokeStyle = ramp;
+  lc.lineWidth = widest * NIB + 1.4;
+  lc.beginPath();
+  lc.moveTo(path[0].x, path[0].y);
+  for (let k = 1; k < path.length; k++) lc.lineTo(path[k].x, path[k].y);
+  lc.stroke();
+}
+
+/**
  * The pen: a fine ballpoint line with a little fountain-pen pooling at the turns.
  *
  * The old painter stroked every segment separately at a translucent alpha, so
@@ -1473,6 +1576,9 @@ const POOL_GAIN = 0.13;      // ink gathered per unit of turn
 const POOL_CAP = 0.065;      // and never more than this, or it overpowers the line
 const GRAIN = 0.05;          // grain dots per square px of page
 const GROOVE = 0.25;         // how much of the groove is lifted out
+const TIP_FADE = 0.82;       // ink lifted at the very tip of a finished mark
+const TIP_LEAD_RUN = 1.3;    // how far the touch-down fade runs, in plotted widths
+const TIP_LIFT_RUN = 2.4;    // and the lift, which the hand takes longer over
 const STEP = 1.4;            // px between the samples the groove and pools read
 
 /**
@@ -1632,6 +1738,22 @@ function paintMarks(ctx, marks, pal) {
       }
       lc.stroke();
     }
+
+    // The pen coming off the paper, and arriving on it. Gated on width the way
+    // the groove is: on a hairline there is no taper to be had, and fading one
+    // only greys it out, which is the thing the ball floor was put in to stop.
+    lc.globalAlpha = 1;
+    for (const mark of group.marks) {
+      const plotted = Array.isArray(mark.s.lw) ? Math.max(...mark.s.lw) : mark.s.lw;
+      const strength = clamp((plotted - 0.9) / 1.1, 0, 1);
+      if (!strength) continue;
+      const pts = samplePath(mark.s, mark.upto, STEP);
+      if (pts.length < 4) continue;
+      fadeTip(lc, pts, false, plotted * TIP_LEAD_RUN, TIP_FADE * 0.5 * strength);
+      // a mark still being written ends at the pen, and the pen is on the paper
+      if (!mark.upto) fadeTip(lc, pts, true, plotted * TIP_LIFT_RUN, TIP_FADE * strength);
+    }
+
     lc.globalCompositeOperation = 'source-over';
 
     const weight = Math.min(1, 0.85 * group.alpha * INK_GAIN);

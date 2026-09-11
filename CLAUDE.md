@@ -425,15 +425,22 @@ and neither should start depending on the other.
   poem's own seed, so a mark hesitates in the same places for every reader. The
   cost is about a second on a half-minute column, and since the caller
   compresses a column it is the proportions that survive, not the seconds.
-- **The tip fade is capped in pixels.** `fadeTip()` tapers each end of a
-  finished mark over a run measured in plotted widths (1.3 for the touch-down,
-  2.4 for the lift), and it is gated to full strength only on broad marks. Both
-  scale with size, so on the hidden page's large words a lift ran eleven pixels
-  at four times a signature's strength and every stroke end dissolved into grey.
-  `TIP_LEAD_CAP` and `TIP_LIFT_CAP` hold the runs to 2.4 and 4.5 pixels: a pen
-  gives up its ink over about a nib's travel however large the hand is writing.
-  Nothing at or under size 22 reaches the caps, and the index, the columns and
-  the name page were checked byte-identical either side of them.
+- **The tip fade and the groove are capped for broad marks.** `fadeTip()`
+  tapers each end of a finished mark over a run measured in plotted widths (1.3
+  for the touch-down, 2.4 for the lift), gated to full strength only on broad
+  marks; both scale with size, so on the hidden page's large words a lift ran
+  eleven pixels at four times a signature's strength and every stroke end
+  dissolved into grey. `TIP_LEAD_CAP` and `TIP_LIFT_CAP` hold the runs to 2.4
+  and 4.5 pixels: a pen gives up its ink over about a nib's travel however large
+  the hand is writing. The groove is a 0.8px line with runs and skips a fixed
+  few pixels long, which on a hairline reads as the ink varying and on a stroke
+  three pixels wide reads as a pale streak with patches; it fades out between
+  `GROOVE_CAP` (2.7) and `GROOVE_GONE` (3.8) plotted widths. Measured: columns
+  and signatures never pass 1.9 and are byte-identical either side of both; the
+  name page's widest stroke is 2.64, so it is byte-identical under the groove
+  cap, and its two heaviest strokes lose up to about a pixel of lift taper under
+  the fade cap, which is the one place under size 22 the fade cap reaches. The
+  large words lose the groove entirely and keep a short taper.
 - **A frame of the write-on costs only the pen.** It used to clear the canvas
   and repaint every finished stroke, and then draw the paper grain, forty-odd
   thousand ellipses at GRAIN dots per square pixel, on every one of those
@@ -656,14 +663,15 @@ shareable, which is the right amount of secret.
 
 Three things sit behind it, drawn at **five to two to two**:
 
-- **book** — fifteen lines of the book, blank lines kept so the hand takes its
-  stanza rests, filling the page illegibly. The write-on ceiling is lifted
-  here and nowhere else, so it runs the time the plan actually costs rather
-  than the nine-second house maximum. It was thirty lines, and halving them is
-  what doubled the size of the writing: the box is the page and does not
-  change, so the only thing deciding how large the hand writes is how many
-  rows it has to fit. Lifting the ceiling does nothing when the ceiling is not
-  what is holding it.
+- **book** — ten lines of the book, blank lines kept so the hand takes its
+  stanza rests, filling the page illegibly, with the size ceiling lifted to 24.
+  The write-on ceiling is lifted here and nowhere else, so it runs the time the
+  plan actually costs rather than the nine-second house maximum. It was thirty
+  lines, and halving them doubled the size of the writing, because the box is
+  the page and the fitter divides the height by the rows. At fifteen it had hit
+  the house ceiling of 16, so cutting lines alone stopped doing anything; the
+  poet asked for half again, and that took both fewer rows and a higher
+  ceiling. Measured at 1.47 to 1.53 times the old size across three screens.
 - **words** — seven words from the book, one to a line, written large. This is
   the only state where a reader can watch a single letter being made.
 - **angel** — Klee's *Angelus Novus* in the site's ink, dead centre of the

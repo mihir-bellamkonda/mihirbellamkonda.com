@@ -25,7 +25,7 @@
         :max-lines="0"
         :ceiling="0"
         :stretch="showing === 'book' ? STRETCH : 1"
-        :max-size="showing === 'words' ? WORD_SIZE : 16"
+        :max-size="showing === 'words' ? WORD_SIZE : BOOK_SIZE"
       />
     </div>
   </div>
@@ -99,14 +99,30 @@ const showing = roll < 5 ? 'book' : (roll < 7 ? 'words' : 'angel');
 // budgeting them together bought the breaks by throwing away a quarter of
 // the writing, which is paying for the shape of a page with the page.
 //
-// Fifteen, where it was thirty. The box is the page and does not change, so
-// the only thing that decides how large the hand writes is how many rows it
-// has to fit: the fitter divides the height by the rows and nothing else
-// binds — the 16 ceiling is nowhere near, at thirty lines it was drawing at
-// about seven. Halving the lines doubles the writing. Nothing else would:
-// lifting the ceiling does nothing when the ceiling is not what is holding
-// it, which is worth writing down because it was the first thing tried.
-const LINES = 15;
+// Ten, where it was fifteen, and thirty before that. The box is the page and
+// does not change, so what decides how large the hand writes is how many rows
+// it has to fit — the fitter divides the height by the rows — up to the
+// ceiling. At thirty lines the ceiling was nowhere near and it drew at about
+// seven; halving the lines doubled it. At fifteen it had reached the ceiling
+// of 16, so cutting lines alone no longer did anything: measured across three
+// screens, ten lines under the same ceiling came out within two percent of
+// fifteen. The poet asked for half again, and that takes both — fewer rows,
+// so the geometry allows it, and a higher ceiling, so the ceiling does. See
+// BOOK_SIZE. Ten lines at 24 measure 1.47 to 1.53 times what fifteen at 16
+// did on a laptop, a desktop and a small pane.
+const LINES = 10;
+
+/**
+ * How large the book state may write.
+ *
+ * The house ceiling of 16 is for a mark beside something else, and the
+ * words state already lifts it to 44. The book state stayed at 16 and was
+ * the smallest writing on the page by some way; the poet asked for it half
+ * again as large. 24 is 16 times 1.5, and with ten rows the height allows
+ * about that on an ordinary screen, so the two agree rather than one quietly
+ * holding the other back.
+ */
+const BOOK_SIZE = 24;
 
 /**
  * Seven words, one to a line.

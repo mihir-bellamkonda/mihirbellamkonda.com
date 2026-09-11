@@ -1700,6 +1700,18 @@ const POOL_GAIN = 0.13;      // ink gathered per unit of turn
 const POOL_CAP = 0.065;      // and never more than this, or it overpowers the line
 const GRAIN = 0.05;          // grain dots per square px of page
 const GROOVE = 0.25;         // how much of the groove is lifted out
+// ...on a mark up to this wide. The groove is a 0.8px line however wide the
+// stroke is, and its runs and skips are a fixed few pixels long, so on a
+// hairline it reads as the ink varying along the mark, which is what it is
+// for — and on the hidden page's large words, drawn two and three pixels
+// wide, the same line became a pale streak down the middle of every stroke
+// with the skips showing as patches. It fades out from GROOVE_CAP to nothing
+// at GROOVE_GONE. The name page's widest stroke measures 2.64, columns and
+// signatures never pass 1.9, and the words' median is 4.2: the name page,
+// the columns, the signatures and the label under the angel (settled into
+// its 46px box) are byte-identical either side, and the words lose it.
+const GROOVE_CAP = 2.7;
+const GROOVE_GONE = 3.8;
 const TIP_FADE = 0.82;       // ink lifted at the very tip of a finished mark
 const TIP_LEAD_RUN = 1.3;    // how far the touch-down fade runs, in plotted widths
 const TIP_LIFT_RUN = 2.4;    // and the lift, which the hand takes longer over
@@ -1917,7 +1929,8 @@ function paintMarks(ctx, marks, pal, opts = {}) {
       // Only a mark broad enough to hold a groove is given one; on a hairline
       // it would read as the line simply fading, which is not the same thing.
       const plotted = plottedOf(mark.s);
-      const base = GROOVE * clamp((plotted - 0.9) / 1.1, 0, 1);
+      const base = GROOVE * clamp((plotted - 0.9) / 1.1, 0, 1)
+        * clamp((GROOVE_GONE - plotted) / (GROOVE_GONE - GROOVE_CAP), 0, 1);
       if (!base) continue;
       const pts = samplePath(mark.s, mark.upto, STEP);
       grooveAlong(lc, pts, mark.s, base);

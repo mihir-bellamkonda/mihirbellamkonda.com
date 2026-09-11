@@ -1245,6 +1245,21 @@ function taperEnds(pts, lw, size) {
   // A broad mark goes to a point at both ends, as the page does. Read off
   // the widths before any of them are tapered.
   const broad = broadShare(Math.max(...lw));
+
+  // And it changes width the way a pen does, continuously. The model above
+  // sets a target per point and keeps most of each new one, so where a
+  // pulled stroke turns into a pushed one the width can jump by a third
+  // between two points. On a hairline that is a change of a fraction of a
+  // pixel; at three pixels wide it is a visible step in the edge at every
+  // crest. Three taps, so the modulation a letter has — thick on the pull,
+  // thin on the push — is kept and only the jump between neighbours goes.
+  if (broad > 0 && lw.length > 2) {
+    const raw = lw.slice();
+    for (let i = 1; i < lw.length - 1; i++) {
+      const smoothed = (raw[i - 1] + 2 * raw[i] + raw[i + 1]) * 0.25;
+      lw[i] = raw[i] + (smoothed - raw[i]) * broad;
+    }
+  }
   const leadTo = LEAD + (LEAD_BROAD - LEAD) * broad;
   const liftTo = LIFT + (LIFT_BROAD - LIFT) * broad;
 
@@ -1564,6 +1579,15 @@ function tracePath(ctx, s, upto, nib, floor = 0) {
     return;
   }
 
+  // A broad mark is drawn in short pieces with the width ramped across each
+  // segment, because a segment drawn at one width is a step at every joint
+  // and at size 44 a segment is ten or fifteen pixels long. A hairline keeps
+  // the single piece per segment: the step there is a fraction of a pixel,
+  // and drawing it whole leaves every mark on the site exactly as it was.
+  const widths = Array.isArray(s.lw) ? s.lw : null;
+  const broad = widths ? broadShare(Math.max(...widths)) : 0;
+  const widthAt = j => (widths ? widths[j] : s.lw);
+
   for (let j = 1; j <= last; j++) {
     // the pen enters where the segment behind was halfway through and leaves
     // halfway through this one; the two ends of a stroke keep their real points
@@ -1573,11 +1597,47 @@ function tracePath(ctx, s, upto, nib, floor = 0) {
       const a = p[j - 1], b = p[j];
       to = [a[0] + (b[0] - a[0]) * upto.fraction, a[1] + (b[1] - a[1]) * upto.fraction];
     }
-    ctx.beginPath();
-    ctx.moveTo(from[0], from[1]);
-    ctx.quadraticCurveTo(p[j - 1][0], p[j - 1][1], to[0], to[1]);
-    ctx.lineWidth = Math.max((Array.isArray(s.lw) ? (s.lw[j - 1] + s.lw[j]) * 0.5 : s.lw) * nib, floor);
-    ctx.stroke();
+    const c = p[j - 1];
+    // the width this segment was always drawn at: the mean of its two points
+    const flat = (widthAt(j - 1) + widthAt(j)) * 0.5;
+
+    if (!(broad > 0)) {
+      ctx.beginPath();
+      ctx.moveTo(from[0], from[1]);
+      ctx.quadraticCurveTo(c[0], c[1], to[0], to[1]);
+      ctx.lineWidth = Math.max(flat * nib, floor);
+      ctx.stroke();
+      continue;
+    }
+
+    // Width is continuous across joints: a joint sits halfway between two
+    // points and carries their mean, so this segment runs from the joint
+    // behind to the joint ahead. Its pieces ramp between the two, blended
+    // toward the old flat width by how far from broad the mark is.
+    const wStart = j === 1 ? widthAt(0) : (widthAt(j - 2) + widthAt(j - 1)) * 0.5;
+    const wEnd = flat;
+    const run = Math.hypot(c[0] - from[0], c[1] - from[1]) + Math.hypot(to[0] - c[0], to[1] - c[1]);
+    const pieces = Math.max(1, Math.min(12, Math.ceil(run / 3)));
+    const bez = t => [
+      (1 - t) * (1 - t) * from[0] + 2 * (1 - t) * t * c[0] + t * t * to[0],
+      (1 - t) * (1 - t) * from[1] + 2 * (1 - t) * t * c[1] + t * t * to[1]
+    ];
+    for (let i = 0; i < pieces; i++) {
+      const t0 = i / pieces, t1 = (i + 1) / pieces;
+      const q0 = bez(t0), q2 = bez(t1);
+      // the control point of the sub-curve on [t0, t1] is the blossom f(t0, t1)
+      const q1 = [
+        (1 - t0) * (1 - t1) * from[0] + ((1 - t0) * t1 + t0 * (1 - t1)) * c[0] + t0 * t1 * to[0],
+        (1 - t0) * (1 - t1) * from[1] + ((1 - t0) * t1 + t0 * (1 - t1)) * c[1] + t0 * t1 * to[1]
+      ];
+      const ramp = wStart + (wEnd - wStart) * ((i + 0.5) / pieces);
+      const w = flat + (ramp - flat) * broad;
+      ctx.beginPath();
+      ctx.moveTo(q0[0], q0[1]);
+      ctx.quadraticCurveTo(q1[0], q1[1], q2[0], q2[1]);
+      ctx.lineWidth = Math.max(w * nib, floor);
+      ctx.stroke();
+    }
   }
 }
 

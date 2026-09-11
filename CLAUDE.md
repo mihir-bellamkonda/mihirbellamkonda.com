@@ -444,7 +444,16 @@ and neither should start depending on the other.
   stops; and the groove fades out. On a hairline the 0.28 close and the 1px
   floor were always cancelling each other, which is why none of this was ever
   visible before the words. The slight feathering at a broad tip is the grain
-  acting on a sub-pixel point, and is wanted.
+  acting on a sub-pixel point, and is wanted. **A broad mark also changes width
+  continuously.** The width model keeps 78% of each new target and a pull-to-
+  push reversal swings the target by 44% of the base, so a crest was a two-step
+  jump; and `tracePath()` drew every segment at one width, a step at every
+  joint, ten or fifteen pixels apart at size 44. On a broad mark the profile
+  gets a 3-tap smoothing in `taperEnds()` (three, so the thick-pull thin-push
+  modulation a letter has is kept and only the jump between neighbours goes),
+  and the painter splits each curve into pieces of about three pixels and ramps
+  the width across them, continuous at the joints. A hairline is drawn whole,
+  as before, and is byte-identical.
 - **The tip fade is capped in pixels on the way to being broad.** `fadeTip()`
   tapers each end of a finished mark over a run measured in plotted widths (1.3
   for the touch-down, 2.4 for the lift), gated to full strength only on broad

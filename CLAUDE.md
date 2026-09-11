@@ -425,6 +425,27 @@ and neither should start depending on the other.
   poem's own seed, so a mark hesitates in the same places for every reader. The
   cost is about a second on a half-minute column, and since the caller
   compresses a column it is the proportions that survive, not the seconds.
+- **A frame of the write-on costs only the pen.** It used to clear the canvas
+  and repaint every finished stroke, and then draw the paper grain, forty-odd
+  thousand ellipses at GRAIN dots per square pixel, on every one of those
+  frames. By the end of the hidden page's write a single frame was 87.6ms, so
+  the long write was held to one frame every 70ms and read as choppy. Two
+  changes in `asemic.js`: the grain is drawn once onto a cached sheet and cut
+  out of the page with one blit, which is the same arithmetic as cutting each
+  dot out in turn (source-over stacks the alphas as 1 minus the product,
+  destination-out multiplies by 1 minus that); and `createWriter()` keeps the
+  finished strokes on a settled sheet and each frame repaints only the
+  rectangle the pen is in, with the few finished strokes whose ink or bloom
+  reaches into it. `paintMarks()` can now work inside a region exactly, reading
+  a margin round it so the bloom at its edge has its context, and laying the
+  ink groups down in the whole page's order, so what comes out of the region
+  is pixel for pixel what a whole-page repaint would have put there. Measured:
+  a late frame went from 87.6ms to 0.2ms; the finished page differs from
+  `paint()` by one pixel in fifty-two thousand; stepping backwards and forwards
+  again lands on the identical image; the hidden page runs at 60fps with no
+  frame over 25ms. The step is gone from `AsemicMarks.vue`. A reader scrolling
+  a poem upward unsettles the sheet and it resettles from the start, which
+  costs about what one repaint used to and happens only on the way back.
 - A ResizeObserver reports the size it starts with. `AsemicMarks.vue` therefore
   redraws on resize only when the canvas has really changed size — otherwise every
   write-on was cut off a fraction of a second in. Theme changes still repaint

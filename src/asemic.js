@@ -1791,6 +1791,33 @@ function scratchFor(width, height) {
   return null;
 }
 
+/** The ink group a mark is laid down with: its colour, its weight, and whether it is broad enough to carry a wet edge. */
+function groupKeyOf(s) {
+  const step = Math.round((s.alpha == null ? 1 : s.alpha) * 20);
+  return (s.ink || 'mark') + '|' + step + '|' + (plottedOf(s) >= BROAD ? 'b' : 't');
+}
+
+function plottedOf(s) {
+  return (Array.isArray(s.lw) ? Math.max(...s.lw) : s.lw) || 0;
+}
+
+/**
+ * How much grain the hand can take: a broad mark is textured by it, a fine one
+ * is only eaten away, so the spatter lightens as the marks get finer.
+ */
+function grainWeightFor(broadest) {
+  return clamp((broadest - 0.6) / 1.2, 0.25, 1);
+}
+
+/** A rectangle snapped outward to the device pixel grid and held inside the page. */
+function readRect(x, y, w, h, pageW, pageH, dpr) {
+  const x0 = Math.max(0, Math.floor(x * dpr) / dpr);
+  const y0 = Math.max(0, Math.floor(y * dpr) / dpr);
+  const x1 = Math.min(pageW, Math.ceil((x + w) * dpr) / dpr);
+  const y1 = Math.min(pageH, Math.ceil((y + h) * dpr) / dpr);
+  return { x: x0, y: y0, w: Math.max(0, x1 - x0), h: Math.max(0, y1 - y0) };
+}
+
 /**
  * Paint a set of marks, each optionally stopped part of the way along it.
  *
@@ -1798,8 +1825,18 @@ function scratchFor(width, height) {
  * is built and composited a handful of times rather than once per mark. Two
  * marks of the same weight may overlap on the mask without darkening, which is
  * the whole point of it.
+ *
+ * `opts.region` confines the work to one rectangle of the page, in CSS pixels:
+ * everything is clipped to it, the shared layer is cleared only where the
+ * blits will read, and the blurred blit reads a margin round the region so
+ * the bloom inside has its full context. Inside the region the result is
+ * exactly what painting the same marks over the whole page would have put
+ * there. `opts.order` fixes the order the ink groups go down in, so a subset
+ * composes the way the whole set did. `opts.grain` false leaves the paper
+ * grain to the caller; `opts.broadest` names the broadest mark on the page
+ * when the caller knows it and this call sees only some of them.
  */
-function paintMarks(ctx, marks, pal) {
+function paintMarks(ctx, marks, pal, opts = {}) {
   if (!marks.length) return;
 
   const canvas = ctx.canvas;
@@ -1818,24 +1855,40 @@ function paintMarks(ctx, marks, pal) {
   const h = canvas.height / dpr;
   const lc = layer.getContext('2d');
 
+  // Where the blits read from. The whole page, unless a region is given —
+  // then the region with a margin round it, so that the bloom just inside
+  // the region's edge has the ink just outside it to blur with. Snapped to
+  // the device grid so the blit maps pixel for pixel and resamples nothing.
+  const region = opts.region || null;
+  const margin = BLOOM_BLUR * 4 + 2;
+  const read = region
+    ? readRect(region.x - margin, region.y - margin, region.w + margin * 2, region.h + margin * 2, w, h, dpr)
+    : { x: 0, y: 0, w, h };
+  if (!read.w || !read.h) return;
+
   const weights = new Map();
   for (const mark of marks) {
-    const step = Math.round((mark.s.alpha == null ? 1 : mark.s.alpha) * 20);
-    const plotted = Array.isArray(mark.s.lw) ? Math.max(...mark.s.lw) : mark.s.lw;
-    const broad = plotted >= BROAD;
-    const key = (mark.s.ink || 'mark') + '|' + step + '|' + (broad ? 'b' : 't');
+    const key = groupKeyOf(mark.s);
     let group = weights.get(key);
     if (!group) {
-      group = { ink: pal[mark.s.ink] || pal.mark, alpha: step / 20, broad, marks: [] };
+      const step = Math.round((mark.s.alpha == null ? 1 : mark.s.alpha) * 20);
+      group = { key, ink: pal[mark.s.ink] || pal.mark, alpha: step / 20, broad: plottedOf(mark.s) >= BROAD, marks: [] };
       weights.set(key, group);
     }
     group.marks.push(mark);
   }
 
-  for (const group of weights.values()) {
-    lc.setTransform(1, 0, 0, 1, 0, 0);
-    lc.clearRect(0, 0, layer.width, layer.height);
+  // Groups go down in the order they first appear, and where two inks cross
+  // the later one sits on top. A caller painting only some of the marks says
+  // what the whole set's order was, so the crossing comes out the same way.
+  const groups = [...weights.values()];
+  if (opts.order) {
+    groups.sort((a, b) => (opts.order.get(a.key) ?? Infinity) - (opts.order.get(b.key) ?? Infinity));
+  }
+
+  for (const group of groups) {
     lc.setTransform(dpr, 0, 0, dpr, 0, 0);
+    lc.clearRect(read.x, read.y, read.w, read.h);
     lc.globalCompositeOperation = 'source-over';
     lc.globalAlpha = 1;
     lc.lineCap = 'round';
@@ -1850,7 +1903,7 @@ function paintMarks(ctx, marks, pal) {
     for (const mark of group.marks) {
       // Only a mark broad enough to hold a groove is given one; on a hairline
       // it would read as the line simply fading, which is not the same thing.
-      const plotted = Array.isArray(mark.s.lw) ? Math.max(...mark.s.lw) : mark.s.lw;
+      const plotted = plottedOf(mark.s);
       const base = GROOVE * clamp((plotted - 0.9) / 1.1, 0, 1);
       if (!base) continue;
       const pts = samplePath(mark.s, mark.upto, STEP);
@@ -1862,7 +1915,7 @@ function paintMarks(ctx, marks, pal) {
     // only greys it out, which is the thing the ball floor was put in to stop.
     lc.globalAlpha = 1;
     for (const mark of group.marks) {
-      const plotted = Array.isArray(mark.s.lw) ? Math.max(...mark.s.lw) : mark.s.lw;
+      const plotted = plottedOf(mark.s);
       const strength = clamp((plotted - 0.9) / 1.1, 0, 1);
       if (!strength) continue;
       const pts = samplePath(mark.s, mark.upto, STEP);
@@ -1877,12 +1930,18 @@ function paintMarks(ctx, marks, pal) {
     const weight = Math.min(1, 0.85 * group.alpha * INK_GAIN);
     ctx.save();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (region) {
+      ctx.beginPath();
+      ctx.rect(region.x, region.y, region.w, region.h);
+      ctx.clip();
+    }
+    const sx = read.x * dpr, sy = read.y * dpr, sw = read.w * dpr, sh = read.h * dpr;
     ctx.globalAlpha = weight * (group.broad ? BLOOM_SHARE : BLOOM_THIN);
     ctx.filter = 'blur(' + BLOOM_BLUR + 'px)';
-    ctx.drawImage(layer, 0, 0, w, h);
+    ctx.drawImage(layer, sx, sy, sw, sh, read.x, read.y, read.w, read.h);
     ctx.filter = 'none';
     ctx.globalAlpha = weight;
-    ctx.drawImage(layer, 0, 0, w, h);
+    ctx.drawImage(layer, sx, sy, sw, sh, read.x, read.y, read.w, read.h);
 
     // Ink gathers where the hand actually turns — not at every sampled point,
     // which is what makes a bead rather than a pool.
@@ -1905,32 +1964,228 @@ function paintMarks(ctx, marks, pal) {
     ctx.restore();
   }
 
-  // Paper grain, fixed in page coordinates rather than carried along the
-  // stroke, so it reads as the sheet and not as a texture painted on the ink.
-  const rand = rngFor('paper-grain');
-  // How much grain the hand can take: a broad mark is textured by it, a fine one
-  // is only eaten away, so the spatter lightens as the marks get finer.
-  let broadest = 0;
-  for (const mark of marks) {
-    const plotted = Array.isArray(mark.s.lw) ? Math.max(...mark.s.lw) : mark.s.lw;
-    if (plotted > broadest) broadest = plotted;
+  if (opts.grain !== false) {
+    let broadest = opts.broadest;
+    if (broadest == null) {
+      broadest = 0;
+      for (const mark of marks) broadest = Math.max(broadest, plottedOf(mark.s));
+    }
+    applyGrain(ctx, w, h, dpr, grainWeightFor(broadest));
   }
-  const grainWeight = clamp((broadest - 0.6) / 1.2, 0.25, 1);
-  ctx.save();
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.globalCompositeOperation = 'destination-out';
-  ctx.fillStyle = '#000';
+}
+
+/**
+ * The paper grain, drawn once and kept.
+ *
+ * Grain is fixed in page coordinates and seeded from a constant, so the same
+ * dots land in the same places on every frame of every mark on the site —
+ * and it was being drawn from scratch on every one of those frames, one
+ * ellipse at a time. At GRAIN dots per square pixel the hidden page's field
+ * is forty-odd thousand of them, which on its own is several frames' worth
+ * of work before a single stroke has been traced. That, more than the
+ * strokes, is what the write-on was choking on.
+ *
+ * Laying the dots on a transparent sheet and cutting the sheet out of the
+ * page is the same picture as cutting each dot out in turn. Source-over
+ * stacks their alphas as 1 − Π(1 − aᵢ), and destination-out then multiplies
+ * the page by 1 minus that, which is Π(1 − aᵢ): exactly what the dots would
+ * have left one after another. So this is not an approximation of the old
+ * grain; it is the old grain, drawn once.
+ *
+ * The weight depends on the broadest mark on the page, so a few sheets are
+ * kept, keyed by size and weight.
+ */
+const grainMasks = new Map();
+
+function newCanvas(width, height) {
+  if (typeof OffscreenCanvas === 'function') return new OffscreenCanvas(width, height);
+  if (typeof document !== 'undefined' && typeof document.createElement === 'function') {
+    const c = document.createElement('canvas');
+    c.width = width;
+    c.height = height;
+    return c;
+  }
+  return null;
+}
+
+function grainDots(gc, w, h, grainWeight) {
+  const rand = rngFor('paper-grain');
+  gc.fillStyle = '#000';
   const dots = Math.round(w * h * GRAIN);
   for (let i = 0; i < dots; i++) {
     const x = rand() * w;
     const y = rand() * h;
     const size = 0.15 + rand() * 0.45;
-    ctx.globalAlpha = (0.1 + rand() * 0.31) * grainWeight;
-    ctx.beginPath();
-    ctx.ellipse(x, y, size, size * 0.65, -0.65, 0, Math.PI * 2);
-    ctx.fill();
+    gc.globalAlpha = (0.1 + rand() * 0.31) * grainWeight;
+    gc.beginPath();
+    gc.ellipse(x, y, size, size * 0.65, -0.65, 0, Math.PI * 2);
+    gc.fill();
+  }
+}
+
+function grainMaskFor(width, height, dpr, grainWeight) {
+  const key = width + 'x' + height + '@' + dpr + '|' + grainWeight.toFixed(3);
+  const kept = grainMasks.get(key);
+  if (kept) return kept;
+  const mask = newCanvas(width, height);
+  if (!mask) return null;
+  const gc = mask.getContext('2d');
+  gc.setTransform(dpr, 0, 0, dpr, 0, 0);
+  grainDots(gc, width / dpr, height / dpr, grainWeight);
+  if (grainMasks.size >= 8) grainMasks.delete(grainMasks.keys().next().value);
+  grainMasks.set(key, mask);
+  return mask;
+}
+
+function applyGrain(ctx, w, h, dpr, grainWeight) {
+  ctx.save();
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.globalCompositeOperation = 'destination-out';
+  const mask = grainMaskFor(ctx.canvas.width, ctx.canvas.height, dpr, grainWeight);
+  if (mask) {
+    ctx.globalAlpha = 1;
+    ctx.drawImage(mask, 0, 0, w, h);
+  } else {
+    // no offscreen surface: cut the dots out one by one, as before
+    grainDots(ctx, w, h, grainWeight);
   }
   ctx.restore();
+}
+
+/**
+ * Write a mark on progressively, paying each frame only for the pen.
+ *
+ * `paintProgress()` clears the page and paints every stroke written so far,
+ * which is the right thing for a mark that fits in a signature row and the
+ * wrong thing for a page: by the end of the hidden page's write a frame was
+ * six hundred strokes traced, grooved, tipped, blurred and beaded, and then
+ * the grain, to move a pen tip a fraction of its own width. The write-on was
+ * held to fourteen frames a second to survive it, and read as choppy.
+ *
+ * This keeps the finished strokes on a settled sheet and, each frame, redraws
+ * only the rectangle the pen is in. The painter can work inside a region
+ * exactly — the bloom inside it is blurred with the ink just outside — so
+ * the rectangle is repainted with the few finished strokes whose ink or
+ * bloom reaches into it, plus the stroke under way, and what comes out is
+ * pixel for pixel what repainting the whole page would have put there. A
+ * stroke goes onto the settled sheet the moment it is finished, by the same
+ * route. Nothing is approximated and nothing snaps at the end: the finished
+ * page is the page `paint()` draws.
+ *
+ * Going backwards — a reader scrolling up a poem — unsettles everything and
+ * settles again from the start, which costs about what one repaint used to.
+ */
+export function createWriter(canvas, strokes, plan) {
+  const ctx = canvas.getContext('2d');
+  if (!ctx || typeof ctx.getTransform !== 'function') return null;
+  const dpr = ctx.getTransform().a || 1;
+  const w = canvas.width / dpr;
+  const h = canvas.height / dpr;
+
+  // Where each stroke's ink can land: its points, plus room for the nib, the
+  // bloom, and the beads at its turns. Generous, because a rectangle a few
+  // pixels too large costs nothing and one a pixel too small leaves a seam.
+  const boxes = strokes.map(s => {
+    const p = s.pts;
+    if (!p || !p.length) return null;
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const q of p) {
+      if (q[0] < x0) x0 = q[0];
+      if (q[0] > x1) x1 = q[0];
+      if (q[1] < y0) y0 = q[1];
+      if (q[1] > y1) y1 = q[1];
+    }
+    const pad = plottedOf(s) + BLOOM_BLUR * 4 + 4;
+    return { x: x0 - pad, y: y0 - pad, w: x1 - x0 + pad * 2, h: y1 - y0 + pad * 2 };
+  });
+
+  const order = new Map();
+  let broadest = 0;
+  for (const s of strokes) {
+    const key = groupKeyOf(s);
+    if (!order.has(key)) order.set(key, order.size);
+    broadest = Math.max(broadest, plottedOf(s));
+  }
+  const grainWeight = grainWeightFor(broadest);
+
+  const touches = (a, b) => a && b &&
+    a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+
+  let settled = null;
+  let settledCount = 0;
+
+  function sheet() {
+    if (!settled) settled = newCanvas(canvas.width, canvas.height);
+    return settled;
+  }
+
+  function reset() {
+    if (settled) {
+      const sc = settled.getContext('2d');
+      sc.setTransform(1, 0, 0, 1, 0, 0);
+      sc.clearRect(0, 0, settled.width, settled.height);
+    }
+    settledCount = 0;
+  }
+
+  /** Repaint one rectangle of a context with the finished strokes that reach into it, and optionally the one under way. */
+  function recompose(target, region, upTo, partial, pal) {
+    const marks = [];
+    for (let j = 0; j < upTo; j++) {
+      if (plan.spans[j] && touches(boxes[j], region)) marks.push({ s: strokes[j], upto: null });
+    }
+    if (partial) marks.push(partial);
+    target.save();
+    target.setTransform(dpr, 0, 0, dpr, 0, 0);
+    target.beginPath();
+    target.rect(region.x, region.y, region.w, region.h);
+    target.clip();
+    target.clearRect(region.x, region.y, region.w, region.h);
+    target.restore();
+    target.setTransform(dpr, 0, 0, dpr, 0, 0);
+    paintMarks(target, marks, pal, { region, order, grain: false });
+  }
+
+  function frame(t) {
+    const pal = palette();
+    const travelled = Math.max(0, Math.min(1, t)) * plan.total;
+
+    // The strokes that are finished, and the one the pen is inside.
+    let done = 0;
+    let partial = null;
+    for (let i = 0; i < strokes.length; i++) {
+      const span = plan.spans[i];
+      if (!span) { done = i + 1; continue; }
+      if (span.start >= travelled) break;
+      if (span.start + span.length <= travelled) { done = i + 1; continue; }
+      const into = travelled - span.start;
+      let segment = 0;
+      while (segment < span.marks.length - 1 && span.marks[segment] < into) segment++;
+      const before = segment === 0 ? 0 : span.marks[segment - 1];
+      const width = span.marks[segment] - before;
+      partial = { s: strokes[i], upto: { segment: segment + 1, fraction: width > 0 ? (into - before) / width : 1 }, index: i };
+      break;
+    }
+
+    if (done < settledCount) reset();
+    if (done > settledCount) {
+      const sc = sheet().getContext('2d');
+      for (let i = settledCount; i < done; i++) {
+        if (plan.spans[i] && boxes[i]) recompose(sc, boxes[i], i + 1, null, pal);
+      }
+      settledCount = done;
+    }
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    if (settled && settledCount) ctx.drawImage(settled, 0, 0, w, h);
+    if (partial && boxes[partial.index]) {
+      recompose(ctx, boxes[partial.index], done, { s: partial.s, upto: partial.upto }, pal);
+    }
+    applyGrain(ctx, w, h, dpr, grainWeight);
+  }
+
+  return { frame, release: () => { settled = null; settledCount = 0; } };
 }
 
 export function paint(ctx, strokes) {

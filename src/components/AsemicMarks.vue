@@ -4,7 +4,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { rngFor, ghost, paint, paintProgress, writingPlan } from '../asemic.js';
+import { rngFor, ghost, paint, paintProgress, writingPlan, createWriter } from '../asemic.js';
 import { prefersReducedMotion } from '../motion.js';
 
 const props = defineProps({
@@ -48,6 +48,9 @@ const props = defineProps({
 const cv = ref(null);
 let strokes = [];
 let plan = null;
+// Keeps the finished strokes on a settled sheet so a frame of the write-on
+// costs only the pen, not the page. See createWriter() in asemic.js.
+let writer = null;
 let drawn = 0;
 let built = null;
 let raf = null;
@@ -86,6 +89,8 @@ function build() {
     furniture: props.furniture
   });
   plan = writingPlan(strokes);
+  if (writer) writer.release();
+  writer = createWriter(el, strokes, plan);
 
   return true;
 }
@@ -95,6 +100,10 @@ function draw(progress) {
   if (!el) return;
   drawn = progress;
   const ctx = el.getContext('2d');
+  if (progress < 1 && plan && plan.total && writer) {
+    writer.frame(progress);
+    return;
+  }
   ctx.clearRect(0, 0, el.offsetWidth, el.offsetHeight);
   if (progress >= 1 || !plan || !plan.total) paint(ctx, strokes);
   else paintProgress(ctx, strokes, plan, progress);
@@ -146,24 +155,13 @@ function writeBetween(from, to, duration) {
   }
   const span = Math.max(220, duration);
 
-  // Every frame clears the canvas and repaints every stroke, finished ones
-  // included, so a page-sized field costs thousands of strokes a frame. At
-  // sixty frames a second a minute-long write is four thousand of those, to
-  // show a pen that has moved less than its own width between frames. A long
-  // write therefore steps instead: at this pace the two are the same picture.
-  // Nothing under the ceiling can reach this — a capped write tops out at
-  // thirteen seconds — so it is the uncapped page and nothing else.
-  const stepMs = span > 20000 ? 70 : 0;
-
+  // This used to step a long write at fourteen frames a second, because every
+  // frame repainted every finished stroke and a page-sized field could not
+  // keep up. The writer pays only for the pen now, so the page runs at the
+  // same rate as a signature row and the step is gone.
   let t0 = null;
-  let last = null;
   const step = (ts) => {
     if (t0 === null) t0 = ts;
-    if (stepMs && last !== null && ts - last < stepMs && ts - t0 < span) {
-      raf = requestAnimationFrame(step);
-      return;
-    }
-    last = ts;
     const t = Math.min(1, (ts - t0) / span);
     // No easing curve here. The plan is the pacing — it already runs the pen
     // fast through a word, slows it into every corner and rests it between
@@ -281,6 +279,8 @@ onMounted(() => {
 onUnmounted(() => {
   mounted = false;
   stopWriting();
+  if (writer) writer.release();
+  writer = null;
   if (resizeTimer) clearTimeout(resizeTimer);
   if (ro) ro.disconnect();
   if (mo) mo.disconnect();

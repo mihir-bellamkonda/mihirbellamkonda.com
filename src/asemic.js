@@ -1213,12 +1213,21 @@ const BROAD_FROM = 2.7;
 const BROAD_TO = 3.8;
 const broadShare = plotted => clamp((plotted - BROAD_FROM) / (BROAD_TO - BROAD_FROM), 0, 1);
 
-// The close a broad mark eases to. 0.77 is the measured figure, from the
-// title-size trace the taper was read off; 0.28 was chosen for how it looked
-// at column size, where the floor cut it to a pixel anyway. The opening has
-// no measurement and eases to a little firmer than the close.
-const LEAD_BROAD = 0.80;
-const LIFT_BROAD = 0.77;
+// What a broad mark's ends become, read off the writing test of 3 September
+// at native resolution rather than off the sampled trace. The crossbar of a
+// t thins to a fine point at both ends; the l and the b enter on a hairline
+// and thicken; the c and the k go out to a point; and the ink is fully dark
+// to the tip everywhere — nothing fades. The 0.77 the trace gave is the
+// width at the last sample, which is short of the tip. So a broad mark
+// closes and opens to near nothing. The 0.28 and 0.55 above were chosen at
+// column size, where the ballpoint's floor turned either into a pixel anyway;
+// on a broad mark the same floor turned the point into a 1px wire, and the
+// opacity fade then chopped the wire, which read as an abrupt break after the
+// thinning. TIP_FLOOR lets the floor fall away at a broad mark's tip so the
+// point is a point.
+const LEAD_BROAD = 0.22;
+const LIFT_BROAD = 0.10;
+const TIP_FLOOR = 0.35;
 
 function taperEnds(pts, lw, size) {
   if (!Array.isArray(lw) || lw.length < 3) return lw;
@@ -1233,8 +1242,8 @@ function taperEnds(pts, lw, size) {
   const lead = Math.min(total * 0.22, size * LEAD_RUN);
   const lift = Math.min(total * 0.34, size * LIFT_RUN);
 
-  // A broad mark closes to the measured share rather than to a needle. Read
-  // off the widths before any of them are tapered.
+  // A broad mark goes to a point at both ends, as the page does. Read off
+  // the widths before any of them are tapered.
   const broad = broadShare(Math.max(...lw));
   const leadTo = LEAD + (LEAD_BROAD - LEAD) * broad;
   const liftTo = LIFT + (LIFT_BROAD - LIFT) * broad;
@@ -1743,7 +1752,8 @@ const GROOVE = 0.25;         // how much of the groove is lifted out
 const TIP_FADE = 0.82;       // ink lifted at the very tip of a finished mark
 const TIP_LEAD_RUN = 1.3;    // how far the touch-down fade runs, in plotted widths
 const TIP_LIFT_RUN = 2.4;    // and the lift, which the hand takes longer over
-// ...but never further than this, in pixels. The runs are in plotted widths
+// ...but never further than this, in pixels, and on a broad mark not at all
+// (see BROAD_FROM). The runs are in plotted widths
 // and width grows with size, so on the hidden page's large words a lift ran
 // eleven pixels and the whole tip of every stroke dissolved into grey: the
 // crossbar of a t lost an end, an s had no beginning, and the pen read as
@@ -1948,7 +1958,12 @@ function paintMarks(ctx, marks, pal, opts = {}) {
     lc.lineJoin = 'round';
     lc.strokeStyle = 'rgb(' + group.ink + ')';
 
-    for (const mark of group.marks) tracePath(lc, mark.s, mark.upto, nibFor(mark.s), BALL);
+    for (const mark of group.marks) {
+      // The floor keeps a hairline from going grey. A broad mark's tips are
+      // meant to go to a point, so the floor falls away there (see TIP_FLOOR).
+      const floor = BALL - (BALL - TIP_FLOOR) * broadShare(plottedOf(mark.s));
+      tracePath(lc, mark.s, mark.upto, nibFor(mark.s), floor);
+    }
 
     // The groove a ballpoint leaves, and the skips where it fails to take.
     lc.globalCompositeOperation = 'destination-out';
@@ -1969,7 +1984,11 @@ function paintMarks(ctx, marks, pal, opts = {}) {
     lc.globalAlpha = 1;
     for (const mark of group.marks) {
       const plotted = plottedOf(mark.s);
-      const strength = clamp((plotted - 0.9) / 1.1, 0, 1);
+      // A broad mark is not faded at all. The ramp is a linear gradient, and
+      // on a hairline that is a softened tip; on a stroke three pixels wide
+      // it is visibly a gradient, which is not a thing a ballpoint does — the
+      // ball stops. The width taper is what ends a broad stroke.
+      const strength = clamp((plotted - 0.9) / 1.1, 0, 1) * (1 - broadShare(plotted));
       if (!strength) continue;
       const pts = samplePath(mark.s, mark.upto, STEP);
       if (pts.length < 4) continue;

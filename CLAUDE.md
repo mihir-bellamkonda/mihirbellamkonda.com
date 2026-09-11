@@ -429,14 +429,23 @@ and neither should start depending on the other.
   `BROAD_FROM` (2.7) and `BROAD_TO` (3.8) plotted widths, chosen from
   measurement: columns and signatures never pass 1.9, the name page's widest
   stroke across a dozen words in its real box is 2.64, the words' median is
-  4.2. Below 2.7 nothing changes. The width taper `taperEnds()` closes a
-  hairline to 0.28 of itself, which the ballpoint's 1px floor turns into no
-  taper at all; on a 3px stroke the same rule drew a twenty-pixel needle. A
-  broad mark eases to the measured close of 0.77 (`LIFT_BROAD`) and an opening
-  of 0.80. The groove fades out over the same range. The tip fade is capped in
-  pixels rather than eased, below. The words were the first marks the hand
-  ever drew wide enough to show any of this.
-- **The tip fade and the groove are capped for broad marks.** `fadeTip()`
+  4.2. Below 2.7 nothing changes. **What a stroke's end is was read off the
+  writing test of 3 September at native resolution**, not off the sampled
+  trace: the crossbar of a t thins to a fine point at both ends, the l and the b
+  enter on a hairline and thicken, the c and the k go out to a point, and the
+  ink is fully dark to the tip everywhere. Nothing fades. The 0.77 the trace
+  gave for "the end" was the width at the last sample, short of the tip; it was
+  briefly shipped as the broad close and looked like a blunt stop. So on a
+  broad mark: the width taper `taperEnds()` goes to 0.10 on the close and 0.22
+  on the open (`LIFT_BROAD`, `LEAD_BROAD`); the ballpoint's 1px floor, which is
+  there to keep a hairline from going grey, falls away to `TIP_FLOOR` (0.35) so
+  the point is a point and not a 1px wire; the opacity fade is off entirely,
+  because it is a linear gradient and a ballpoint does not fade, the ball
+  stops; and the groove fades out. On a hairline the 0.28 close and the 1px
+  floor were always cancelling each other, which is why none of this was ever
+  visible before the words. The slight feathering at a broad tip is the grain
+  acting on a sub-pixel point, and is wanted.
+- **The tip fade is capped in pixels on the way to being broad.** `fadeTip()`
   tapers each end of a finished mark over a run measured in plotted widths (1.3
   for the touch-down, 2.4 for the lift), gated to full strength only on broad
   marks; both scale with size, so on the hidden page's large words a lift ran

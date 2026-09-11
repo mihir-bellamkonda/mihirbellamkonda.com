@@ -433,10 +433,9 @@ test('a stroke opens and closes lighter than it runs', () => {
     looked++;
 
     assert.ok(s.lw[0] < run * 0.9, 'the pen arrives at the weight it will settle at');
-    // At this size the mark is broad, and a broad mark closes to the measured
-    // 0.77 of its width rather than to the 0.28 a hairline is given (which
-    // the ballpoint's floor turns into no taper at all). Measured here the
-    // close lands between 0.73 and 0.83 of the run.
+    // At this size the mark is broad, and a broad mark goes out to a point,
+    // as the writing test does at native resolution; a hairline is given
+    // 0.28, which the ballpoint's floor turns into no taper at all.
     assert.ok(s.lw[s.lw.length - 1] < run * 0.9, 'the pen leaves the paper at full weight');
     // and the middle is nobody's ramp
     assert.ok(Math.max(...middle) > s.lw[s.lw.length - 1] * 1.25, 'the taper ate the line');

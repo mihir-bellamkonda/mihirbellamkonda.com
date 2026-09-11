@@ -425,6 +425,17 @@ and neither should start depending on the other.
   poem's own seed, so a mark hesitates in the same places for every reader. The
   cost is about a second on a half-minute column, and since the caller
   compresses a column it is the proportions that survive, not the seconds.
+- **Three things ease off on a broad mark, and one pair of widths decides it.**
+  `BROAD_FROM` (2.7) and `BROAD_TO` (3.8) plotted widths, chosen from
+  measurement: columns and signatures never pass 1.9, the name page's widest
+  stroke across a dozen words in its real box is 2.64, the words' median is
+  4.2. Below 2.7 nothing changes. The width taper `taperEnds()` closes a
+  hairline to 0.28 of itself, which the ballpoint's 1px floor turns into no
+  taper at all; on a 3px stroke the same rule drew a twenty-pixel needle. A
+  broad mark eases to the measured close of 0.77 (`LIFT_BROAD`) and an opening
+  of 0.80. The groove fades out over the same range. The tip fade is capped in
+  pixels rather than eased, below. The words were the first marks the hand
+  ever drew wide enough to show any of this.
 - **The tip fade and the groove are capped for broad marks.** `fadeTip()`
   tapers each end of a finished mark over a run measured in plotted widths (1.3
   for the touch-down, 2.4 for the lift), gated to full strength only on broad
@@ -434,8 +445,8 @@ and neither should start depending on the other.
   and 4.5 pixels: a pen gives up its ink over about a nib's travel however large
   the hand is writing. The groove is a 0.8px line with runs and skips a fixed
   few pixels long, which on a hairline reads as the ink varying and on a stroke
-  three pixels wide reads as a pale streak with patches; it fades out between
-  `GROOVE_CAP` (2.7) and `GROOVE_GONE` (3.8) plotted widths. Measured: columns
+  three pixels wide reads as a pale streak with patches; it fades out across
+  `BROAD_FROM`..`BROAD_TO`. Measured: columns
   and signatures never pass 1.9 and are byte-identical either side of both; the
   name page's widest stroke is 2.64, so it is byte-identical under the groove
   cap, and its two heaviest strokes lose up to about a pixel of lift taper under

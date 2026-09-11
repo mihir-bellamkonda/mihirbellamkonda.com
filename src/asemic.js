@@ -1194,6 +1194,32 @@ const LIFT = 0.28;        // and the share it closes to
 const LEAD_RUN = 0.30;    // how far the opening runs, in units of the letter size
 const LIFT_RUN = 0.60;    // and the close
 
+/**
+ * Where a mark becomes broad enough to show what is done to it.
+ *
+ * Three things are done to a stroke that read one way on a hairline and
+ * another on a line three pixels wide: the ends are tapered, a groove is cut
+ * along it, and its tips are faded. All three were tuned on columns and
+ * signatures, whose strokes never pass 1.9 plotted, and the ballpoint's one
+ * pixel floor hid most of what they did — a taper to 0.28 of a 1.3px stroke
+ * is a taper to 1px, which is no taper. The hidden page's words are the first
+ * marks wide enough to show all of it, and it showed as needle ends, a pale
+ * streak and patches. So each eases off between these two widths. 2.7 sits
+ * above the widest stroke the name page draws, which is 2.64 across a dozen
+ * words in its real box, and 3.8 is under the words' median of 4.2: nothing
+ * at or under size 22 changes, and the words get the eased version.
+ */
+const BROAD_FROM = 2.7;
+const BROAD_TO = 3.8;
+const broadShare = plotted => clamp((plotted - BROAD_FROM) / (BROAD_TO - BROAD_FROM), 0, 1);
+
+// The close a broad mark eases to. 0.77 is the measured figure, from the
+// title-size trace the taper was read off; 0.28 was chosen for how it looked
+// at column size, where the floor cut it to a pixel anyway. The opening has
+// no measurement and eases to a little firmer than the close.
+const LEAD_BROAD = 0.80;
+const LIFT_BROAD = 0.77;
+
 function taperEnds(pts, lw, size) {
   if (!Array.isArray(lw) || lw.length < 3) return lw;
 
@@ -1207,14 +1233,20 @@ function taperEnds(pts, lw, size) {
   const lead = Math.min(total * 0.22, size * LEAD_RUN);
   const lift = Math.min(total * 0.34, size * LIFT_RUN);
 
+  // A broad mark closes to the measured share rather than to a needle. Read
+  // off the widths before any of them are tapered.
+  const broad = broadShare(Math.max(...lw));
+  const leadTo = LEAD + (LEAD_BROAD - LEAD) * broad;
+  const liftTo = LIFT + (LIFT_BROAD - LIFT) * broad;
+
   for (let i = 0; i < lw.length; i++) {
     let f = 1;
     if (lead > 0 && arc[i] < lead) {
-      f *= LEAD + (1 - LEAD) * Math.pow(arc[i] / lead, 0.5);
+      f *= leadTo + (1 - leadTo) * Math.pow(arc[i] / lead, 0.5);
     }
     const back = total - arc[i];
     if (lift > 0 && back < lift) {
-      f *= LIFT + (1 - LIFT) * Math.pow(back / lift, 0.85);
+      f *= liftTo + (1 - liftTo) * Math.pow(back / lift, 0.85);
     }
     lw[i] *= f;
   }
@@ -1705,13 +1737,9 @@ const GROOVE = 0.25;         // how much of the groove is lifted out
 // hairline it reads as the ink varying along the mark, which is what it is
 // for — and on the hidden page's large words, drawn two and three pixels
 // wide, the same line became a pale streak down the middle of every stroke
-// with the skips showing as patches. It fades out from GROOVE_CAP to nothing
-// at GROOVE_GONE. The name page's widest stroke measures 2.64, columns and
-// signatures never pass 1.9, and the words' median is 4.2: the name page,
-// the columns, the signatures and the label under the angel (settled into
-// its 46px box) are byte-identical either side, and the words lose it.
-const GROOVE_CAP = 2.7;
-const GROOVE_GONE = 3.8;
+// with the skips showing as patches. It fades out across BROAD_FROM..BROAD_TO
+// and the words lose it; the name page, the columns, the signatures and the
+// label under the angel (settled into its 46px box) are byte-identical.
 const TIP_FADE = 0.82;       // ink lifted at the very tip of a finished mark
 const TIP_LEAD_RUN = 1.3;    // how far the touch-down fade runs, in plotted widths
 const TIP_LIFT_RUN = 2.4;    // and the lift, which the hand takes longer over
@@ -1929,8 +1957,7 @@ function paintMarks(ctx, marks, pal, opts = {}) {
       // Only a mark broad enough to hold a groove is given one; on a hairline
       // it would read as the line simply fading, which is not the same thing.
       const plotted = plottedOf(mark.s);
-      const base = GROOVE * clamp((plotted - 0.9) / 1.1, 0, 1)
-        * clamp((GROOVE_GONE - plotted) / (GROOVE_GONE - GROOVE_CAP), 0, 1);
+      const base = GROOVE * clamp((plotted - 0.9) / 1.1, 0, 1) * (1 - broadShare(plotted));
       if (!base) continue;
       const pts = samplePath(mark.s, mark.upto, STEP);
       grooveAlong(lc, pts, mark.s, base);

@@ -1703,6 +1703,19 @@ const GROOVE = 0.25;         // how much of the groove is lifted out
 const TIP_FADE = 0.82;       // ink lifted at the very tip of a finished mark
 const TIP_LEAD_RUN = 1.3;    // how far the touch-down fade runs, in plotted widths
 const TIP_LIFT_RUN = 2.4;    // and the lift, which the hand takes longer over
+// ...but never further than this, in pixels. The runs are in plotted widths
+// and width grows with size, so on the hidden page's large words a lift ran
+// eleven pixels and the whole tip of every stroke dissolved into grey: the
+// crossbar of a t lost an end, an s had no beginning, and the pen read as
+// running dry rather than lifting. The fade is also gated to full strength
+// only on broad marks, so those words got four times the fade a signature
+// row gets over four times the distance. A pen gives up its ink over about a
+// nib's travel however large the hand is writing; past this a bigger hand is
+// a bigger letter written with the same pen. Nothing at or under size 22 —
+// every column, every signature, the name page — reaches these, and they are
+// byte-identical either side of the cap.
+const TIP_LEAD_CAP = 2.4;
+const TIP_LIFT_CAP = 4.5;
 const STEP = 1.4;            // px between the samples the groove and pools read
 
 /**
@@ -1920,9 +1933,9 @@ function paintMarks(ctx, marks, pal, opts = {}) {
       if (!strength) continue;
       const pts = samplePath(mark.s, mark.upto, STEP);
       if (pts.length < 4) continue;
-      fadeTip(lc, pts, false, plotted * TIP_LEAD_RUN, TIP_FADE * 0.5 * strength);
+      fadeTip(lc, pts, false, Math.min(plotted * TIP_LEAD_RUN, TIP_LEAD_CAP), TIP_FADE * 0.5 * strength);
       // a mark still being written ends at the pen, and the pen is on the paper
-      if (!mark.upto) fadeTip(lc, pts, true, plotted * TIP_LIFT_RUN, TIP_FADE * strength);
+      if (!mark.upto) fadeTip(lc, pts, true, Math.min(plotted * TIP_LIFT_RUN, TIP_LIFT_CAP), TIP_FADE * strength);
     }
 
     lc.globalCompositeOperation = 'source-over';

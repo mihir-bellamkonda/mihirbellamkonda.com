@@ -425,6 +425,15 @@ and neither should start depending on the other.
   poem's own seed, so a mark hesitates in the same places for every reader. The
   cost is about a second on a half-minute column, and since the caller
   compresses a column it is the proportions that survive, not the seconds.
+- **The tip fade is capped in pixels.** `fadeTip()` tapers each end of a
+  finished mark over a run measured in plotted widths (1.3 for the touch-down,
+  2.4 for the lift), and it is gated to full strength only on broad marks. Both
+  scale with size, so on the hidden page's large words a lift ran eleven pixels
+  at four times a signature's strength and every stroke end dissolved into grey.
+  `TIP_LEAD_CAP` and `TIP_LIFT_CAP` hold the runs to 2.4 and 4.5 pixels: a pen
+  gives up its ink over about a nib's travel however large the hand is writing.
+  Nothing at or under size 22 reaches the caps, and the index, the columns and
+  the name page were checked byte-identical either side of them.
 - **A frame of the write-on costs only the pen.** It used to clear the canvas
   and repaint every finished stroke, and then draw the paper grain, forty-odd
   thousand ellipses at GRAIN dots per square pixel, on every one of those

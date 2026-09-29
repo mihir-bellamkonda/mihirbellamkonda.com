@@ -54,7 +54,10 @@ function urlFor(r) {
 // Links to the index are real links to a real page, but inside the app they
 // need not reload it: the opening's "read poems →" should feel as quick as it
 // did when it was only a change of hash.
+// The 404 document is the exception: it boots with window.__notHere set, so
+// every route it parses is the missing page, and only a real load leaves it.
 function followIndexLink(event) {
+  if (window.__notHere) return;
   if (event.defaultPrevented || event.button !== 0) return;
   if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
   const link = event.target instanceof Element && event.target.closest('a[href="/poems/"]');

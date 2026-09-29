@@ -44,10 +44,6 @@ const studies = {
     kind: 'field', focus: '50% 54%',
     primary: '/collage/winter-stand.webp', secondary: '/collage/pulse-trace.svg'
   },
-  dallas: {
-    kind: 'field', focus: '54% 46%',
-    primary: '/collage/burnt-terrain.webp', secondary: '/collage/plumb-lines.svg'
-  },
   'new-orleans': {
     kind: 'field', focus: '50% 54%',
     primary: '/collage/river-flood.webp', secondary: '/collage/strata-contours.svg'

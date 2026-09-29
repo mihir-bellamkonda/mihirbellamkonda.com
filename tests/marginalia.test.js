@@ -5,7 +5,7 @@ import { deckle, ruleMarks, marginMark } from '../src/marginalia.js';
 const POEMS = [
   'the-gesture', 'summer', 'thuragnosia-parable-of-the-man-blind-to-doors',
   'questions-and-answers', 'the-dinner-party', 'mother-dreams-in-half-light',
-  'in-of', 'mercy', 'dallas', 'new-orleans', 'circling-figures', 'the-horse',
+  'in-of', 'mercy', 'new-orleans', 'circling-figures', 'the-horse',
   'brahmanda', 'a-quiet-family', 'old-man-at-dinner', 'the-carpenter',
   'the-economy', 'epiphany', 'love-outside-poems', 'musician-s-daughter'
 ];

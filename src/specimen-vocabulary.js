@@ -22,7 +22,6 @@ export const specimenVocabulary = {
   'mother-dreams-in-half-light': ['sweetbad', 'starlings', 'hydrants', 'analemma'],
   'in-of': ['innervates', 'fish', 'sweetwater', 'pleasure'],
   mercy: ['kindness', 'bird', 'shovel', 'gravel'],
-  dallas: ['fortune', 'concrete', 'ghost', 'pine'],
   'new-orleans': ['multiplicity', 'river', 'guitar', 'consumption'],
   'circling-figures': ['loop-de-loop', 'signs', 'pigeon', 'beginning'],
   'the-horse': ['domesticity', 'rennet', 'marrow', 'distance'],

@@ -63,11 +63,6 @@ illustrates the poem by naming its objects back to it.
   https://www.metmuseum.org/art/collection/search/270860
   Used under *Mercy*.
 
-- `burnt-terrain.webp` — Eugène Cuvelier, Près de la Caverne, Terrain Brûlé, early 1860s.
-  The Metropolitan Museum of Art, object 271965, public domain (Open Access).
-  https://www.metmuseum.org/art/collection/search/271965
-  Used under *Dallas*.
-
 - `river-flood.webp` — Edouard Baldus, The Floods of 1856, Avignon, 1856.
   The Metropolitan Museum of Art, object 271912, public domain (Open Access).
   https://www.metmuseum.org/art/collection/search/271912

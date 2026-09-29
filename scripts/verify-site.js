@@ -170,6 +170,32 @@ check(/<script\b[^>]*type="application\/ld\+json"/i.test(rootHtml), 'Homepage st
 check(rootHtml.includes('"@type":"Person"'), 'Homepage Person structured data is missing.');
 check(rootHtml.includes('"@type":"WebSite"'), 'Homepage WebSite structured data is missing.');
 
+const indexPagePath = path.join(dist, 'poems', 'index.html');
+check(fs.existsSync(indexPagePath), 'The /poems/ index page is missing.');
+if (fs.existsSync(indexPagePath)) {
+  const indexHtml = fs.readFileSync(indexPagePath, 'utf8');
+  check(indexHtml.includes('<title>Poems — Mihir Bellamkonda</title>'), '/poems/: title is missing.');
+  check(indexHtml.includes('<link rel="canonical" href="https://mihirbellamkonda.com/poems/">'), '/poems/: canonical URL is missing.');
+  check(indexHtml.includes('class="static-home-index"'), '/poems/: no-JavaScript poem index is missing.');
+  for (const poem of poems) {
+    check(indexHtml.includes(`href="${poem.url}"`), `/poems/: no-JavaScript index does not link ${poem.slug}.`);
+  }
+}
+
+// The email address is assembled in the browser, never shipped whole.
+for (const file of ['index.html', 'poems/index.html', '404.html']) {
+  const target = path.join(dist, file);
+  if (fs.existsSync(target)) {
+    check(!fs.readFileSync(target, 'utf8').includes('bellamkonda@gmail'), `${file}: email address is written out whole.`);
+  }
+}
+const assetsDir = path.join(dist, 'assets');
+if (fs.existsSync(assetsDir)) {
+  for (const asset of fs.readdirSync(assetsDir).filter(name => name.endsWith('.js'))) {
+    check(!fs.readFileSync(path.join(assetsDir, asset), 'utf8').includes('bellamkonda@gmail'), `${asset}: email address is written out whole.`);
+  }
+}
+
 const paths = new Set();
 const titles = new Set();
 
@@ -251,6 +277,7 @@ const sitemapPath = path.join(dist, 'sitemap.xml');
 check(fs.existsSync(sitemapPath), 'Sitemap is missing.');
 if (fs.existsSync(sitemapPath)) {
   const sitemap = fs.readFileSync(sitemapPath, 'utf8');
+  check(sitemap.includes('https://mihirbellamkonda.com/poems/</loc>'), '/poems/: missing from sitemap.');
   for (const poem of poems) {
     check(sitemap.includes(`https://mihirbellamkonda.com${poem.url}`), `${poem.slug}: missing from sitemap.`);
   }

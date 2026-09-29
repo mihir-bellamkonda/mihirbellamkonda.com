@@ -432,6 +432,7 @@ h3 {
   padding-top: 2rem;
 }
 
+.static-home-index h1,
 .static-home-index h2 {
   margin-bottom: 2rem;
   font-family: var(--f-cat);

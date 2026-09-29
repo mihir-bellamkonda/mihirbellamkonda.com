@@ -2,7 +2,7 @@
   <div class="nothere">
     <div class="chrome">
       <a href="/">mihir bellamkonda</a>
-      <a href="/#index">poems</a>
+      <a href="/poems/">poems</a>
     </div>
 
     <main id="main" tabindex="-1">
@@ -20,7 +20,7 @@
     </main>
 
     <p class="ways">
-      <a href="/#index">the index</a>
+      <a href="/poems/">the index</a>
       <a href="/">the opening</a>
     </p>
   </div>

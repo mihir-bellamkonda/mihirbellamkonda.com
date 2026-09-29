@@ -132,7 +132,7 @@
       <div class="rest"></div>
     </div>
 
-    <FooterNav />
+    <FooterNav here="index" />
   </div>
 </template>
 

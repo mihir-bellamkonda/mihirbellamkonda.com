@@ -3,11 +3,11 @@
     <div class="inner">
       <div class="chrome">
         <span>mihirbellamkonda.com</span>
-        <a href="/#index">poems</a>
+        <a href="/poems/">poems</a>
       </div>
 
       <main class="opening" id="main" tabindex="-1">
-        <h1 data-page-heading tabindex="-1"><a class="name-link" href="/#index">Mihir Bellamkonda</a></h1>
+        <h1 data-page-heading tabindex="-1"><a class="name-link" href="/poems/">Mihir Bellamkonda</a></h1>
 
         <p class="bio">
           Mihir Bellamkonda is a poet based in Brooklyn. They were a finalist for Black Lawrence
@@ -18,10 +18,16 @@
           and
           <a href="https://www.instagram.com/mihirwords/" rel="me noopener" target="_blank">Instagram</a>
           as @MihirWords, or reached by
-          <a href="mailto:mihir.bellamkonda@gmail.com">email</a>. They are honored to be read.
+          <a
+            :href="mailHref"
+            @pointerenter="revealMail"
+            @focus="revealMail"
+            @touchstart.passive="revealMail"
+            @click="revealMail"
+          >email</a>. They are honored to be read.
         </p>
 
-        <p class="enter"><a href="/#index">read poems →</a></p>
+        <p class="enter"><a href="/poems/">read poems →</a></p>
       </main>
 
       <div class="rest"></div>
@@ -48,7 +54,7 @@
       <a
         v-if="angel"
         class="corner-mark corner-mark--angel"
-        href="/#index"
+        href="/poems/"
         aria-hidden="true"
         tabindex="-1"
       ><AngelusNovus /></a>
@@ -56,7 +62,7 @@
       <a
         v-else
         class="corner-mark corner-mark--word"
-        href="/#index"
+        href="/poems/"
         aria-hidden="true"
         tabindex="-1"
       ><AsemicMarks
@@ -67,12 +73,12 @@
       /></a>
     </div>
 
-    <FooterNav />
+    <FooterNav here="about" />
   </div>
 </template>
 
 <script setup>
-import { defineAsyncComponent } from 'vue';
+import { defineAsyncComponent, ref } from 'vue';
 import FooterNav from './FooterNav.vue';
 import AsemicMarks from './AsemicMarks.vue';
 import poems from '../poems.json';
@@ -115,6 +121,16 @@ const AngelusNovus = defineAsyncComponent(() => import('./AngelusNovus.vue'));
 const angel = Math.floor(Math.random() * 20) === 0;
 
 const word = WORDS[Math.floor(Math.random() * WORDS.length)] || 'analemma';
+
+// The address is assembled only when a reader reaches for the link — pointer,
+// focus, or touch, all of which come before the click — so it never sits whole
+// in the page or the bundle for an address harvester to read.
+const MAILBOX = ['mihir.bellamkonda', 'gmail.com'];
+const mailHref = ref('#email');
+
+function revealMail() {
+  mailHref.value = 'mailto:' + MAILBOX.join('@');
+}
 </script>
 
 <style scoped>
@@ -196,6 +212,10 @@ const word = WORDS[Math.floor(Math.random() * WORDS.length)] || 'analemma';
   font-size: 1.02rem;
   line-height: 1.8;
   color: var(--a-ink-2);
+  /* The venues are held together with non-breaking spaces, so a narrow
+     column can strand "The Offing," alone on a short line. Let the browser
+     even the rag out instead. */
+  text-wrap: pretty;
 }
 
 .bio a {
@@ -292,6 +312,15 @@ const word = WORDS[Math.floor(Math.random() * WORDS.length)] || 'analemma';
   .corner-mark--word {
     width: 7rem;
     opacity: 0.42;
+  }
+}
+
+/* A quarter of a phone's height above the name read as a page that had not
+   finished loading. The name still arrives low enough to feel like an
+   opening, and the bio starts inside the first screen. */
+@media (max-width: 560px) {
+  .opening {
+    padding-top: clamp(3rem, 11vh, 6rem);
   }
 }
 

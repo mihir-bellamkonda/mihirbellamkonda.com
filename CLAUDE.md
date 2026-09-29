@@ -73,7 +73,7 @@ poems/*.md                        source poems, filename sets order
 scripts/build-poems.js            markdown -> src/poems.json (slug, path, url)
 scripts/build-pages.js            static HTML shell per poem + sitemap.xml
 src/asemic.js                     the mark generator
-src/App.vue                       routing: /poem/<path>/, #index, legacy #poem/<slug>
+src/App.vue                       routing: /poem/<path>/, /poems/, legacy #index and #poem/<slug>
 src/components/
   AboutPage.vue                   opening: name, bio, link in
   PoemsListPage.vue               the index

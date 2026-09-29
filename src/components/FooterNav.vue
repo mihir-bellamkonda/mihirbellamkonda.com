@@ -3,17 +3,20 @@
     <nav class="inner">
       <span class="slot start">
         <a v-if="prev" :href="prev.url" @click="follow($event, prev.slug)">← {{ short(prev.title) }}</a>
-        <a v-else href="/">← about</a>
+        <a v-else-if="here !== 'about'" href="/">← about</a>
       </span>
 
+      <!-- Off a poem, the footer names only the pages you are not on: the
+           opening's footer used to offer the opening, and the index's
+           offered the index twice. -->
       <span class="slot mid">
-        <a v-if="position" href="/#index">{{ position }} — all poems</a>
-        <a v-else href="/#index">poems</a>
+        <a v-if="position" href="/poems/">{{ position }} — all poems</a>
+        <a v-else-if="here !== 'index'" href="/poems/">poems</a>
       </span>
 
       <span class="slot end">
         <a v-if="next" :href="next.url" @click="follow($event, next.slug)">{{ short(next.title) }} →</a>
-        <a v-else href="/#index">read poems →</a>
+        <a v-else-if="position" href="/poems/">read poems →</a>
       </span>
     </nav>
   </footer>
@@ -24,6 +27,7 @@ const props = defineProps({
   prev: { type: Object, default: null },
   next: { type: Object, default: null },
   position: { type: String, default: '' },
+  here: { type: String, default: '' },
   onGo: { type: Function, default: null }
 });
 
@@ -99,6 +103,8 @@ a:focus-visible {
   }
   .slot.start,
   .slot.end { text-align: center; }
+  /* Stacked, an empty slot would still take its share of the gap. */
+  .slot:empty { display: none; }
 }
 
 @media print {

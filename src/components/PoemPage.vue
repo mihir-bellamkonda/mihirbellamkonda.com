@@ -8,7 +8,7 @@
   >
     <div class="chrome">
       <a href="/">mihir bellamkonda</a>
-      <a href="/#index">poems</a>
+      <a href="/poems/">poems</a>
     </div>
 
     <main class="grid" id="main" tabindex="-1">

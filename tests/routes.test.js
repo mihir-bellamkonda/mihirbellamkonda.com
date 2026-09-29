@@ -14,6 +14,9 @@ test('normal, encoded, legacy and missing-page routes retain their destinations'
   for (const hash of ['#index', '#contents', '#poems']) {
     assert.deepEqual(parseRoute({ hash }), { page: 'index' });
   }
+  for (const pathname of ['/poems/', '/poems']) {
+    assert.deepEqual(parseRoute({ pathname }), { page: 'index' });
+  }
   assert.deepEqual(parseRoute({ hash: '#hand' }), { page: 'hand' });
   assert.deepEqual(parseRoute({ hash: '#poem/00-The%20Carpenter' }), { page: 'poem', slug: '00-The Carpenter' });
   assert.deepEqual(parseRoute({ pathname: '/poem/my-mentorship-problem/' }), { page: 'poem', path: 'my-mentorship-problem' });

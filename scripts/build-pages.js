@@ -44,7 +44,7 @@ function structuredData(poem, canonical) {
     isPartOf: {
       '@type': 'CollectionPage',
       '@id': 'https://mihirbellamkonda.com/#published-poems',
-      url: 'https://mihirbellamkonda.com/#index',
+      url: 'https://mihirbellamkonda.com/poems/',
       name: 'Published poems by Mihir Bellamkonda'
     }
   };
@@ -92,7 +92,7 @@ function staticPoem(poem, index, total) {
     <article class="static-poem">
       <nav class="static-chrome" aria-label="Site">
         <a href="/">mihir bellamkonda</a>
-        <a href="/#index">poems</a>
+        <a href="/poems/">poems</a>
       </nav>
       <main class="static-grid">
         <header class="static-margin">
@@ -118,13 +118,15 @@ function staticNotHere() {
       <p>That page is not on this site. It may have been withdrawn, or it may
         never have existed.</p>
       <p>
-        <a href="/#index">read the index</a> &nbsp; <a href="/">the opening</a>
+        <a href="/poems/">read the index</a> &nbsp; <a href="/">the opening</a>
       </p>
     </div>
   </noscript>`;
 }
 
-function staticHome(poems) {
+// The index in plain HTML: under the opening on the homepage, and on its own at
+// /poems/, where it is the page and takes the page's heading.
+function staticIndex(poems, heading) {
   const row = (poem, index) => {
     const year = String(poem.date || '').match(/\d{4}/)?.[0] || '';
     const venue = poem.published_in || (poem.unpublished ? 'unpublished' : '');
@@ -143,6 +145,22 @@ function staticHome(poems) {
     .map((poem, index) => row(poem, index + OPENING))
     .join('');
 
+  return `<section class="static-home-index" id="static-index">
+          <${heading}>Poems</${heading}>
+          <div class="static-home-group">
+            <h3>selected</h3>
+            <ol>${selected}</ol>
+          </div>
+          <div class="static-home-group">
+            <h3>archive</h3>
+            <ol start="6">${archive}</ol>
+          </div>
+        </section>`;
+}
+
+// Without JavaScript there is nothing to assemble the address at the moment of
+// reaching for it, so the no-script copy spells it out for a person to type.
+function staticHome(poems) {
   return `<noscript>
     <div class="static-home">
       <nav class="static-chrome" aria-label="Site">
@@ -153,20 +171,23 @@ function staticHome(poems) {
         <section class="static-home-about">
           <h1>Mihir Bellamkonda</h1>
           <p>Mihir Bellamkonda is a poet based in Brooklyn. They were a finalist for Black Lawrence Press's St. Lawrence Book Award, and their work appears in Oxford Poetry, Nashville Review, The Offing, Variant Literature, and elsewhere.</p>
-          <p>They can be found on <a href="https://x.com/MihirWords">Twitter</a> and <a href="https://www.instagram.com/mihirwords/">Instagram</a> as @MihirWords, or reached by <a href="mailto:mihir.bellamkonda@gmail.com">email</a>. They are honored to be read.</p>
+          <p>They can be found on <a href="https://x.com/MihirWords">Twitter</a> and <a href="https://www.instagram.com/mihirwords/">Instagram</a> as @MihirWords, or reached by email at mihir.bellamkonda (at) gmail.com. They are honored to be read.</p>
           <p class="static-home-enter"><a href="#static-index">read poems →</a></p>
         </section>
-        <section class="static-home-index" id="static-index">
-          <h2>Poems</h2>
-          <div class="static-home-group">
-            <h3>selected</h3>
-            <ol>${selected}</ol>
-          </div>
-          <div class="static-home-group">
-            <h3>archive</h3>
-            <ol start="6">${archive}</ol>
-          </div>
-        </section>
+        ${staticIndex(poems, 'h2')}
+      </main>
+    </div>
+  </noscript>`;
+}
+
+function staticIndexPage(poems) {
+  return `<noscript>
+    <div class="static-home">
+      <nav class="static-chrome" aria-label="Site">
+        <a href="/">mihir bellamkonda</a>
+      </nav>
+      <main id="main">
+        ${staticIndex(poems, 'h1')}
       </main>
     </div>
   </noscript>`;
@@ -217,6 +238,26 @@ for (const [index, poem] of poems.entries()) {
 const home = template.replace('<div id="app"></div>', `${staticHome(poems)}\n  <div id="app"></div>`);
 fs.writeFileSync(path.join(dist, 'index.html'), home);
 
+// The index has its own address, so a shared link to it arrives as the index
+// with its own title rather than as the opening.
+const indexTitle = 'Poems — Mihir Bellamkonda';
+const indexDescription = 'An index of poems by Mihir Bellamkonda, with where each first appeared.';
+const indexCanonical = 'https://mihirbellamkonda.com/poems/';
+let index = template.replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(indexTitle)}</title>`);
+index = setMeta(index, 'name="description"', indexDescription);
+index = setMeta(index, 'property="og:title"', indexTitle);
+index = setMeta(index, 'property="og:description"', indexDescription);
+index = setMeta(index, 'property="og:url"', indexCanonical);
+index = setMeta(index, 'name="twitter:title"', indexTitle);
+index = setMeta(index, 'name="twitter:description"', indexDescription);
+index = index.replace(
+  /<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i,
+  `<link rel="canonical" href="${indexCanonical}">`
+);
+index = index.replace('<div id="app"></div>', `${staticIndexPage(poems)}\n  <div id="app"></div>`);
+fs.mkdirSync(path.join(dist, 'poems'), { recursive: true });
+fs.writeFileSync(path.join(dist, 'poems', 'index.html'), index);
+
 /**
  * The 404, which is the hand.
  *
@@ -246,6 +287,7 @@ fs.writeFileSync(path.join(dist, '404.html'), notHere);
 
 const urls = [
   'https://mihirbellamkonda.com/',
+  indexCanonical,
   ...poems.map(poem => `https://mihirbellamkonda.com${poem.url}`)
 ];
 const sitemap = [

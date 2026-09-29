@@ -67,7 +67,7 @@ URL syntax, and deterministic asemic signatures.
    its canonical metadata, CreativeWork JSON-LD, and a complete no-JavaScript
    reading copy. It also writes `sitemap.xml`.
 
-The visible application uses real URLs at `/poem/<title>/`. Legacy
+The visible application uses real URLs at `/poem/<title>/` and `/poems/` for the index. Legacy
 `#poem/<slug>` links remain supported.
 
 ## Design and content rules

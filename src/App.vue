@@ -20,8 +20,9 @@ import NotFoundHand from './components/NotFoundHand.vue';
  * Real paths for poems, with legacy hash routing retained.
  *
  *   #            → about
- *   #index       → the index   (#contents and #poems still work; they were
- *                               the old names and may exist in shared links)
+ *   /poems/      → the index, pre-rendered at build time like the poems
+ *   #index       → the index   (as do #contents and #poems; they were the
+ *                               old addresses and may exist in shared links)
  *   #poem/<slug> → one poem
  *   /poem/<path>/ → one poem, pre-rendered at build time for link previews
  *
@@ -44,10 +45,22 @@ function parseRoute() {
 
 function urlFor(r) {
   if (r.page === 'about') return '/';
-  if (r.page === 'index') return '/#index';
+  if (r.page === 'index') return '/poems/';
   if (r.page === 'hand') return '/#hand';
   const poem = poemsData.find(p => p.slug === r.slug || p.path === r.path);
-  return poem ? poem.url : '/#index';
+  return poem ? poem.url : '/poems/';
+}
+
+// Links to the index are real links to a real page, but inside the app they
+// need not reload it: the opening's "read poems →" should feel as quick as it
+// did when it was only a change of hash.
+function followIndexLink(event) {
+  if (event.defaultPrevented || event.button !== 0) return;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  const link = event.target instanceof Element && event.target.closest('a[href="/poems/"]');
+  if (!link || link.target) return;
+  event.preventDefault();
+  navigate({ page: 'index' });
 }
 
 function navigate(r) {
@@ -196,14 +209,20 @@ function setTitle() {
 watchEffect(setTitle);
 
 onMounted(() => {
+  // An old #index link still arrives; the address bar shows the one to share.
+  if (route.value.page === 'index' && window.location.pathname !== '/poems/') {
+    window.history.replaceState(null, '', '/poems/');
+  }
   window.addEventListener('hashchange', onHashChange);
   window.addEventListener('popstate', onPopState);
   document.addEventListener('keydown', handleKeydown);
+  document.addEventListener('click', followIndexLink);
 });
 
 onUnmounted(() => {
   window.removeEventListener('hashchange', onHashChange);
   window.removeEventListener('popstate', onPopState);
   document.removeEventListener('keydown', handleKeydown);
+  document.removeEventListener('click', followIndexLink);
 });
 </script>

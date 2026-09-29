@@ -15,6 +15,7 @@ export function parseRoute({ pathname = '/', hash = '', notHere = false } = {}) 
   if (fragment === 'hand') return { page: 'hand' };
   if (fragment.startsWith('poem/')) return { page: 'poem', slug: fragment.slice(5) };
 
+  if (/^\/poems\/?$/.test(path)) return { page: 'index' };
   const match = path.match(/^\/poem\/([^/]+)\/?$/);
   return match ? { page: 'poem', path: match[1] } : { page: 'about' };
 }

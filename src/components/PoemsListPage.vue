@@ -244,7 +244,7 @@ function yearOf(poem) {
 
 // stanzas[0][0] is already a complete HTML fragment from build-poems.js,
 // carrying the poet's emphasis and nothing added. A poem that opens on a
-// section header — Dallas on "1. Father", New Orleans on "1. River" — would
+// section header — New Orleans on "1. River", The Horse on "1." — would
 // otherwise preview the header instead of a line of the poem.
 const SECTION_HEADER = /^<strong>[^<]*<\/strong>$/;
 

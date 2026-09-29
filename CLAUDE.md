@@ -8,7 +8,7 @@ The poetry site of **Mihir Bellamkonda** (pronouns **they/them** — not he/him;
 published bios use "they"). Live at **https://mihirbellamkonda.com**.
 
 It is a **record**, not a themed collection: a numbered index of poems with venue
-and year. Most are published; six are not, and say so where a venue would go. Vue 3 SPA, Vite, real URLs at `/poem/<title>/` with
+and year. Most are published; the rest say *unpublished* where a venue would go. Vue 3 SPA, Vite, real URLs at `/poem/<title>/` with
 legacy `#poem/<slug>` links still honoured, markdown poems compiled to JSON at build
 time, deployed to GitHub Pages by GitHub Actions.
 
@@ -23,7 +23,7 @@ time, deployed to GitHub Pages by GitHub Actions.
      poem spoken end to end (The Carpenter, The Economy, New Orleans) stays roman,
      because italicising it would italicise the whole poem. *Questions and Answers*
      keeps its roman question against its italic answer; that contrast is the poem.
-   - `**bold**` for a **section header** — `1. Father`, `2. Son`, `1. River`.
+   - `**bold**` for a **section header** — `1. River`, `2. Player`, `1.`.
      Spectral is self-hosted at 200/300/400 only, so `.verse strong` is 400 against
      the 300 body: a real weight rather than a synthesised bold.
 2. **Do not use the word "plates"** anywhere user-facing. Numbers only: `01 / 18`.
@@ -37,10 +37,12 @@ time, deployed to GitHub Pages by GitHub Actions.
 
 ```bash
 npm install       # first run
+npm run new-poem "Title"  # new poems/NN-Title.md, numbered last, front matter only
 npm run poems     # markdown -> src/poems.json
 npm run dev       # dev server, localhost:5173
 npm run build     # npm run poems && vite build -> dist/
 npm run preview   # serve the production build
+npm run verify    # unit tests, build, and every release check
 ```
 
 ## Deployment
@@ -658,7 +660,7 @@ would go on the index, and prints `unpublished 2025` on the poem page instead of
 venue URL, or if it has no date — the year is the only provenance it has.
 
 The index previews the first line of **verse**, skipping a leading section
-header, so Dallas shows its first line rather than `1. Father`.
+header, so New Orleans shows its first line rather than `1. River`.
 
 The rules between index rows are **drawn, not declared** — `DrawnRule.vue` over
 `ruleMarks()`, one seeded line per row, allowed to wobble, to lift once, and to

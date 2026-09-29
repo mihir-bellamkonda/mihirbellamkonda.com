@@ -1,0 +1,27 @@
+# Dependency updates, once a month, as few pull requests as possible.
+#
+# Each pull request runs the quality workflow (npm run verify), so a green
+# check means the site still builds and passes every release check with the
+# new versions. Security fixes are not held for the monthly run: GitHub opens
+# those as soon as an advisory lands, when Dependabot security updates are
+# enabled in the repository's settings.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      # Minor and patch releases arrive together; a major version gets its
+      # own pull request, since that is where something might need changing.
+      packages:
+        update-types: [minor, patch]
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ['*']

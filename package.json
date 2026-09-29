@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "poems": "node scripts/build-poems.js",
+    "new-poem": "node scripts/new-poem.js",
     "social": "node scripts/build-social-images.js",
     "test": "node --test tests/*.test.js",
     "test:browser": "playwright test",

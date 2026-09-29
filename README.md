@@ -16,6 +16,7 @@ npm run dev
 Useful commands:
 
 ```bash
+npm run new-poem "Title"  # start a poem file, numbered last in the index
 npm run poems       # compile poems/*.md into src/poems.json
 npm test            # test poem formatting edge cases
 npm run build       # build the app and generated poem pages
@@ -30,7 +31,16 @@ either one.
 ## Add a poem
 
 Create a Markdown file in `poems/`. Its filename sets its position in the
-index.
+index. The quickest start:
+
+```bash
+npm run new-poem "Poem Title"
+npm run new-poem -- "Poem Title" --venue "Magazine Name" --url "https://example.com"
+```
+
+That writes the front matter with today's date and a number no poem has used,
+marks the poem unpublished unless you name a venue, and tells you the collage
+study key to add in `src/collage-studies.js`. Or write the file by hand:
 
 ```markdown
 ---

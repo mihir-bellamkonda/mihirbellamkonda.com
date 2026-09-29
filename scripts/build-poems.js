@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
 import { fileURLToPath } from 'url';
-import { stanzaLines } from './poem-format.js';
+import { stanzaLines, pathSlug } from './poem-format.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const POEMS_DIR = path.join(__dirname, '../poems');
@@ -12,13 +12,6 @@ const OUTPUT_FILE = path.join(__dirname, '../src/poems.json');
 const poemFiles = fs.readdirSync(POEMS_DIR)
   .filter(file => file.endsWith('.md'))
   .sort();
-
-const pathSlug = (value) => String(value || '')
-  .normalize('NFKD')
-  .replace(/[\u0300-\u036f]/g, '')
-  .toLowerCase()
-  .replace(/[^a-z0-9]+/g, '-')
-  .replace(/^-+|-+$/g, '');
 
 /**
  * The length past which a line is not a line.

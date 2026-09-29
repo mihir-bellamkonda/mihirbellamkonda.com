@@ -1,6 +1,14 @@
 const escapeHtml = (ch) =>
   ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch;
 
+/** A poem's public address, `/poem/<pathSlug(title)>/`. */
+export const pathSlug = (value) => String(value || '')
+  .normalize('NFKD')
+  .replace(/[̀-ͯ]/g, '')
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-+|-+$/g, '');
+
 /**
  * Split one stanza into lines, each a complete fragment of HTML.
  *

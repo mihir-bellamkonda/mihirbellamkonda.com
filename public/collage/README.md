@@ -88,11 +88,6 @@ illustrates the poem by naming its objects back to it.
   https://www.metmuseum.org/art/collection/search/264985
   Used under *The Economy*.
 
-- `dustbowl-farm.webp` — Dorothea Lange, Abandoned Farm in the Dustbowl, Coldwater District, near Dalhart, Texas, June, 1938, printed ca. 1972.
-  The Metropolitan Museum of Art, object 260387, public domain (Open Access).
-  https://www.metmuseum.org/art/collection/search/260387
-  Used under *Epiphany*.
-
 - `oriel-window.webp` — William Henry Fox Talbot, [The Oriel Window, South Gallery, Lacock Abbey], probably 1835.
   The Metropolitan Museum of Art, object 282004, public domain (Open Access).
   https://www.metmuseum.org/art/collection/search/282004

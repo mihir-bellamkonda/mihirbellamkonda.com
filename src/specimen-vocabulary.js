@@ -30,7 +30,6 @@ export const specimenVocabulary = {
   'old-man-at-dinner': ['forgiveness', 'violet', 'chamomile', 'apron'],
   'the-carpenter': ['seashells', 'wood', 'evening', 'hands'],
   'the-economy': ['roadkill', 'basement', 'boot', 'commute'],
-  epiphany: ['afterimages', 'mirror', 'stars', 'kitchen'],
   'love-outside-poems': ['wax', 'fox', 'plates', 'lobe'],
   atlas: ['horizon', 'beetles', 'starlings', 'molars'],
   'musician-s-daughter': ['tuba', 'brass', 'glee', 'grace'],

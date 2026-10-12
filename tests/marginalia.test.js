@@ -7,7 +7,7 @@ const POEMS = [
   'questions-and-answers', 'the-dinner-party', 'mother-dreams-in-half-light',
   'in-of', 'mercy', 'new-orleans', 'circling-figures', 'the-horse',
   'brahmanda', 'a-quiet-family', 'old-man-at-dinner', 'the-carpenter',
-  'the-economy', 'epiphany', 'love-outside-poems', 'musician-s-daughter'
+  'the-economy', 'love-outside-poems', 'musician-s-daughter'
 ];
 
 function corners(polygon) {

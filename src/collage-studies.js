@@ -76,10 +76,6 @@ const studies = {
     kind: 'field', focus: '50% 58%',
     primary: '/collage/sutro-road.webp', secondary: '/collage/plumb-lines.svg'
   },
-  epiphany: {
-    kind: 'field', focus: '50% 56%',
-    primary: '/collage/dustbowl-farm.webp', secondary: '/collage/hatch-field.svg'
-  },
   'love-outside-poems': {
     kind: 'field', focus: '50% 50%',
     primary: '/collage/oriel-window.webp', secondary: '/collage/pulse-trace.svg'
